@@ -3125,6 +3125,6 @@ function resumeTimerIfActive(){const paused=parseInt(localStorage.getItem('timer
   });
 })();
 </script>
-
+<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js');});}</script>
 </body>
 </html>
