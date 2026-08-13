@@ -2089,6 +2089,84 @@ header{margin-bottom:22px;}
         win.focus();
         win.print();
     }
+    async function syncWithSupabase(userId) {
+    if (!userId) return;
+
+    // ۱. دریافت داده‌های ابری از Supabase
+    let { data: cloudData, error } = await supabase
+        .from('user_data')
+        .select('payload')
+        .eq('user_id', userId)
+        .single();
+
+    // ۲. دریافت داده‌های محلی از LocalStorage
+    let localData = {
+        history: JSON.parse(localStorage.getItem('study_history') || '[]'),
+        exams: JSON.parse(localStorage.getItem('exams_list') || '[]'),
+        goals: JSON.parse(localStorage.getItem('goals_data') || '{}'),
+        planner: JSON.parse(localStorage.getItem('planner_data') || '{}')
+    };
+
+    if (cloudData && cloudData.payload) {
+        let serverData = cloudData.payload;
+
+        // ۳. ترکیب هوشمند (Merge) برای جلوگیری از پاک شدن اطلاعات
+        // ترکیب آرایه‌ها بر اساس یکتایی آیتم‌ها (مثلاً تاریخ/شناسه)
+        let mergedHistory = mergeArraysById(localData.history, serverData.history || []);
+        let mergedExams = mergeArraysById(localData.exams, serverData.exams || []);
+        
+        // ترکیب آبجکت‌ها (ابری ترجیح داده می‌شود مگر اینکه محلی جدیدتر باشد)
+        let mergedGoals = { ...(serverData.goals || {}), ...(localData.goals || {}) };
+        let mergedPlanner = { ...(serverData.planner || {}), ...(localData.planner || {}) };
+
+        // ۴. ذخیره نتیجه ادغام‌شده روی لوکال
+        localStorage.setItem('study_history', JSON.stringify(mergedHistory));
+        localStorage.setItem('exams_list', JSON.stringify(mergedExams));
+        localStorage.setItem('goals_data', JSON.stringify(mergedGoals));
+        localStorage.setItem('planner_data', JSON.stringify(mergedPlanner));
+
+        // ۵. ارسال نسخه کامل و ترکیب‌شده به Supabase جهت هماهنگی کامل
+        await supabase
+            .from('user_data')
+            .upsert({ 
+                user_id: userId, 
+                payload: {
+                    history: mergedHistory,
+                    exams: mergedExams,
+                    goals: mergedGoals,
+                    planner: mergedPlanner,
+                    updated_at: new Date().toISOString()
+                } 
+            });
+    } else {
+        // اگر ابری وجود نداشت (کاربر جدید یا اولین بار)، اطلاعات لوکال را آپلود کن
+        await supabase
+            .from('user_data')
+            .upsert({ 
+                user_id: userId, 
+                payload: { ...localData, updated_at: new Date().toISOString() } 
+            });
+    }
+    
+    // بازخوانی رابط کاربری برنامه
+    if (typeof loadUserData === 'function') loadUserData();
+}
+
+// تابع کمکی برای ترکیب دو آرایه بدون از دست رفتن داده‌ها
+function mergeArraysById(localArr, serverArr) {
+    let combinedMap = new Map();
+    // ابتدا سرور را بریزیم
+    serverArr.forEach(item => {
+        let key = item.id || item.date || JSON.stringify(item);
+        combinedMap.set(key, item);
+    });
+    // سپس لوکال را اضافه کنیم (داده‌های جدیدتر روی لوکال ترجیح داده می شوند)
+    localArr.forEach(item => {
+        let key = item.id || item.date || JSON.stringify(item);
+        combinedMap.set(key, item);
+    });
+    return Array.from(combinedMap.values());
+}
 </script>
 
             
