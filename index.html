@@ -2292,6 +2292,19 @@ window.resetTimer=function(){
 @keyframes cloudModalIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 #cloud-account-modal-close{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--text-primary);border-radius:10px;width:28px;height:28px;cursor:pointer;font-size:.9rem;line-height:1}
 @media(max-width:480px){#cloud-account-btn span.label{display:none}#cloud-account-modal-overlay{padding-top:64px}}
+    @media(max-width:480px){#cloud-account-btn span.label{display:none}#cloud-account-modal-overlay{padding-top:64px}}
+.daily-row:last-child{border-bottom:0;}
+.daily-row.header-row{background:rgba(245,185,66,0.08);font-weight:bold;color:var(--gold);text-align:center;}
+.daily-cell{padding:10px;display:flex;align-items:center;border-left:1px solid rgba(255,255,255,0.08);}
+.daily-cell:last-child{border-left:0;}
+.daily-cell input, .daily-cell select{margin-bottom:0;border:none;background:transparent;padding:6px;color:var(--text-primary);text-align:center;}
+.daily-cell input:focus, .daily-cell select:focus{box-shadow:none;border:none;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+@media(max-width:768px){
+  .daily-row{grid-template-columns:1fr;gap:5px;padding:10px;border-bottom:2px solid rgba(255,255,255,0.1);}
+  .daily-cell{border-left:0;border-bottom:1px solid rgba(255,255,255,0.04);padding:6px 0;}
+}
+</style>
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
