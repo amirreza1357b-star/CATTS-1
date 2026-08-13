@@ -2304,7 +2304,93 @@ window.resetTimer=function(){
   .daily-row{grid-template-columns:1fr;gap:5px;padding:10px;border-bottom:2px solid rgba(255,255,255,0.1);}
   .daily-cell{border-left:0;border-bottom:1px solid rgba(255,255,255,0.04);padding:6px 0;}
 }
-</style>
+// تابع ذخیره خودکار و آنی اطلاعات در Supabase
+async function saveToSupabaseCloud() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return; // اگر کاربر لاگین نکرده باشد
+
+        // جمع‌آوری تمام داده‌های اصلی برنامه از localStorage یا متغیرهای سراسری
+        const currentData = {
+            goals: window.goals || {},
+            study: window.study || {},
+            errors: window.errors || [],
+            appDate: window.appDate || "",
+            history: window.historyData || JSON.parse(localStorage.getItem('study_tracker_data') || '[]'),
+            planner: window.planner || {},
+            version: 3,
+            archives: window.archives || [],
+            countdown: window.countdown || "",
+            dailyGoals: window.dailyGoals || [],
+            weeklyGoal: window.weeklyGoal || "",
+            monthlyGoal: window.monthlyGoal || ""
+        };
+
+        // ارسال به جدول study_cloud
+        const { error } = await supabase
+            .from('study_cloud')
+            .upsert({
+                user_id: user.id,
+                data: currentData,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+        if (error) {
+            console.error('خطا در ذخیره ابری:', error.message);
+        }
+    } catch (err) {
+        console.error('مشکل در ارتباط با سرور:', err);
+    }
+}
+
+// تابع دریافت آخرین اطلاعات از Supabase هنگام ورود با ایمیل
+async function loadFromSupabaseCloud() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from('study_cloud')
+            .select('data')
+            .eq('user_id', user.id)
+            .single();
+
+        if (error) {
+            console.error('خطا در دریافت اطلاعات ابری:', error.message);
+            return;
+        }
+
+        if (data && data.data) {
+            // قرار دادن داده‌های دریافتی در برنامه یا localStorage گوشی
+            localStorage.setItem('study_tracker_data', JSON.stringify(data.data.history || []));
+            
+            // بازنشانی متغیرها و رفرش ظاهر صفحه برای نمایش اطلاعات جدید
+            if (typeof renderApp === 'function') {
+                renderApp(data.data);
+            } else {
+                location.reload(); // بارگذاری مجدد صفحه برای اعمال تغییرات
+            }
+        }
+    } catch (err) {
+        console.error('خطا در بارگذاری:', err);
+    }
+}
+
+// ذخیره خودکار به محض هرگونه تغییر یا تایپ در برنامه (Auto-Save)
+let cloudSaveTimer;
+document.addEventListener('input', () => {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(saveToSupabaseCloud, 800); // پس از ۸۰۰ میلی‌ثانیه مکث ذخیره می‌کند
+});
+
+document.addEventListener('change', () => {
+    saveToSupabaseCloud();
+});
+
+// فراخوانی تابع بارگذاری به محض لود شدن سایت یا لاگین موفق در گوشی
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadFromSupabaseCloud, 1000);
+});
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
