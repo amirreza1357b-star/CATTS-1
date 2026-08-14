@@ -2388,22 +2388,6 @@ async function saveToSupabaseCloud() {
 }
 
 // تابع دریافت آخرین اطلاعات از Supabase هنگام ورود با ایمیل
-async function loadFromSupabaseCloud() {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data, error } = await supabase
-            .from('study_cloud')
-            .select('data')
-            .eq('user_id', user.id)
-            .single();
-
-        if (error) {
-            console.error('خطا در دریافت اطلاعات ابری:', error.message);
-            return;
-        }
-
         if (data && data.data) {
             // قرار دادن داده‌های دریافتی در برنامه یا localStorage گوشی
             localStorage.setItem('study_tracker_data', JSON.stringify(data.data.history || []));
