@@ -2569,14 +2569,6 @@ async function cloudSyncNow(){
         cloudBusy = false;
     }
 }
- function subscribeRealtime(){
-   const client=getSupabaseClient(); if(!client)return;
-   if(sbChannel){client.removeChannel(sbChannel);sbChannel=null}
-   sbChannel=client.channel('study-cloud-sync').on('postgres_changes',{event:'UPDATE',schema:'public',table:'study_cloud'},async payload=>{
-     const {data:{session}}=await client.auth.getSession(); if(!session?.user||payload.new.user_id!==session.user.id)return;
-     const remote=payload.new.data; const local=collectCloudData(); if((Date.parse(remote?.updatedAt||'')||0)>(Date.parse(local.updatedAt||'')||0)){applyCloudData(remote);setCloudStatus('⚡ تغییرات دستگاه دیگر دریافت شد.',true);}
-   }).subscribe();
- }
  function updateAutoSyncUI(){const on=localStorage.getItem('neo_auto_sync')==='1';const b=q('neo-auto-sync-badge');if(b){b.textContent=on?'🔄 Auto Sync روشن':'Auto Sync خاموش';b.classList.toggle('on',on)}}
  window.toggleCloudAutoSync=function(){const on=localStorage.getItem('neo_auto_sync')==='1';localStorage.setItem('neo_auto_sync',on?'0':'1');updateAutoSyncUI();if(!on){cloudSyncNow();if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=setInterval(()=>{if(localStorage.getItem('neo_auto_sync')==='1')cloudSyncNow()},5000)}else{if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=null}}
  function initCloud(){
