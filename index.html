@@ -2007,30 +2007,60 @@ header{margin-bottom:22px;}
     }
     loadErrors();
 
-    // --- هدف‌گذاری تست هفتگی ---
-    function saveGoal() {
-        let goal = parseInt(document.getElementById('goal-input').value) || 0;
-        localStorage.setItem('weekly_goal', goal);
-        updateGoalsProgress();
-        alert('هدف ثبت شد!');
-    }
+   // --- هدف‌گذاری تست هفتگی ---
+function saveGoal() {
+  const raw = document.getElementById('goal-input').value;
+  // normalize Persian digits -> latin if enNum exists
+  const normalized = (typeof window.enNum === 'function') ? window.enNum(raw) : raw;
+  const goal = parseInt(normalized, 10);
+  const safe = Number.isFinite(goal) ? goal : 0;
+  localStorage.setItem('weekly_goal', String(safe));
+  updateGoalsProgress();
+  // بهتر از alert است استفاده از یک toast/notice داخل UI (اختیاری)
+  alert('هدف ثبت شد!');
+}
 
-    function loadGoals() {
-        let goal = localStorage.getItem('weekly_goal') || 0;
-        if(goal > 0) document.getElementById('goal-input').value = goal;
-        updateGoalsProgress();
+function loadGoals() {
+  const stored = localStorage.getItem('weekly_goal');
+  if (stored !== null) {
+    // normalise and parse
+    const normalized = (typeof window.enNum === 'function') ? window.enNum(stored) : stored;
+    const goal = parseInt(normalized, 10);
+    if (Number.isFinite(goal)) {
+      document.getElementById('goal-input').value = String(goal);
+    } else {
+      document.getElementById('goal-input').value = '';
     }
+  } else {
+    document.getElementById('goal-input').value = '';
+  }
+  updateGoalsProgress();
+}
 
-    function updateGoalsProgress() {
-        let goal = parseInt(localStorage.getItem('weekly_goal')) || 0;
-        if(goal === 0) {
-            document.getElementById('goal-status').innerText = "هنوز هدفی تعیین نکرده‌اید.";
-            return;
-        }
-        let history = getHistory();
-        let totalDone = history.reduce((sum, item) => sum + (item.totalTests || 0), 0);
-        document.getElementById('goal-status').innerText = `کل تست‌های ثبت‌شده: ${totalDone} از هدف ${goal}`;
-    }
+function updateGoalsProgress() {
+  const stored = localStorage.getItem('weekly_goal');
+  const weekGoal = (stored !== null) ? Number((typeof window.enNum === 'function') ? window.enNum(stored) : stored) : 0;
+  const goal = Number.isFinite(weekGoal) ? weekGoal : 0;
+
+  const statusEl = document.getElementById('goal-status');
+
+  if (goal === 0) {
+    if (statusEl) statusEl.innerText = "هنوز هدفی تعیین نکرده‌اید.";
+    return;
+  }
+
+  const history = Array.isArray(getHistory && getHistory()) ? getHistory() : [];
+  const totalDone = history.reduce((sum, item) => {
+    const n = Number(item && (item.totalTests || 0));
+    return sum + (Number.isFinite(n) ? n : 0);
+  }, 0);
+
+  // use faNum for display if available
+  const displayTotal = (typeof window.faNum === 'function') ? window.faNum(String(totalDone)) : String(totalDone);
+  const displayGoal = (typeof window.faNum === 'function') ? window.faNum(String(goal)) : String(goal);
+
+  if (statusEl) statusEl.innerText = `کل تست‌های ثبت‌شده: ${displayTotal} از هدف ${displayGoal}`;
+}
 
     // --- استریک روزانه ---
     function calculateStreak(history) {
