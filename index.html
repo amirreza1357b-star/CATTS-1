@@ -2556,30 +2556,6 @@ window.addEventListener('DOMContentLoaded', () => {
    setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...',true); await authRefreshUI(); await cloudSyncNow();
  }
  window.authSignOut=async function(){const client=getSupabaseClient();if(!client)return;await client.auth.signOut();if(sbChannel){await client.removeChannel(sbChannel);sbChannel=null}setCloudStatus('از حساب خارج شدی؛ اطلاعات محلی روی همین دستگاه باقی است.');authRefreshUI()}
-function mergeSnapshots(localData,remoteData){
-   if(!remoteData) return localData;
-   if(!localData) return remoteData;
-   const byId=(arr)=>{const m={};(arr||[]).forEach(x=>{if(x&&x.id!=null)m[x.id]=x;});return m;};
-   const mergeArraysById=(a,b)=>{const ma=byId(a),mb=byId(b);const ids=new Set([...Object.keys(ma),...Object.keys(mb)]);const merged=[];ids.forEach(id=>merged.push(ma[id]||mb[id]));merged.sort((x,y)=>(Number(y.id)||0)-(Number(x.id)||0));return merged;};
-   const mergeDict=(a,b)=>Object.assign({},b||{},a||{});
-   const mergePlanner=(a,b)=>{const out=Object.assign({},b||{});Object.keys(a||{}).forEach(k=>{const av=a[k],bv=out[k];if(!bv){out[k]=av;return;}const at=Date.parse(av&&av.updatedAt||'')||0,bt=Date.parse(bv&&bv.updatedAt||'')||0;out[k]=at>=bt?av:bv;});return out;};
-   const mergeStudy=(a,b)=>{const out=Object.assign({},b||{});Object.keys(a||{}).forEach(k=>{out[k]=String(Math.max(Number(a[k])||0,Number(out[k])||0));});return out;};
-   return {
-     version:3,
-     history:mergeArraysById(localData.history,remoteData.history),
-     errors:mergeArraysById(localData.errors,remoteData.errors),
-     dailyGoals:mergeArraysById(localData.dailyGoals,remoteData.dailyGoals),
-     planner:mergePlanner(localData.planner,remoteData.planner),
-     archives:(localData.archives&&localData.archives.length?localData.archives:remoteData.archives)||[],
-     study:mergeStudy(localData.study,remoteData.study),
-     goals:mergeDict(localData.goals,remoteData.goals),
-     countdown:localData.countdown||remoteData.countdown||'',
-     weeklyGoal:localData.weeklyGoal||remoteData.weeklyGoal||'',
-     monthlyGoal:localData.monthlyGoal||remoteData.monthlyGoal||'',
-     appDate:localData.appDate||remoteData.appDate||'',
-     updatedAt:new Date().toISOString()
-   };
- }
 async function cloudSyncNow(){
    if(cloudBusy||applyingRemote)return; const client=getSupabaseClient(); if(!client){setCloudStatus('اول اتصال Supabase را ذخیره کن.');return}
    const {data:{session}}=await client.auth.getSession(); if(!session?.user){setCloudStatus('برای همگام‌سازی اول وارد حساب شو.');return}
