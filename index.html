@@ -2349,42 +2349,6 @@ window.resetTimer=function(){
   .daily-cell{border-left:0;border-bottom:1px solid rgba(255,255,255,0.04);padding:6px 0;}
 }
 // تابع ذخیره خودکار و آنی اطلاعات در Supabase
-async function saveToSupabaseCloud() {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return; // اگر کاربر لاگین نکرده باشد
-
-        // جمع‌آوری تمام داده‌های اصلی برنامه از localStorage یا متغیرهای سراسری
-        const currentData = {
-            goals: window.goals || {},
-            study: window.study || {},
-            errors: window.errors || [],
-            appDate: window.appDate || "",
-            history: window.historyData || JSON.parse(localStorage.getItem('study_tracker_data') || '[]'),
-            planner: window.planner || {},
-            version: 3,
-            archives: window.archives || [],
-            countdown: window.countdown || "",
-            dailyGoals: window.dailyGoals || [],
-            weeklyGoal: window.weeklyGoal || "",
-            monthlyGoal: window.monthlyGoal || ""
-        };
-
-        // ارسال به جدول study_cloud
-        const { error } = await supabase
-            .from('study_cloud')
-            .upsert({
-                user_id: user.id,
-                data: currentData,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
-
-        if (error) {
-            console.error('خطا در ذخیره ابری:', error.message);
-        }
-    } catch (err) {
-        console.error('مشکل در ارتباط با سرور:', err);
-    }
 }
 
 // تابع دریافت آخرین اطلاعات از Supabase هنگام ورود با ایمیل
