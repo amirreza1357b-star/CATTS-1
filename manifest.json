@@ -1,6 +1,6 @@
 {
-  "name": "سامانه حرفه‌ای تست‌زنی و هدف‌گذاری",
-  "short_name": "تست‌زنی",
+  "name": "Comprehensive Test Analysis System",
+  "short_name": "CTAS",
   "description": "ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی",
   "start_url": "./index.html",
   "scope": "./",
