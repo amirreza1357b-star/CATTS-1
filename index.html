@@ -2982,11 +2982,80 @@ function editSubjectGoal(subject){
   openGoalManager();
 }
 function renderGoalManager(){
-  const box=document.getElementById('goal-manager-list');if(!box)return;
-  const g=getSubjectGoals(), entries=Object.entries(g);
-  box.innerHTML=entries.length?entries.map(([s,v])=>`<div class="goal-manager-item"><div><b>${escapeHtml(s)}</b><br><small>هفتگی: ${faNum(v.weekly||0)} تست · ماهانه: ${faNum(v.monthly||0)} تست</small></div><div class="goal-manager-actions"><button class="btn btn-primary" onclick="editSubjectGoal('${s.replace(/'/g,"\\'")}')">ویرایش</button><button class="btn btn-danger" onclick="deleteSubjectGoal('${s.replace(/'/g,"\\'")}')">حذف</button></div></div>`).join(''):'<div style="color:var(--text-secondary);text-align:center;padding:12px">هنوز هدف درسی ثبت نشده است.</div>';
-}
-function renderGoalDashboard(){
+  const box = document.getElementById('goal-manager-list');
+  if(!box) return;
+
+  const goalsObj = (typeof getSubjectGoals === 'function') ? getSubjectGoals() || {} : {};
+  const entries = Object.entries(goalsObj);
+
+  box.innerHTML = ''; // پاک‌سازی امن
+
+  if(entries.length === 0){
+    const empty = document.createElement('div');
+    empty.style.color = 'var(--text-secondary)';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '12px';
+    empty.textContent = 'هنوز هدف درسی ثبت نشده است.';
+    box.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(([subject, v]) => {
+    const item = document.createElement('div');
+    item.className = 'goal-manager-item';
+
+    const left = document.createElement('div');
+    const title = document.createElement('b');
+    title.textContent = subject;
+    const br = document.createElement('br');
+    const small = document.createElement('small');
+
+    // مقادیر را ایمن تبدیل کن (اگر faNum موجوده برای نمایش فارسی استفاده کن)
+    const weeklyVal = (v && typeof v.weekly !== 'undefined') ? v.weekly : 0;
+    const monthlyVal = (v && typeof v.monthly !== 'undefined') ? v.monthly : 0;
+    const weeklyDisplay = (typeof window.faNum === 'function') ? window.faNum(String(weeklyVal)) : String(weeklyVal);
+    const monthlyDisplay = (typeof window.faNum === 'function') ? window.faNum(String(monthlyVal)) : String(monthlyVal);
+
+    small.textContent = `هفتگی: ${weeklyDisplay} تست · ماهانه: ${monthlyDisplay} تست`;
+
+    left.appendChild(title);
+    left.appendChild(br);
+    left.appendChild(small);
+
+    const actions = document.createElement('div');
+    actions.className = 'goal-manager-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-primary';
+    editBtn.type = 'button';
+    editBtn.textContent = 'ویرایش';
+    editBtn.addEventListener('click', () => {
+      // فراخوانی تابع و ارسال subject به صورت امن
+      if (typeof editSubjectGoal === 'function') editSubjectGoal(subject);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-danger';
+    delBtn.type = 'button';
+    delBtn.textContent = 'حذف';
+    delBtn.addEventListener('click', () => {
+      // اگر می‌خواهی confirm اضافه کن
+      if (confirm(`آیا مطمئنی که می‌خواهی هدف درس "${subject}" حذف شود؟`)) {
+        if (typeof deleteSubjectGoal === 'function') {
+          deleteSubjectGoal(subject);
+        }
+      }
+    });
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    item.appendChild(left);
+    item.appendChild(actions);
+
+    box.appendChild(item);
+  });
+}function renderGoalDashboard(){
   const box=document.getElementById('goal-cards-grid'),empty=document.getElementById('goal-empty-state');if(!box)return;
   const goals=getSubjectGoals(), entries=Object.entries(goals);
   if(!entries.length){box.innerHTML='';if(empty)empty.style.display='block';return;}
