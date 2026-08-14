@@ -2561,9 +2561,9 @@ async function cloudSyncNow(){
    }).subscribe();
  }
  function updateAutoSyncUI(){const on=localStorage.getItem('neo_auto_sync')==='1';const b=q('neo-auto-sync-badge');if(b){b.textContent=on?'🔄 Auto Sync روشن':'Auto Sync خاموش';b.classList.toggle('on',on)}}
- window.toggleCloudAutoSync=function(){const on=localStorage.getItem('neo_auto_sync')==='1';localStorage.setItem('neo_auto_sync',on?'0':'1');updateAutoSyncUI();if(!on){cloudSyncNow();if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=setInterval(()=>{if(localStorage.getItem('neo_auto_sync')==='1')cloudSyncNow()},30000)}else{if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=null}}
+ window.toggleCloudAutoSync=function(){const on=localStorage.getItem('neo_auto_sync')==='1';localStorage.setItem('neo_auto_sync',on?'0':'1');updateAutoSyncUI();if(!on){cloudSyncNow();if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=setInterval(()=>{if(localStorage.getItem('neo_auto_sync')==='1')cloudSyncNow()},5000)}else{if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=null}}
  function initCloud(){
-   const c=cloudCfg();if(c.url)q('neo-cloud-url').value=c.url;if(c.key)q('neo-cloud-key').value=c.key;getSupabaseClient();authRefreshUI();updateAutoSyncUI();if(localStorage.getItem('neo_auto_sync')==='1'){if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=setInterval(()=>cloudSyncNow(),30000)}
+   const c=cloudCfg();if(c.url)q('neo-cloud-url').value=c.url;if(c.key)q('neo-cloud-key').value=c.key;getSupabaseClient();authRefreshUI();updateAutoSyncUI();if(localStorage.getItem('neo_auto_sync')==='1'){if(autoSyncTimer)clearInterval(autoSyncTimer);autoSyncTimer=setInterval(()=>cloudSyncNow(),5000)}
    if(sb)sb.auth.onAuthStateChange(()=>setTimeout(authRefreshUI,0));
  }
  document.addEventListener('DOMContentLoaded',()=>setTimeout(initNeo,120));
