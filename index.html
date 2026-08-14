@@ -2536,7 +2536,7 @@ function mergeSnapshots(localData,remoteData){
      updatedAt:new Date().toISOString()
    };
  }
- async function cloudSyncNow(){
+async function cloudSyncNow(){
    if(cloudBusy||applyingRemote)return; const client=getSupabaseClient(); if(!client){setCloudStatus('اول اتصال Supabase را ذخیره کن.');return}
    const {data:{session}}=await client.auth.getSession(); if(!session?.user){setCloudStatus('برای همگام‌سازی اول وارد حساب شو.');return}
    cloudBusy=true; setCloudStatus('☁️ در حال همگام‌سازی...');
@@ -2544,13 +2544,11 @@ function mergeSnapshots(localData,remoteData){
      const localData=collectCloudData();
      const {data:remote,error:rerr}=await client.from('study_cloud').select('data,updated_at').eq('user_id',session.user.id).maybeSingle();
      if(rerr)throw rerr;
-     if(remote?.data){
-       const chosen=mergeSnapshots(localData,remote.data); if(chosen!==localData){applyCloudData(remote.data);setCloudStatus('☁️ اطلاعات جدیدتر از ابر دریافت شد.',true);}
-     }
-     const finalData=collectCloudData();
-     const {error:uerr}=await client.from('study_cloud').upsert({user_id:session.user.id,data:finalData,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+     const merged=mergeSnapshots(localData, remote&&remote.data);
+     applyCloudData(merged);
+     const {error:uerr}=await client.from('study_cloud').upsert({user_id:session.user.id,data:merged,updated_at:new Date().toISOString()},{onConflict:'user_id'});
      if(uerr)throw uerr;
-     setCloudStatus('☁️ همگام‌سازی موفق؛ این حساب روی دستگاه‌های دیگر هم قابل استفاده است.',true);
+     setCloudStatus('☁️ همگام‌سازی موفق؛ اطلاعات همهٔ دستگاه‌ها با هم ترکیب شد.',true);
    }catch(e){setCloudStatus('❌ همگام‌سازی انجام نشد: '+(e.message||'خطای نامشخص'));}
    finally{cloudBusy=false}
  }
