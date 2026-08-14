@@ -2498,7 +2498,7 @@ document.addEventListener('change', () => {
    if(!client){setCloudStatus('اول URL و Key پروژه Supabase را ذخیره کن.');return} if(!email||!password){setCloudStatus('ایمیل و رمز عبور را وارد کن.');return}
    setCloudStatus('در حال ورود...'); const {data,error}=await client.auth.signInWithPassword({email,password});
    if(error){setCloudStatus('ورود ناموفق بود: '+error.message);return}
-   setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...',true); await authRefreshUI(); await cloudSyncNow();
+   setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...',true); await authRefreshUI();
  }
  window.authSignOut=async function(){const client=getSupabaseClient();if(!client)return;await client.auth.signOut();if(sbChannel){await client.removeChannel(sbChannel);sbChannel=null}setCloudStatus('از حساب خارج شدی؛ اطلاعات محلی روی همین دستگاه باقی است.');authRefreshUI()}
 async function cloudSyncNow(){
