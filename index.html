@@ -2557,21 +2557,73 @@ window.addEventListener('DOMContentLoaded', () => {
  }
  window.authSignOut=async function(){const client=getSupabaseClient();if(!client)return;await client.auth.signOut();if(sbChannel){await client.removeChannel(sbChannel);sbChannel=null}setCloudStatus('از حساب خارج شدی؛ اطلاعات محلی روی همین دستگاه باقی است.');authRefreshUI()}
 async function cloudSyncNow(){
-   if(cloudBusy||applyingRemote)return; const client=getSupabaseClient(); if(!client){setCloudStatus('اول اتصال Supabase را ذخیره کن.');return}
-   const {data:{session}}=await client.auth.getSession(); if(!session?.user){setCloudStatus('برای همگام‌سازی اول وارد حساب شو.');return}
-   cloudBusy=true; setCloudStatus('☁️ در حال همگام‌سازی...');
-   try{
-     const localData=collectCloudData();
-     const {data:remote,error:rerr}=await client.from('study_cloud').select('data,updated_at').eq('user_id',session.user.id).maybeSingle();
-     if(rerr)throw rerr;
-     const merged=mergeSnapshots(localData, remote&&remote.data);
-     applyCloudData(merged);
-     const {error:uerr}=await client.from('study_cloud').upsert({user_id:session.user.id,data:merged,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-     if(uerr)throw uerr;
-     setCloudStatus('☁️ همگام‌سازی موفق؛ اطلاعات همهٔ دستگاه‌ها با هم ترکیب شد.',true);
-   }catch(e){setCloudStatus('❌ همگام‌سازی انجام نشد: '+(e.message||'خطای نامشخص'));}
-   finally{cloudBusy=false}
- }
+    if(cloudBusy || applyingRemote) return;
+
+    const client = getSupabaseClient();
+
+    if(!client){
+        setCloudStatus('اول اتصال Supabase را ذخیره کن.');
+        return;
+    }
+
+    const {data:{session}} = await client.auth.getSession();
+
+    if(!session?.user){
+        setCloudStatus('برای همگام‌سازی اول وارد حساب شو.');
+        return;
+    }
+
+    cloudBusy = true;
+    setCloudStatus('☁️ در حال همگام‌سازی...');
+
+    try{
+        const localData = collectCloudData();
+
+        const {data:remote,error:rerr} = await client
+            .from('study_cloud')
+            .select('data,updated_at')
+            .eq('user_id',session.user.id)
+            .maybeSingle();
+
+        if(rerr) throw rerr;
+
+        /*
+         * مهم:
+         * دیگر local و cloud را با mergeSnapshots ترکیب نمی‌کنیم.
+         *
+         * Local در این لحظه منبع اصلی است.
+         * بنابراین اگر چیزی از Local حذف شده باشد،
+         * همان حذف به Cloud نیز منتقل می‌شود.
+         */
+
+        const finalData = localData;
+
+        const {error:uerr} = await client
+            .from('study_cloud')
+            .upsert({
+                user_id: session.user.id,
+                data: finalData,
+                updated_at: new Date().toISOString()
+            },{
+                onConflict:'user_id'
+            });
+
+        if(uerr) throw uerr;
+
+        setCloudStatus(
+            '☁️ همگام‌سازی موفق؛ اطلاعات دستگاه در Cloud ذخیره شد.',
+            true
+        );
+
+    }catch(e){
+        setCloudStatus(
+            '❌ همگام‌سازی انجام نشد: ' +
+            (e.message || 'خطای نامشخص')
+        );
+    }finally{
+        cloudBusy = false;
+    }
+}
  function subscribeRealtime(){
    const client=getSupabaseClient(); if(!client)return;
    if(sbChannel){client.removeChannel(sbChannel);sbChannel=null}
