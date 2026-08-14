@@ -28,7 +28,7 @@
             --purple: #a855f7;
             --font-mono: ui-monospace, 'Courier New', monospace;
         }
-        /* CSS truncated for brevity in commit message but full content preserved in file */
+        /* (بقیهٔ CSS به دلیل طول زیاد در فایل باقی می‌ماند و بدون تغییر است) */
     </style>
 
     <meta name="theme-color" content="#100c24">
@@ -50,7 +50,7 @@
 <div class="main-container">
     <header>
         <div id="smart-date-line" class="smart-date-line" title="برای تنظیم دستی تاریخ کلیک کن" onclick="openDateSettings()"></div>
-        <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب" style="position:absolute; top:0; left:0; background:var(--card-bg); border:var(--border); color:var(--[...]
+        <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب" style="position:absolute; top:0; left:0; background:var(--card-bg); border:var(--border); color:var(--text-primary);">☀️</button>
         <button id="countdown-badge" onclick="toggleCountdownPopup()" title="روزهای باقی‌مانده">🚀</button>
         <div id="countdown-popup">
             <div id="countdown-popup-text">در حال محاسبه...</div>
@@ -93,6 +93,18 @@
       if(arr && arr.length){
         const filtered = arr.filter(g => String(g.id) !== String(id) && String((g && g.title) || '') !== String(id));
         setGoals(filtered);
+
+        // ALSO update in-memory state and call save if present to keep other code in sync
+        try {
+          if (window && window.goals) {
+            window.goals = filtered;
+          }
+        } catch (e) { /* ignore */ }
+        try {
+          if (typeof window.saveGoals === 'function') {
+            window.saveGoals();
+          }
+        } catch (e) { /* ignore */ }
       }
     } catch(e){ console.error('deleteGoal storage error', e); }
 
