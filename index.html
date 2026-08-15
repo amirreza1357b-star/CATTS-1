@@ -4067,8 +4067,7 @@ function previewSmartNoteImage(event){
             "smartNoteImagePreview"
         ).innerHTML = `
 
-            <img src="${e.target.result}" alt="تصویر نکته" onclick="openImageLightbox('${e.target.result}')">
-
+            : `<img src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">`
         `;
 
     };
