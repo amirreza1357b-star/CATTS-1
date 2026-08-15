@@ -1432,17 +1432,50 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     background:rgba(255,255,255,.07);
 }
 
+.smart-note-label{
+    display:block;
+    margin:16px 0 7px;
+    font-size:.8rem;
+    font-weight:800;
+    color:var(--text-secondary);
+}
+.smart-note-label:first-of-type{ margin-top:0; }
+
 .smart-note-image-preview{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+    gap:10px;
     margin-top:10px;
 }
-
-.smart-note-image-preview img{
-    display:block;
-    max-width:100%;
-    max-height:260px;
+.smart-note-img-item{
+    position:relative;
     border-radius:13px;
-    object-fit:contain;
+    overflow:hidden;
     border:1px solid rgba(255,255,255,.08);
+    aspect-ratio:1/1;
+    background:rgba(255,255,255,.03);
+}
+.smart-note-img-item img{
+    width:100%; height:100%; object-fit:cover; cursor:zoom-in; display:block;
+}
+.smart-note-img-remove{
+    position:absolute; top:6px; left:6px;
+    width:26px; height:26px; border-radius:50%;
+    border:none; background:rgba(0,0,0,.65); color:#fff;
+    font-size:.85rem; cursor:pointer; display:grid; place-items:center;
+    backdrop-filter:blur(4px);
+}
+.smart-note-img-remove:hover{ background:rgba(220,38,38,.85); }
+.smart-note-upload.dragover{ border-color:var(--accent); background:rgba(45,212,191,.08); }
+
+.smart-note-view-gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:10px;
+    margin-top:15px;
+}
+.smart-note-view-gallery img{
+    width:100%; border-radius:13px; object-fit:cover; aspect-ratio:1/1; cursor:zoom-in; display:block;
 }
 
 
