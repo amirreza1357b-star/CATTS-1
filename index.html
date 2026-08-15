@@ -3858,6 +3858,24 @@ window.onload = function(){
 
 const SMART_NOTES_KEY = "smart_study_notes_v4";
 
+function openImageLightbox(src){
+    let ov = document.getElementById('smart-image-lightbox');
+    if(!ov){
+        ov = document.createElement('div');
+        ov.id = 'smart-image-lightbox';
+        ov.innerHTML = '<button id="smart-image-lightbox-close" aria-label="بستن">✕</button><img id="smart-image-lightbox-img" src="">';
+        document.body.appendChild(ov);
+        ov.addEventListener('click', (e) => { if(e.target === ov) closeImageLightbox(); });
+        document.getElementById('smart-image-lightbox-close').addEventListener('click', closeImageLightbox);
+        document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeImageLightbox(); });
+    }
+    document.getElementById('smart-image-lightbox-img').src = src;
+    ov.classList.add('show');
+}
+function closeImageLightbox(){
+    document.getElementById('smart-image-lightbox')?.classList.remove('show');
+}
+
 let smartNotes = {};
 let currentSmartSubject = "هندسه";
 let editingSmartNoteId = null;
