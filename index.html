@@ -4014,7 +4014,7 @@ function openSmartNoteEditor(){
 
     editingSmartNoteId = null;
 
-    smartNoteImage = null;
+    smartNoteImages = [];
 
     document.getElementById(
         "smartNoteModalTitle"
@@ -4041,9 +4041,7 @@ function openSmartNoteEditor(){
     ).value = "";
 
 
-    document.getElementById(
-        "smartNoteImagePreview"
-    ).innerHTML = "";
+    renderSmartNoteImagePreview();
 
 
     document
