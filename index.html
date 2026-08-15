@@ -3534,51 +3534,71 @@ window.onload = function(){
    سیستم نکته‌های درس
    ========================================================= */
 
-let currentNoteSubject = null;
-let currentNoteImage = null;
+/* =========================================================
+   سیستم جدید نکات دروس تخصصی
+   ========================================================= */
+
+const SMART_NOTES_KEY = "smart_study_notes_v4";
+
+let smartNotes = {};
+let currentSmartSubject = "هندسه";
+let editingSmartNoteId = null;
+let smartNoteImage = null;
 
 
-/* ---------- دریافت نکته‌ها ---------- */
+/* =========================
+   بارگذاری نکات
+========================= */
 
-function getAllStudyNotes(){
+function loadSmartNotes(){
 
     try{
 
-        const saved = localStorage.getItem("study_notes");
+        const saved =
+            localStorage.getItem(SMART_NOTES_KEY);
 
-        if(!saved) return {};
-
-        return JSON.parse(saved);
+        smartNotes =
+            saved ? JSON.parse(saved) : {};
 
     }catch(error){
 
-        console.error("خطا در خواندن نکته‌ها:", error);
+        console.error(
+            "خطا در بارگذاری نکات:",
+            error
+        );
 
-        return {};
+        smartNotes = {};
 
     }
 
 }
 
 
-/* ---------- ذخیره کل نکته‌ها ---------- */
+/* =========================
+   ذخیره نکات
+========================= */
 
-function saveAllStudyNotes(notes){
+function saveSmartNotes(){
 
     try{
 
         localStorage.setItem(
-            "study_notes",
-            JSON.stringify(notes)
+            SMART_NOTES_KEY,
+            JSON.stringify(smartNotes)
         );
 
         return true;
 
     }catch(error){
 
-        console.error("خطا در ذخیره نکته:", error);
+        console.error(
+            "خطا در ذخیره نکات:",
+            error
+        );
 
-        alert("ذخیره نکته انجام نشد.");
+        alert(
+            "ذخیره انجام نشد. ممکن است حافظه مرورگر پر شده باشد."
+        );
 
         return false;
 
@@ -3587,385 +3607,951 @@ function saveAllStudyNotes(notes){
 }
 
 
-/* ---------- انتخاب درس ---------- */
+/* =========================
+   انتخاب درس
+========================= */
 
-function changeNotesSubject(){
+function selectSmartNoteSubject(subject, button){
 
-    const select =
-        document.getElementById("notesSubjectSelect");
+    currentSmartSubject = subject;
 
-    const subject = select.value;
+    document
+        .querySelectorAll(".smart-subject-btn")
+        .forEach(btn => {
 
-    if(!subject){
+            btn.classList.remove("active");
 
-        currentNoteSubject = null;
+        });
 
-        renderStudyNotes();
+    if(button){
 
-        return;
+        button.classList.add("active");
 
     }
 
-    currentNoteSubject = subject;
+    const search =
+        document.getElementById("smartNotesSearch");
 
-    renderStudyNotes();
+    if(search){
+
+        search.value = "";
+
+    }
+
+    renderSmartNotes();
 
 }
 
 
-/* ---------- باز کردن نکته جدید ---------- */
+/* =========================
+   افزودن نکته
+========================= */
 
-function openNewNote(){
+function openSmartNoteEditor(){
 
-    if(!currentNoteSubject){
+    editingSmartNoteId = null;
 
-        alert("ابتدا یک درس را انتخاب کنید.");
+    smartNoteImage = null;
 
-        return;
+    document.getElementById(
+        "smartNoteModalTitle"
+    ).textContent = "📝 نکته جدید";
 
-    }
 
-    const allNotes = getAllStudyNotes();
+    document.getElementById(
+        "smartNoteSubjectInput"
+    ).value = currentSmartSubject;
 
-    if(!allNotes[currentNoteSubject]){
 
-        allNotes[currentNoteSubject] = [];
+    document.getElementById(
+        "smartNoteTitleInput"
+    ).value = "";
 
-    }
 
-    const nextNumber =
-        allNotes[currentNoteSubject].length + 1;
+    document.getElementById(
+        "smartNoteTextInput"
+    ).value = "";
 
-    document.getElementById("noteNumberTitle")
-        .textContent = "نکته " + nextNumber;
 
-    document.getElementById("noteSubjectTitle")
-        .textContent = currentNoteSubject;
+    document.getElementById(
+        "smartNoteImageInput"
+    ).value = "";
 
-    document.getElementById("noteText").value = "";
 
-    currentNoteImage = null;
+    document.getElementById(
+        "smartNoteImagePreview"
+    ).innerHTML = "";
 
-    document.getElementById("noteImageInput").value = "";
 
-    document.getElementById("noteImagePreview").innerHTML = "";
-
-    document.getElementById("noteModal")
+    document
+        .getElementById("smartNoteModal")
         .classList.add("show");
 
-    setTimeout(() => {
-
-        document.getElementById("noteText").focus();
-
-    },100);
-
 }
 
 
-/* ---------- بستن پنجره ---------- */
+/* =========================
+   بستن پنجره
+========================= */
 
-function closeNoteModal(){
+function closeSmartNoteEditor(){
 
-    document.getElementById("noteModal")
+    document
+        .getElementById("smartNoteModal")
         .classList.remove("show");
 
 }
 
 
-/* ---------- پیش‌نمایش عکس ---------- */
+function closeSmartNoteView(){
 
-function previewNoteImage(event){
+    document
+        .getElementById("smartNoteViewModal")
+        .classList.remove("show");
 
-    const file = event.target.files[0];
+}
+
+
+/* =========================
+   پیش‌نمایش تصویر
+========================= */
+
+function previewSmartNoteImage(event){
+
+    const file =
+        event.target.files[0];
 
     if(!file) return;
 
+
     if(!file.type.startsWith("image/")){
 
-        alert("لطفاً یک فایل تصویری انتخاب کنید.");
+        alert(
+            "لطفاً یک فایل تصویری انتخاب کنید."
+        );
 
         return;
 
     }
 
-    const reader = new FileReader();
+
+    const reader =
+        new FileReader();
+
 
     reader.onload = function(e){
 
-        currentNoteImage = e.target.result;
+        smartNoteImage =
+            e.target.result;
 
-        document.getElementById("noteImagePreview")
-            .innerHTML =
-            `<img src="${e.target.result}" alt="تصویر نکته">`;
+
+        document.getElementById(
+            "smartNoteImagePreview"
+        ).innerHTML = `
+
+            <img
+                src="${e.target.result}"
+                alt="تصویر نکته">
+
+        `;
 
     };
+
 
     reader.readAsDataURL(file);
 
 }
 
 
-/* ---------- ذخیره نکته ---------- */
+/* =========================
+   ذخیره نکته
+========================= */
 
-function saveCurrentNote(){
+function saveSmartNote(){
 
-    if(!currentNoteSubject){
+    const subject =
+        document.getElementById(
+            "smartNoteSubjectInput"
+        ).value;
 
-        alert("درس انتخاب نشده است.");
 
-        return;
+    const title =
+        document.getElementById(
+            "smartNoteTitleInput"
+        ).value.trim();
 
-    }
 
     const text =
-        document.getElementById("noteText")
-        .value
-        .trim();
+        document.getElementById(
+            "smartNoteTextInput"
+        ).value.trim();
 
-    if(!text && !currentNoteImage){
 
-        alert("حداقل متن یا یک عکس برای نکته اضافه کنید.");
+    if(!title){
 
-        return;
-
-    }
-
-    const allNotes = getAllStudyNotes();
-
-    if(!allNotes[currentNoteSubject]){
-
-        allNotes[currentNoteSubject] = [];
-
-    }
-
-    const noteNumber =
-        allNotes[currentNoteSubject].length + 1;
-
-    const note = {
-
-        id:
-            "note_" +
-            Date.now() +
-            "_" +
-            Math.random()
-                .toString(36)
-                .slice(2,8),
-
-        number: noteNumber,
-
-        subject: currentNoteSubject,
-
-        text: text,
-
-        image: currentNoteImage,
-
-        createdAt: new Date().toISOString(),
-
-        updatedAt: new Date().toISOString()
-
-    };
-
-    allNotes[currentNoteSubject].push(note);
-
-    if(!saveAllStudyNotes(allNotes)){
+        alert(
+            "لطفاً عنوان نکته را وارد کنید."
+        );
 
         return;
 
     }
 
-    renderStudyNotes();
 
-    closeNoteModal();
+    if(!text && !smartNoteImage){
+
+        alert(
+            "حداقل توضیحات یا تصویر را اضافه کنید."
+        );
+
+        return;
+
+    }
+
+
+    if(!smartNotes[subject]){
+
+        smartNotes[subject] = [];
+
+    }
+
+
+    /* ---------- ویرایش ---------- */
+
+    if(editingSmartNoteId){
+
+        let foundNote = null;
+        let oldSubject = null;
+
+
+        Object.keys(smartNotes)
+            .some(subjectName => {
+
+                const found =
+                    smartNotes[subjectName]
+                    .find(
+                        note =>
+                            note.id ===
+                            editingSmartNoteId
+                    );
+
+
+                if(found){
+
+                    foundNote = found;
+                    oldSubject = subjectName;
+
+                    return true;
+
+                }
+
+                return false;
+
+            });
+
+
+        if(foundNote){
+
+            foundNote.subject = subject;
+            foundNote.title = title;
+            foundNote.text = text;
+
+
+            if(smartNoteImage !== null){
+
+                foundNote.image =
+                    smartNoteImage;
+
+            }
+
+
+            foundNote.updatedAt =
+                new Date().toISOString();
+
+
+            if(oldSubject !== subject){
+
+                smartNotes[oldSubject] =
+                    smartNotes[oldSubject]
+                    .filter(
+                        note =>
+                            note.id !==
+                            editingSmartNoteId
+                    );
+
+
+                smartNotes[subject].push(
+                    foundNote
+                );
+
+            }
+
+        }
+
+    }
+
+    /* ---------- نکته جدید ---------- */
+
+    else{
+
+        smartNotes[subject].push({
+
+            id:
+                "smart_note_" +
+                Date.now() +
+                "_" +
+                Math.random()
+                    .toString(36)
+                    .substring(2,8),
+
+            subject: subject,
+
+            title: title,
+
+            text: text,
+
+            image: smartNoteImage,
+
+            createdAt:
+                new Date().toISOString(),
+
+            updatedAt:
+                new Date().toISOString()
+
+        });
+
+    }
+
+
+    if(!saveSmartNotes()){
+
+        return;
+
+    }
+
+
+    currentSmartSubject =
+        subject;
+
+
+    updateSmartSubjectButtons();
+
+    renderSmartNotes();
+
+    closeSmartNoteEditor();
 
 }
 
 
-/* ---------- نمایش نکته‌ها ---------- */
+/* =========================
+   نمایش نکات
+========================= */
 
-function renderStudyNotes(){
+function renderSmartNotes(){
 
     const list =
-        document.getElementById("notesList");
+        document.getElementById(
+            "smartNotesList"
+        );
+
 
     if(!list) return;
 
-    if(!currentNoteSubject){
 
-        list.innerHTML =
-            `<div class="notes-empty">
-                ابتدا یک درس را انتخاب کنید.
-             </div>`;
+    const search =
+        document.getElementById(
+            "smartNotesSearch"
+        );
 
-        return;
+
+    const query =
+        search
+        ?
+        search.value
+            .trim()
+            .toLowerCase()
+        :
+        "";
+
+
+    let notes =
+        smartNotes[currentSmartSubject] || [];
+
+
+    if(query){
+
+        notes =
+            notes.filter(note => {
+
+                const title =
+                    String(note.title || "")
+                        .toLowerCase();
+
+                const text =
+                    String(note.text || "")
+                        .toLowerCase();
+
+                return (
+                    title.includes(query) ||
+                    text.includes(query)
+                );
+
+            });
 
     }
 
-    const allNotes = getAllStudyNotes();
 
-    const notes =
-        allNotes[currentNoteSubject] || [];
+    const total =
+        (smartNotes[currentSmartSubject] || [])
+            .length;
 
-    if(notes.length === 0){
 
-        list.innerHTML =
-            `<div class="notes-empty">
-                هنوز نکته‌ای برای این درس ثبت نشده است.
-             </div>`;
+    const subjectTitle =
+        document.getElementById(
+            "smartNotesCurrentSubject"
+        );
 
-        return;
+
+    const count =
+        document.getElementById(
+            "smartNotesCount"
+        );
+
+
+    if(subjectTitle){
+
+        subjectTitle.textContent =
+            getSmartSubjectIcon(
+                currentSmartSubject
+            ) +
+            " " +
+            currentSmartSubject;
 
     }
 
-    list.innerHTML = notes.map((note,index) => {
 
-        const imageHTML =
-            note.image
-            ?
-            `<img class="note-card-image"
-                  src="${note.image}"
-                  alt="تصویر نکته">`
-            :
-            "";
+    if(count){
 
-        const textHTML =
-            note.text
-            ?
-            `<div class="note-card-text">
-                ${escapeStudyNoteHTML(note.text)}
-             </div>`
-            :
-            "";
+        count.textContent =
+            toPersianNumber(total) +
+            " نکته";
 
-        return `
-            <div class="note-card">
+    }
 
-                <div class="note-card-header">
 
-                    <span class="note-card-number">
-                        📝 نکته ${index + 1}
-                    </span>
+    if(!notes.length){
 
-                    <span>
-                        ${note.subject}
-                    </span>
+        list.innerHTML = `
 
-                </div>
+            <div class="smart-notes-empty">
 
-                ${textHTML}
+                📝
 
-                ${imageHTML}
+                <br><br>
 
-                <div class="note-card-actions">
-
-                    <button
-                        class="btn"
-                        onclick="deleteStudyNote('${note.id}')">
-                        🗑️ حذف
-                    </button>
-
-                </div>
+                ${
+                    query
+                    ?
+                    "نتیجه‌ای برای جستجو پیدا نشد."
+                    :
+                    "هنوز نکته‌ای برای این درس ثبت نشده است."
+                }
 
             </div>
+
         `;
 
-    }).join("");
+        return;
+
+    }
+
+
+    list.innerHTML =
+        notes.map((note,index) => {
+
+            const preview =
+                note.text
+                ?
+                note.text
+                    .replace(/\s+/g," ")
+                    .substring(0,100)
+                :
+                "📷 این نکته دارای تصویر است";
+
+
+            return `
+
+                <div
+                    class="smart-note-item"
+                    onclick="openSmartNoteView('${note.id}')">
+
+                    <div class="smart-note-item-number">
+
+                        ${toPersianNumber(index + 1)}
+
+                    </div>
+
+
+                    <div class="smart-note-item-main">
+
+                        <div class="smart-note-item-title">
+
+                            ${escapeSmartHTML(note.title)}
+
+                        </div>
+
+
+                        <div class="smart-note-item-preview">
+
+                            ${escapeSmartHTML(preview)}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="smart-note-item-arrow">
+
+                        ←
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
 
 }
 
 
-/* ---------- حذف نکته ---------- */
+/* =========================
+   جستجو
+========================= */
 
-function deleteStudyNote(noteId){
+function searchSmartNotes(){
 
-    if(!currentNoteSubject) return;
+    renderSmartNotes();
 
-    const allNotes = getAllStudyNotes();
-
-    if(!allNotes[currentNoteSubject]) return;
-
-    const confirmed =
-        confirm("آیا از حذف این نکته مطمئن هستید؟");
-
-    if(!confirmed) return;
-
-    allNotes[currentNoteSubject] =
-        allNotes[currentNoteSubject]
-        .filter(note => note.id !== noteId);
+}
 
 
-    /*
-       شماره نکته‌ها دوباره مرتب می‌شود:
-       نکته ۱
-       نکته ۲
-       نکته ۳
-       ...
-    */
+/* =========================
+   نمایش کامل نکته
+========================= */
 
-    allNotes[currentNoteSubject]
-        .forEach((note,index) => {
+function openSmartNoteView(noteId){
 
-            note.number = index + 1;
+    let note = null;
+
+
+    Object.keys(smartNotes)
+        .some(subject => {
+
+            const found =
+                smartNotes[subject]
+                .find(
+                    n =>
+                        n.id === noteId
+                );
+
+
+            if(found){
+
+                note = found;
+
+                return true;
+
+            }
+
+            return false;
 
         });
 
 
-    saveAllStudyNotes(allNotes);
+    if(!note) return;
 
-    renderStudyNotes();
+
+    const imageHTML =
+        note.image
+        ?
+        `
+        <img
+            class="smart-note-view-image"
+            src="${note.image}"
+            alt="تصویر نکته">
+        `
+        :
+        "";
+
+
+    document.getElementById(
+        "smartNoteViewContent"
+    ).innerHTML = `
+
+        <div class="smart-note-view-title">
+
+            ${escapeSmartHTML(note.title)}
+
+        </div>
+
+
+        <div class="smart-note-view-subject">
+
+            ${getSmartSubjectIcon(note.subject)}
+
+            ${escapeSmartHTML(note.subject)}
+
+        </div>
+
+
+        ${
+            note.text
+            ?
+            `
+            <div class="smart-note-view-text">
+
+                ${escapeSmartHTML(note.text)}
+
+            </div>
+            `
+            :
+            ""
+        }
+
+
+        ${imageHTML}
+
+
+        <div class="smart-note-modal-actions">
+
+            <button
+                class="smart-note-cancel-btn"
+                onclick="editSmartNote('${note.id}')">
+
+                ✏️ ویرایش
+
+            </button>
+
+
+            <button
+                class="smart-note-delete-btn"
+                onclick="deleteSmartNote('${note.id}')">
+
+                🗑️ حذف
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById("smartNoteViewModal")
+        .classList.add("show");
 
 }
 
 
-/* ---------- جلوگیری از HTML Injection ---------- */
+/* =========================
+   ویرایش
+========================= */
 
-function escapeStudyNoteHTML(text){
+function editSmartNote(noteId){
 
-    return String(text)
+    let note = null;
+
+
+    Object.keys(smartNotes)
+        .some(subject => {
+
+            const found =
+                smartNotes[subject]
+                .find(
+                    n =>
+                        n.id === noteId
+                );
+
+
+            if(found){
+
+                note = found;
+
+                return true;
+
+            }
+
+            return false;
+
+        });
+
+
+    if(!note) return;
+
+
+    editingSmartNoteId =
+        note.id;
+
+
+    smartNoteImage =
+        note.image || null;
+
+
+    document.getElementById(
+        "smartNoteModalTitle"
+    ).textContent =
+        "✏️ ویرایش نکته";
+
+
+    document.getElementById(
+        "smartNoteSubjectInput"
+    ).value =
+        note.subject;
+
+
+    document.getElementById(
+        "smartNoteTitleInput"
+    ).value =
+        note.title;
+
+
+    document.getElementById(
+        "smartNoteTextInput"
+    ).value =
+        note.text || "";
+
+
+    document.getElementById(
+        "smartNoteImageInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "smartNoteImagePreview"
+    ).innerHTML =
+        note.image
+        ?
+        `<img src="${note.image}" alt="تصویر نکته">`
+        :
+        "";
+
+
+    closeSmartNoteView();
+
+
+    document
+        .getElementById("smartNoteModal")
+        .classList.add("show");
+
+}
+
+
+/* =========================
+   حذف واقعی
+========================= */
+
+function deleteSmartNote(noteId){
+
+    if(
+        !confirm(
+            "آیا از حذف این نکته مطمئن هستید؟"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    Object.keys(smartNotes)
+        .forEach(subject => {
+
+            if(!Array.isArray(smartNotes[subject])){
+
+                return;
+
+            }
+
+
+            smartNotes[subject] =
+                smartNotes[subject]
+                .filter(
+                    note =>
+                        note.id !== noteId
+                );
+
+        });
+
+
+    saveSmartNotes();
+
+
+    closeSmartNoteView();
+
+    renderSmartNotes();
+
+}
+
+
+/* =========================
+   آیکون درس
+========================= */
+
+function getSmartSubjectIcon(subject){
+
+    const icons = {
+
+        "هندسه":"📐",
+        "آمار":"📊",
+        "گسسته":"🔢",
+        "حسابان":"📈",
+        "ریاضی":"➗",
+        "زیست":"🧬",
+        "زمین شناسی":"🌍",
+        "فیزیک":"⚡",
+        "شیمی":"🧪"
+
+    };
+
+
+    return icons[subject] || "📚";
+
+}
+
+
+/* =========================
+   فعال کردن درس
+========================= */
+
+function updateSmartSubjectButtons(){
+
+    document
+        .querySelectorAll(".smart-subject-btn")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.subject ===
+                currentSmartSubject
+            );
+
+        });
+
+}
+
+
+/* =========================
+   اعداد فارسی
+========================= */
+
+function toPersianNumber(value){
+
+    return String(value)
+        .replace(
+            /\d/g,
+            d => "۰۱۲۳۴۵۶۷۸۹"[d]
+        );
+
+}
+
+
+/* =========================
+   جلوگیری از HTML
+========================= */
+
+function escapeSmartHTML(text){
+
+    return String(text || "")
 
         .replace(/&/g,"&amp;")
-
         .replace(/</g,"&lt;")
-
         .replace(/>/g,"&gt;")
-
         .replace(/"/g,"&quot;")
-
         .replace(/'/g,"&#039;");
 
 }
 
 
-/* ---------- بستن با کلیک بیرون ---------- */
+/* =========================
+   بستن با کلیک بیرون
+========================= */
 
-document.addEventListener("click",function(event){
+document.addEventListener(
+    "click",
+    function(event){
 
-    const modal =
-        document.getElementById("noteModal");
+        const editor =
+            document.getElementById(
+                "smartNoteModal"
+            );
 
-    if(
-        event.target === modal &&
-        modal.classList.contains("show")
-    ){
 
-        closeNoteModal();
+        const viewer =
+            document.getElementById(
+                "smartNoteViewModal"
+            );
+
+
+        if(
+            editor &&
+            event.target === editor
+        ){
+
+            closeSmartNoteEditor();
+
+        }
+
+
+        if(
+            viewer &&
+            event.target === viewer
+        ){
+
+            closeSmartNoteView();
+
+        }
 
     }
+);
 
-});
 
+/* =========================
+   Escape
+========================= */
 
-/* ---------- بستن با Escape ---------- */
+document.addEventListener(
+    "keydown",
+    function(event){
 
-document.addEventListener("keydown",function(event){
+        if(event.key === "Escape"){
 
-    if(event.key === "Escape"){
+            closeSmartNoteEditor();
 
-        closeNoteModal();
+            closeSmartNoteView();
+
+        }
 
     }
+);
 
-});
 
+/* =========================
+   شروع سیستم
+========================= */
+
+loadSmartNotes();
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        updateSmartSubjectButtons();
+
+        renderSmartNotes();
+
+    }
+);
 </script>
 </body>
 </html>
