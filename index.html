@@ -3215,33 +3215,249 @@ window.onload = function(){
 };
 </script>
     <!-- ==================== سیستم نکته‌ها ==================== -->
-<div id="notesSection" class="notes-section">
+<!-- ==================== سیستم جدید نکات ==================== -->
 
-    <div class="notes-header">
+<section id="smartNotesSection" class="smart-notes-section">
+
+    <div class="smart-notes-header">
+
         <div>
-            <h2>📝 نکته‌های درس</h2>
-       <div class="notes-subject-selector">
+            <h2>📝 نکات دروس تخصصی</h2>
+            <p>نکات را مرتب ذخیره کن و هر زمان خواستی پیدا کن.</p>
+        </div>
 
-    <label for="notesSubjectSelect">
-        📚 انتخاب درس
-    </label>
+        <button
+            class="smart-note-add-btn"
+            onclick="openSmartNoteEditor()">
+            ➕ افزودن نکته
+        </button>
 
-    <select id="notesSubjectSelect" onchange="changeNotesSubject()">
+    </div>
 
-        <option value="">-- انتخاب درس --</option>
 
-        <option value="ریاضی">📐 ریاضی</option>
-        <option value="فیزیک">⚡ فیزیک</option>
-        <option value="شیمی">🧪 شیمی</option>
-        <option value="زیست">🧬 زیست</option>
-        <option value="زمین‌شناسی">🌍 زمین‌شناسی</option>
-        <option value="ادبیات">📖 ادبیات</option>
-        <option value="عربی">📕 عربی</option>
-        <option value="دینی">☪️ دینی</option>
-        <option value="زبان">🔤 زبان</option>
+    <!-- جستجو -->
 
-    </select>
+    <div class="smart-notes-search">
 
+        <span>🔎</span>
+
+        <input
+            id="smartNotesSearch"
+            type="text"
+            placeholder="جستجوی عنوان یا توضیحات..."
+            oninput="searchSmartNotes()">
+
+    </div>
+
+
+    <!-- درس‌ها -->
+
+    <div class="smart-notes-subjects">
+
+        <button
+            class="smart-subject-btn active"
+            data-subject="هندسه"
+            onclick="selectSmartNoteSubject('هندسه',this)">
+            📐 هندسه
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="آمار"
+            onclick="selectSmartNoteSubject('آمار',this)">
+            📊 آمار
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="گسسته"
+            onclick="selectSmartNoteSubject('گسسته',this)">
+            🔢 گسسته
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="حسابان"
+            onclick="selectSmartNoteSubject('حسابان',this)">
+            📈 حسابان
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="ریاضی"
+            onclick="selectSmartNoteSubject('ریاضی',this)">
+            ➗ ریاضی
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="زیست"
+            onclick="selectSmartNoteSubject('زیست',this)">
+            🧬 زیست
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="زمین شناسی"
+            onclick="selectSmartNoteSubject('زمین شناسی',this)">
+            🌍 زمین‌شناسی
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="فیزیک"
+            onclick="selectSmartNoteSubject('فیزیک',this)">
+            ⚡ فیزیک
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="شیمی"
+            onclick="selectSmartNoteSubject('شیمی',this)">
+            🧪 شیمی
+        </button>
+
+    </div>
+
+
+    <!-- عنوان درس و تعداد -->
+
+    <div class="smart-notes-current-title">
+
+        <span id="smartNotesCurrentSubject">
+            📐 هندسه
+        </span>
+
+        <span id="smartNotesCount">
+            ۰ نکته
+        </span>
+
+    </div>
+
+
+    <!-- لیست خلاصه نکات -->
+
+    <div id="smartNotesList" class="smart-notes-list"></div>
+
+</section>
+
+
+<!-- ==================== افزودن / ویرایش ==================== -->
+
+<div id="smartNoteModal" class="smart-note-modal">
+
+    <div class="smart-note-modal-box">
+
+        <button
+            class="smart-note-close"
+            onclick="closeSmartNoteEditor()">
+            ×
+        </button>
+
+
+        <h2 id="smartNoteModalTitle">
+            📝 نکته جدید
+        </h2>
+
+
+        <label class="smart-note-label">
+            📚 درس
+        </label>
+
+        <select id="smartNoteSubjectInput">
+
+            <option value="هندسه">📐 هندسه</option>
+            <option value="آمار">📊 آمار</option>
+            <option value="گسسته">🔢 گسسته</option>
+            <option value="حسابان">📈 حسابان</option>
+            <option value="ریاضی">➗ ریاضی</option>
+            <option value="زیست">🧬 زیست</option>
+            <option value="زمین شناسی">🌍 زمین‌شناسی</option>
+            <option value="فیزیک">⚡ فیزیک</option>
+            <option value="شیمی">🧪 شیمی</option>
+
+        </select>
+
+
+        <label class="smart-note-label">
+            🏷️ عنوان نکته
+        </label>
+
+        <input
+            id="smartNoteTitleInput"
+            class="smart-note-title-input"
+            type="text"
+            placeholder="مثلاً: قانون کولن">
+
+
+        <label class="smart-note-label">
+            📝 توضیحات
+        </label>
+
+        <textarea
+            id="smartNoteTextInput"
+            class="smart-note-text-input"
+            placeholder="توضیحات نکته را بنویسید..."></textarea>
+
+
+        <label class="smart-note-label">
+            📷 تصویر
+        </label>
+
+        <label class="smart-note-image-btn">
+
+            📷 انتخاب تصویر
+
+            <input
+                id="smartNoteImageInput"
+                type="file"
+                accept="image/*"
+                hidden
+                onchange="previewSmartNoteImage(event)">
+
+        </label>
+
+        <div id="smartNoteImagePreview"></div>
+
+
+        <div class="smart-note-modal-actions">
+
+            <button
+                class="smart-note-cancel-btn"
+                onclick="closeSmartNoteEditor()">
+                انصراف
+            </button>
+
+            <button
+                class="smart-note-save-btn"
+                onclick="saveSmartNote()">
+                💾 ذخیره
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================== نمایش کامل نکته ==================== -->
+
+<div id="smartNoteViewModal" class="smart-note-modal">
+
+    <div class="smart-note-modal-box">
+
+        <button
+            class="smart-note-close"
+            onclick="closeSmartNoteView()">
+            ×
+        </button>
+
+        <div id="smartNoteViewContent"></div>
+
+    </div>
+
+</div>
 </div>
 
         <button class="btn notes-add-btn" onclick="openNewNote()">
