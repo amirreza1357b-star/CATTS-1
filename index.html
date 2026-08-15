@@ -4650,7 +4650,7 @@ function editSmartNote(noteId){
     ).innerHTML =
         note.image
         ?
-        `<img src="${note.image}" alt="تصویر نکته">`
+        <img src="${e.target.result}" alt="تصویر نکته" onclick="openImageLightbox('${e.target.result}')">
         :
         "";
 
