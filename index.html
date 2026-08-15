@@ -4494,10 +4494,7 @@ function openSmartNoteView(noteId){
         note.image
         ?
         `
-        <img
-            class="smart-note-view-image"
-            src="${note.image}"
-            alt="تصویر نکته">
+       <img class="smart-note-view-image" src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">>
         `
         :
         "";
