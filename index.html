@@ -2736,8 +2736,9 @@ function switchTab(tabId, btn){
     document.getElementById(tabId).classList.add('active');
     btn.classList.add('active');
     if(tabId === 'tab-stats') updateChart();
+    const notesTab = document.getElementById('smartNotesSection');
+    if(notesTab) notesTab.classList.toggle('active', tabId === 'tab-timer');
 }
-
 /* ---------------------------------------------------------------------- */
 /* 9) هدف‌گذاری تفکیکی دروس + ثبت تست روزانه                                */
 /* ---------------------------------------------------------------------- */
