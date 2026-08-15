@@ -4909,6 +4909,25 @@ document.addEventListener(
 
     }
 );
+        (function(){
+    const uploadLabel = document.querySelector('.smart-note-upload');
+    if(uploadLabel){
+        ['dragover','dragenter'].forEach(evt => uploadLabel.addEventListener(evt, e => { e.preventDefault(); uploadLabel.classList.add('dragover'); }));
+        ['dragleave','drop'].forEach(evt => uploadLabel.addEventListener(evt, e => { e.preventDefault(); uploadLabel.classList.remove('dragover'); }));
+        uploadLabel.addEventListener('drop', e => { if(e.dataTransfer?.files?.length) handleSmartNoteImageFiles(e.dataTransfer.files); });
+    }
+    document.addEventListener('paste', e => {
+        const modal = document.getElementById('smartNoteModal');
+        if(!modal || !modal.classList.contains('show')) return;
+        const items = e.clipboardData?.items; if(!items) return;
+        const files = Array.from(items).filter(it => it.type.startsWith('image/')).map(it => it.getAsFile());
+        if(files.length) handleSmartNoteImageFiles(files);
+    });
+    document.addEventListener('keydown', e => {
+        const modal = document.getElementById('smartNoteModal');
+        if(modal?.classList.contains('show') && (e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); saveSmartNote(); }
+    });
+})();
 </script>
 </body>
 </html>
