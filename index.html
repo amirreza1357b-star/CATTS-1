@@ -4513,12 +4513,10 @@ function openSmartNoteView(noteId){
     if(!note) return;
 
 
-    const imageHTML =
-        note.image
-        ?
-    `<img class="smart-note-view-image" src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">`
-        :
-        "";
+    const imgs = note.images?.length ? note.images : (note.image ? [note.image] : []);
+const imageHTML = imgs.length
+    ? `<div class="smart-note-view-gallery">${imgs.map(src => `<img src="${src}" alt="تصویر نکته" onclick="openImageLightbox('${src}')">`).join('')}</div>`
+    : "";
 
 
     document.getElementById(
