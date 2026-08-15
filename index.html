@@ -3220,8 +3220,29 @@ window.onload = function(){
     <div class="notes-header">
         <div>
             <h2>📝 نکته‌های درس</h2>
-            <div id="selectedSubjectForNotes">لطفاً یک درس انتخاب کنید</div>
-        </div>
+       <div class="notes-subject-selector">
+
+    <label for="notesSubjectSelect">
+        📚 انتخاب درس
+    </label>
+
+    <select id="notesSubjectSelect" onchange="changeNotesSubject()">
+
+        <option value="">-- انتخاب درس --</option>
+
+        <option value="ریاضی">📐 ریاضی</option>
+        <option value="فیزیک">⚡ فیزیک</option>
+        <option value="شیمی">🧪 شیمی</option>
+        <option value="زیست">🧬 زیست</option>
+        <option value="زمین‌شناسی">🌍 زمین‌شناسی</option>
+        <option value="ادبیات">📖 ادبیات</option>
+        <option value="عربی">📕 عربی</option>
+        <option value="دینی">☪️ دینی</option>
+        <option value="زبان">🔤 زبان</option>
+
+    </select>
+
+</div>
 
         <button class="btn notes-add-btn" onclick="openNewNote()">
             ➕ افزودن نکته
