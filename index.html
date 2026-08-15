@@ -3011,5 +3011,82 @@ window.onload = function(){
     }
 };
 </script>
+    <!-- ==================== سیستم نکته‌ها ==================== -->
+<div id="notesSection" class="notes-section">
+
+    <div class="notes-header">
+        <div>
+            <h2>📝 نکته‌های درس</h2>
+            <div id="selectedSubjectForNotes">لطفاً یک درس انتخاب کنید</div>
+        </div>
+
+        <button class="btn notes-add-btn" onclick="openNewNote()">
+            ➕ افزودن نکته
+        </button>
+    </div>
+
+    <div id="notesList" class="notes-list">
+        <div class="notes-empty">
+            هنوز نکته‌ای برای این درس ثبت نشده است.
+        </div>
+    </div>
+
+</div>
+
+
+<!-- پنجره افزودن نکته -->
+<div id="noteModal" class="note-modal">
+
+    <div class="note-modal-box">
+
+        <button class="note-close-btn" onclick="closeNoteModal()">×</button>
+
+        <div class="note-modal-title">
+            📝 <span id="noteNumberTitle">نکته ۱</span>
+        </div>
+
+        <div class="note-subject">
+            درس:
+            <strong id="noteSubjectTitle">---</strong>
+        </div>
+
+        <textarea
+            id="noteText"
+            class="note-textarea"
+            placeholder="نکته خود را اینجا بنویسید..."
+        ></textarea>
+
+        <div class="note-image-area">
+
+            <label class="note-upload-btn">
+                📷 افزودن عکس
+                <input
+                    type="file"
+                    id="noteImageInput"
+                    accept="image/*"
+                    hidden
+                    onchange="previewNoteImage(event)"
+                >
+            </label>
+
+            <div id="noteImagePreview"></div>
+
+        </div>
+
+        <div class="note-modal-actions">
+
+            <button class="btn" onclick="closeNoteModal()">
+                انصراف
+            </button>
+
+            <button class="btn primary" onclick="saveCurrentNote()">
+                💾 ذخیره نکته
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 </html>
