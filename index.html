@@ -4079,44 +4079,37 @@ function closeSmartNoteView(){
    پیش‌نمایش تصویر
 ========================= */
 
+function handleSmartNoteImageFiles(fileList){
+    const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+    if(!files.length) return;
+    let remaining = files.length;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            smartNoteImages.push(e.target.result);
+            remaining--;
+            if(remaining === 0) renderSmartNoteImagePreview();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+function renderSmartNoteImagePreview(){
+    const box = document.getElementById('smartNoteImagePreview');
+    if(!box) return;
+    box.innerHTML = smartNoteImages.map((src, i) => `
+        <div class="smart-note-img-item">
+            <img src="${src}" alt="تصویر نکته" onclick="openImageLightbox('${src}')">
+            <button type="button" class="smart-note-img-remove" onclick="removeSmartNoteImage(${i})" title="حذف عکس">✕</button>
+        </div>
+    `).join('');
+}
+function removeSmartNoteImage(index){
+    smartNoteImages.splice(index, 1);
+    renderSmartNoteImagePreview();
+}
 function previewSmartNoteImage(event){
-
-    const file =
-        event.target.files[0];
-
-    if(!file) return;
-
-
-    if(!file.type.startsWith("image/")){
-
-        alert(
-            "لطفاً یک فایل تصویری انتخاب کنید."
-        );
-
-        return;
-
-    }
-
-
-    const reader =
-        new FileReader();
-
-
-    reader.onload = function(e){
-
-        smartNoteImage =
-            e.target.result;
-
-
-       document.getElementById(
-    "smartNoteImagePreview"
-).innerHTML = `<img src="${e.target.result}" alt="تصویر نکته" onclick="openImageLightbox('${e.target.result}')">`;
-
-    };
-
-
-    reader.readAsDataURL(file);
-
+    handleSmartNoteImageFiles(event.target.files);
+    event.target.value = '';
 }
 
 
