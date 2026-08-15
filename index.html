@@ -3026,6 +3026,7 @@ function renderPlannerArchives(){
             <div class="planner-archive-actions">
                 <button class="primary" onclick="downloadWeeklyArchive(${i})">⬇️ دانلود رنگی</button>
                 <button onclick="viewWeeklyArchive(${i})">👁️ مشاهده</button>
+                <button onclick="deleteWeeklyArchive(${i})" style="background:rgba(244,63,94,.15);color:#ff8585;border:1px solid rgba(244,63,94,.3);">🗑️ حذف</button>
             </div>
         </div>`;
     }).join('');
@@ -3044,9 +3045,26 @@ function downloadWeeklyArchive(index){
 }
 function viewWeeklyArchive(index){
     const a = getWeeklyArchives()[index]; if(!a) return;
-    const w = window.open('', '_blank'); if(!w) return;
-    w.document.write(`<html lang="fa" dir="rtl"><head><meta charset="UTF-8"></head><body style="font-family:Tahoma;padding:30px"><h1>${archiveWeekLabel(a.weekKey)}</h1><pre style="white-space:pre-wrap;line-height:2">${escapeHtml(JSON.stringify(a.days, null, 2))}</pre></body></html>`);
+    const days = PLANNER_DAYS.map(d => {
+        const p = normalizePlannerDay(a.days?.[d.key]);
+        return `<section><h2>${d.emoji} ${d.name}</h2><table><tr><th>پارت</th><th>درس / مبحث</th><th>ساعت</th><th>وضعیت</th></tr>${p.parts.map((x,i) => `<tr><td>${faNum(i+1)}</td><td>${escapeHtml(x.subject||'—')}</td><td>${escapeHtml(x.time||'—')}</td><td>${x.done?'✓ انجام شد':'—'}</td></tr>`).join('')}</table>${p.notes ? `<p class="notes">📝 ${escapeHtml(p.notes)}</p>` : ''}</section>`;
+    }).join('');
+    const html = `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${archiveWeekLabel(a.weekKey)}</title><style>body{font-family:Tahoma,Arial,sans-serif;background:#f4f7ff;color:#172033;padding:25px}header{background:linear-gradient(135deg,#06b6d4,#6366f1,#a855f7);color:white;border-radius:24px;padding:25px;margin-bottom:20px}h1{margin:0 0 6px}h2{color:#4f46e5}section{background:white;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 8px 25px #1111}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:right}th{background:#eef2ff;color:#4338ca}.notes{background:#ecfeff;border-right:4px solid #06b6d4;padding:10px;border-radius:10px}</style></head><body><header><h1>📘 ${archiveWeekLabel(a.weekKey)}</h1><div>گزارش هفته</div></header>${days}</body></html>`;
+    const w = window.open('', '_blank');
+    if(!w){ alert('مرورگر پاپ‌آپ رو بلاک کرده؛ اجازه‌ی باز شدن پنجره را بده.'); return; }
+    w.document.write(html);
     w.document.close();
+}
+    function deleteWeeklyArchive(index){
+    const archives = getWeeklyArchives();
+    const item = archives[index];
+    if(!item) return;
+    if(!confirm(`آرشیو «${archiveWeekLabel(item.weekKey)}» حذف شود؟`)) return;
+    archives.splice(index, 1);
+    setWeeklyArchives(archives);
+    addTombstone('deleted_planner_archives', item.id);
+    renderPlannerArchives();
+    scheduleCloudSync();
 }
 function initWeeklyPlanner(){
     ensureWeeklyArchive(); renderPlannerArchives();
