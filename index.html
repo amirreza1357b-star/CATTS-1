@@ -3291,5 +3291,439 @@ window.onload = function(){
     </div>
 
 </div>
+    <script>
+
+/* =========================================================
+   سیستم نکته‌های درس
+   ========================================================= */
+
+let currentNoteSubject = null;
+let currentNoteImage = null;
+
+
+/* ---------- دریافت نکته‌ها ---------- */
+
+function getAllStudyNotes(){
+
+    try{
+
+        const saved = localStorage.getItem("study_notes");
+
+        if(!saved) return {};
+
+        return JSON.parse(saved);
+
+    }catch(error){
+
+        console.error("خطا در خواندن نکته‌ها:", error);
+
+        return {};
+
+    }
+
+}
+
+
+/* ---------- ذخیره کل نکته‌ها ---------- */
+
+function saveAllStudyNotes(notes){
+
+    try{
+
+        localStorage.setItem(
+            "study_notes",
+            JSON.stringify(notes)
+        );
+
+        return true;
+
+    }catch(error){
+
+        console.error("خطا در ذخیره نکته:", error);
+
+        alert("ذخیره نکته انجام نشد.");
+
+        return false;
+
+    }
+
+}
+
+
+/* ---------- انتخاب درس ---------- */
+
+function selectSubjectForNotes(subjectName){
+
+    currentNoteSubject = subjectName;
+
+    const title =
+        document.getElementById("selectedSubjectForNotes");
+
+    if(title){
+
+        title.textContent =
+            "درس انتخاب‌شده: " + subjectName;
+
+    }
+
+    renderStudyNotes();
+
+}
+
+
+/* ---------- باز کردن نکته جدید ---------- */
+
+function openNewNote(){
+
+    if(!currentNoteSubject){
+
+        alert("ابتدا یک درس را انتخاب کنید.");
+
+        return;
+
+    }
+
+    const allNotes = getAllStudyNotes();
+
+    if(!allNotes[currentNoteSubject]){
+
+        allNotes[currentNoteSubject] = [];
+
+    }
+
+    const nextNumber =
+        allNotes[currentNoteSubject].length + 1;
+
+    document.getElementById("noteNumberTitle")
+        .textContent = "نکته " + nextNumber;
+
+    document.getElementById("noteSubjectTitle")
+        .textContent = currentNoteSubject;
+
+    document.getElementById("noteText").value = "";
+
+    currentNoteImage = null;
+
+    document.getElementById("noteImageInput").value = "";
+
+    document.getElementById("noteImagePreview").innerHTML = "";
+
+    document.getElementById("noteModal")
+        .classList.add("show");
+
+    setTimeout(() => {
+
+        document.getElementById("noteText").focus();
+
+    },100);
+
+}
+
+
+/* ---------- بستن پنجره ---------- */
+
+function closeNoteModal(){
+
+    document.getElementById("noteModal")
+        .classList.remove("show");
+
+}
+
+
+/* ---------- پیش‌نمایش عکس ---------- */
+
+function previewNoteImage(event){
+
+    const file = event.target.files[0];
+
+    if(!file) return;
+
+    if(!file.type.startsWith("image/")){
+
+        alert("لطفاً یک فایل تصویری انتخاب کنید.");
+
+        return;
+
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        currentNoteImage = e.target.result;
+
+        document.getElementById("noteImagePreview")
+            .innerHTML =
+            `<img src="${e.target.result}" alt="تصویر نکته">`;
+
+    };
+
+    reader.readAsDataURL(file);
+
+}
+
+
+/* ---------- ذخیره نکته ---------- */
+
+function saveCurrentNote(){
+
+    if(!currentNoteSubject){
+
+        alert("درس انتخاب نشده است.");
+
+        return;
+
+    }
+
+    const text =
+        document.getElementById("noteText")
+        .value
+        .trim();
+
+    if(!text && !currentNoteImage){
+
+        alert("حداقل متن یا یک عکس برای نکته اضافه کنید.");
+
+        return;
+
+    }
+
+    const allNotes = getAllStudyNotes();
+
+    if(!allNotes[currentNoteSubject]){
+
+        allNotes[currentNoteSubject] = [];
+
+    }
+
+    const noteNumber =
+        allNotes[currentNoteSubject].length + 1;
+
+    const note = {
+
+        id:
+            "note_" +
+            Date.now() +
+            "_" +
+            Math.random()
+                .toString(36)
+                .slice(2,8),
+
+        number: noteNumber,
+
+        subject: currentNoteSubject,
+
+        text: text,
+
+        image: currentNoteImage,
+
+        createdAt: new Date().toISOString(),
+
+        updatedAt: new Date().toISOString()
+
+    };
+
+    allNotes[currentNoteSubject].push(note);
+
+    if(!saveAllStudyNotes(allNotes)){
+
+        return;
+
+    }
+
+    renderStudyNotes();
+
+    closeNoteModal();
+
+}
+
+
+/* ---------- نمایش نکته‌ها ---------- */
+
+function renderStudyNotes(){
+
+    const list =
+        document.getElementById("notesList");
+
+    if(!list) return;
+
+    if(!currentNoteSubject){
+
+        list.innerHTML =
+            `<div class="notes-empty">
+                ابتدا یک درس را انتخاب کنید.
+             </div>`;
+
+        return;
+
+    }
+
+    const allNotes = getAllStudyNotes();
+
+    const notes =
+        allNotes[currentNoteSubject] || [];
+
+    if(notes.length === 0){
+
+        list.innerHTML =
+            `<div class="notes-empty">
+                هنوز نکته‌ای برای این درس ثبت نشده است.
+             </div>`;
+
+        return;
+
+    }
+
+    list.innerHTML = notes.map((note,index) => {
+
+        const imageHTML =
+            note.image
+            ?
+            `<img class="note-card-image"
+                  src="${note.image}"
+                  alt="تصویر نکته">`
+            :
+            "";
+
+        const textHTML =
+            note.text
+            ?
+            `<div class="note-card-text">
+                ${escapeStudyNoteHTML(note.text)}
+             </div>`
+            :
+            "";
+
+        return `
+            <div class="note-card">
+
+                <div class="note-card-header">
+
+                    <span class="note-card-number">
+                        📝 نکته ${index + 1}
+                    </span>
+
+                    <span>
+                        ${note.subject}
+                    </span>
+
+                </div>
+
+                ${textHTML}
+
+                ${imageHTML}
+
+                <div class="note-card-actions">
+
+                    <button
+                        class="btn"
+                        onclick="deleteStudyNote('${note.id}')">
+                        🗑️ حذف
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+    }).join("");
+
+}
+
+
+/* ---------- حذف نکته ---------- */
+
+function deleteStudyNote(noteId){
+
+    if(!currentNoteSubject) return;
+
+    const allNotes = getAllStudyNotes();
+
+    if(!allNotes[currentNoteSubject]) return;
+
+    const confirmed =
+        confirm("آیا از حذف این نکته مطمئن هستید؟");
+
+    if(!confirmed) return;
+
+    allNotes[currentNoteSubject] =
+        allNotes[currentNoteSubject]
+        .filter(note => note.id !== noteId);
+
+
+    /*
+       شماره نکته‌ها دوباره مرتب می‌شود:
+       نکته ۱
+       نکته ۲
+       نکته ۳
+       ...
+    */
+
+    allNotes[currentNoteSubject]
+        .forEach((note,index) => {
+
+            note.number = index + 1;
+
+        });
+
+
+    saveAllStudyNotes(allNotes);
+
+    renderStudyNotes();
+
+}
+
+
+/* ---------- جلوگیری از HTML Injection ---------- */
+
+function escapeStudyNoteHTML(text){
+
+    return String(text)
+
+        .replace(/&/g,"&amp;")
+
+        .replace(/</g,"&lt;")
+
+        .replace(/>/g,"&gt;")
+
+        .replace(/"/g,"&quot;")
+
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ---------- بستن با کلیک بیرون ---------- */
+
+document.addEventListener("click",function(event){
+
+    const modal =
+        document.getElementById("noteModal");
+
+    if(
+        event.target === modal &&
+        modal.classList.contains("show")
+    ){
+
+        closeNoteModal();
+
+    }
+
+});
+
+
+/* ---------- بستن با Escape ---------- */
+
+document.addEventListener("keydown",function(event){
+
+    if(event.key === "Escape"){
+
+        closeNoteModal();
+
+    }
+
+});
+
+</script>
 </body>
 </html>
