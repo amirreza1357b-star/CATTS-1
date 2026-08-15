@@ -4630,9 +4630,7 @@ function editSmartNote(noteId){
         note.id;
 
 
-    smartNoteImage =
-        note.image || null;
-
+smartNoteImages = (note.images?.length ? note.images : (note.image ? [note.image] : [])).slice();
 
     document.getElementById(
         "smartNoteModalTitle"
@@ -4662,14 +4660,7 @@ function editSmartNote(noteId){
         "smartNoteImageInput"
     ).value = "";
 
-document.getElementById(
-    "smartNoteImagePreview"
-).innerHTML =
-    note.image
-    ?
-    `<img src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">`
-    :
-    "";
+renderSmartNoteImagePreview();
 
 
     closeSmartNoteView();
