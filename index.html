@@ -3884,7 +3884,52 @@ window.onload = function(){
    ========================================================= */
 
 const SMART_NOTES_KEY = "smart_study_notes_v4";
+function enhanceAllSelects(){
+    document.querySelectorAll('select').forEach(sel => {
+        if(sel.dataset.enhanced) return;
+        sel.dataset.enhanced = '1';
+        const wrap = document.createElement('div');
+        wrap.className = 'smart-select-wrap';
+        sel.parentNode.insertBefore(wrap, sel);
+        wrap.appendChild(sel);
+        const display = document.createElement('div');
+        display.className = 'smart-select-display';
+        display.innerHTML = '<span class="smart-select-label"></span><span class="arrow">▾</span>';
+        wrap.appendChild(display);
+        const list = document.createElement('div');
+        list.className = 'smart-select-list';
+        wrap.appendChild(list);
 
+        function rebuild(){
+            list.innerHTML = '';
+            Array.from(sel.options).forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'smart-select-option' + (opt.selected ? ' selected' : '');
+                item.textContent = opt.textContent;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    sel.value = opt.value;
+                    sel.dispatchEvent(new Event('change', { bubbles:true }));
+                    wrap.classList.remove('open');
+                };
+                list.appendChild(item);
+            });
+            display.querySelector('.smart-select-label').textContent = sel.options[sel.selectedIndex]?.textContent || '';
+        }
+        rebuild();
+        new MutationObserver(rebuild).observe(sel, { childList:true });
+
+        display.addEventListener('click', () => {
+            document.querySelectorAll('.smart-select-wrap.open').forEach(w => { if(w !== wrap) w.classList.remove('open'); });
+            wrap.classList.toggle('open');
+        });
+    });
+}
+document.addEventListener('click', (e) => {
+    if(!e.target.closest('.smart-select-wrap')){
+        document.querySelectorAll('.smart-select-wrap.open').forEach(w => w.classList.remove('open'));
+    }
+});
 function openImageLightbox(src){
     let ov = document.getElementById('smart-image-lightbox');
     if(!ov){
