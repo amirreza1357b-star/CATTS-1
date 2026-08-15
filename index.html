@@ -4653,15 +4653,14 @@ function editSmartNote(noteId){
         "smartNoteImageInput"
     ).value = "";
 
-
-    document.getElementById(
-        "smartNoteImagePreview"
-    ).innerHTML =
-        note.image
-        ?
-        <img src="${e.target.result}" alt="تصویر نکته" onclick="openImageLightbox('${e.target.result}')">
-        :
-        "";
+document.getElementById(
+    "smartNoteImagePreview"
+).innerHTML =
+    note.image
+    ?
+    `<img src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">`
+    :
+    "";
 
 
     closeSmartNoteView();
