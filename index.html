@@ -4081,12 +4081,9 @@ function previewSmartNoteImage(event){
             e.target.result;
 
 
-        document.getElementById(
-            "smartNoteImagePreview"
-        ).innerHTML = `
-
-            : `<img src="${note.image}" alt="تصویر نکته" onclick="openImageLightbox('${note.image}')">`
-        `;
+       document.getElementById(
+    "smartNoteImagePreview"
+).innerHTML = `<img src="${e.target.result}" alt="تصویر نکته" onclick="openImageLightbox('${e.target.result}')">`;
 
     };
 
