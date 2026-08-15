@@ -4204,14 +4204,8 @@ function saveSmartNote(){
             foundNote.title = title;
             foundNote.text = text;
 
-
-            if(smartNoteImage !== null){
-
-                foundNote.image =
-                    smartNoteImage;
-
-            }
-
+foundNote.images = smartNoteImages.slice();
+delete foundNote.image;
 
             foundNote.updatedAt =
                 new Date().toISOString();
