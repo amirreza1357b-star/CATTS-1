@@ -3373,19 +3373,24 @@ function saveAllStudyNotes(notes){
 
 /* ---------- انتخاب درس ---------- */
 
-function selectSubjectForNotes(subjectName){
+function changeNotesSubject(){
 
-    currentNoteSubject = subjectName;
+    const select =
+        document.getElementById("notesSubjectSelect");
 
-    const title =
-        document.getElementById("selectedSubjectForNotes");
+    const subject = select.value;
 
-    if(title){
+    if(!subject){
 
-        title.textContent =
-            "درس انتخاب‌شده: " + subjectName;
+        currentNoteSubject = null;
+
+        renderStudyNotes();
+
+        return;
 
     }
+
+    currentNoteSubject = subject;
 
     renderStudyNotes();
 
