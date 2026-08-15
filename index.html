@@ -1010,15 +1010,38 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 @media(max-width:480px){#cloud-account-btn span.label{display:none}#cloud-account-modal-overlay{padding-top:64px}}
         /* ==================== Notes System ==================== */
 
-.notes-section{
-    margin-top:20px;
-    padding:20px;
-    border-radius:18px;
-    background:rgba(255,255,255,.035);
-    border:1px solid rgba(255,255,255,.08);
+/* =========================================================
+   سیستم جدید نکات دروس
+   ========================================================= */
+
+.smart-notes-section{
+    padding:24px;
+    position:relative;
+    overflow:hidden;
 }
 
-.notes-header{
+.smart-notes-section::before{
+    content:"";
+    position:absolute;
+    width:280px;
+    height:280px;
+    left:-130px;
+    top:-130px;
+    border-radius:50%;
+    background:radial-gradient(
+        circle,
+        rgba(45,212,191,.12),
+        transparent 70%
+    );
+    pointer-events:none;
+}
+
+
+/* ---------- سربرگ ---------- */
+
+.smart-notes-header{
+    position:relative;
+    z-index:1;
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -1026,72 +1049,212 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     margin-bottom:18px;
 }
 
-.notes-header h2{
-    margin:0 0 5px;
-    font-size:1.2rem;
+.smart-notes-title{
+    margin:0;
+    font-size:1.35rem;
+    font-weight:900;
 }
 
-#selectedSubjectForNotes{
+.smart-notes-subtitle{
+    margin-top:5px;
     color:var(--text-secondary);
-    font-size:.8rem;
+    font-size:.78rem;
 }
 
-.notes-list{
-    display:grid;
-    gap:10px;
+
+/* ---------- انتخاب درس ---------- */
+
+.smart-subjects{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:15px;
 }
 
-.notes-empty{
-    text-align:center;
-    padding:25px;
-    color:var(--text-secondary);
-    border:1px dashed rgba(255,255,255,.12);
-    border-radius:14px;
-}
-
-.note-card{
-    padding:15px;
-    border-radius:15px;
+.smart-subject-btn{
+    border:1px solid rgba(255,255,255,.09);
     background:rgba(255,255,255,.035);
-    border:1px solid rgba(255,255,255,.08);
+    color:var(--text-secondary);
+    border-radius:13px;
+    padding:9px 13px;
+    cursor:pointer;
+    transition:.2s;
+    font-family:inherit;
+    font-weight:700;
 }
 
-.note-card-header{
+.smart-subject-btn:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,.07);
+}
+
+.smart-subject-btn.active{
+    color:var(--text-primary);
+    border-color:rgba(45,212,191,.45);
+    background:rgba(45,212,191,.12);
+    box-shadow:0 0 18px rgba(45,212,191,.12);
+}
+
+
+/* ---------- نوار جستجو ---------- */
+
+.smart-notes-toolbar{
+    position:relative;
+    z-index:1;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.smart-notes-search{
+    flex:1;
+    min-width:0;
+    height:44px;
+    padding:0 15px;
+    border-radius:13px;
+    border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.035);
+    color:var(--text-primary);
+    outline:none;
+    font-family:inherit;
+}
+
+.smart-notes-search:focus{
+    border-color:rgba(45,212,191,.45);
+    box-shadow:0 0 15px rgba(45,212,191,.08);
+}
+
+.smart-notes-search::placeholder{
+    color:var(--text-secondary);
+}
+
+
+/* ---------- عنوان درس ---------- */
+
+.smart-notes-current{
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:10px;
-    margin-bottom:10px;
+    margin-bottom:12px;
 }
 
-.note-card-number{
+.smart-notes-current-title{
+    font-size:1rem;
     font-weight:900;
-    color:var(--gold);
 }
 
-.note-card-text{
-    white-space:pre-wrap;
-    line-height:1.9;
-    color:var(--text-primary);
+.smart-notes-count{
+    color:var(--text-secondary);
+    font-size:.75rem;
 }
 
-.note-card-image{
-    max-width:100%;
-    max-height:300px;
-    object-fit:contain;
-    display:block;
-    margin-top:12px;
-    border-radius:12px;
+
+/* ---------- لیست نکات ---------- */
+
+.smart-notes-list{
+    position:relative;
+    z-index:1;
+    display:grid;
+    gap:9px;
 }
 
-.note-card-actions{
+
+/* ---------- هر نکته ---------- */
+
+.smart-note-item{
     display:flex;
-    justify-content:flex-end;
-    gap:7px;
-    margin-top:12px;
+    align-items:center;
+    gap:12px;
+    min-height:70px;
+    padding:11px 13px;
+    border-radius:15px;
+    border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(
+        145deg,
+        rgba(255,255,255,.045),
+        rgba(255,255,255,.018)
+    );
+    cursor:pointer;
+    transition:.2s;
 }
 
-.note-modal{
+.smart-note-item:hover{
+    transform:translateY(-2px);
+    border-color:rgba(45,212,191,.3);
+    background:rgba(45,212,191,.055);
+    box-shadow:0 7px 22px rgba(0,0,0,.12);
+}
+
+
+/* ---------- شماره ---------- */
+
+.smart-note-item-number{
+    flex:none;
+    width:39px;
+    height:39px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:rgba(45,212,191,.1);
+    border:1px solid rgba(45,212,191,.18);
+    color:var(--accent);
+    font-weight:900;
+}
+
+
+/* ---------- متن خلاصه ---------- */
+
+.smart-note-item-main{
+    min-width:0;
+    flex:1;
+}
+
+.smart-note-item-title{
+    font-weight:900;
+    font-size:.92rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-bottom:4px;
+}
+
+.smart-note-item-preview{
+    color:var(--text-secondary);
+    font-size:.73rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.smart-note-item-arrow{
+    flex:none;
+    color:var(--text-secondary);
+    font-size:1rem;
+}
+
+
+/* ---------- حالت خالی ---------- */
+
+.smart-notes-empty{
+    text-align:center;
+    padding:45px 20px;
+    border:1px dashed rgba(255,255,255,.12);
+    border-radius:17px;
+    color:var(--text-secondary);
+    line-height:1.8;
+}
+
+
+/* =========================================================
+   پنجره افزودن / ویرایش
+   ========================================================= */
+
+#smartNoteModal,
+#smartNoteViewModal{
     position:fixed;
     inset:0;
     z-index:99999;
@@ -1103,111 +1266,268 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     backdrop-filter:blur(8px);
 }
 
-.note-modal.show{
+#smartNoteModal.show,
+#smartNoteViewModal.show{
     display:flex;
 }
 
-.note-modal-box{
-    position:relative;
-    width:min(600px,100%);
+
+.smart-note-modal-box{
+    width:min(650px,100%);
     max-height:90vh;
     overflow:auto;
-    padding:25px;
     border-radius:22px;
+    border:1px solid rgba(255,255,255,.1);
     background:var(--bg-solid);
-    border:1px solid rgba(255,255,255,.1);
-    box-shadow:0 20px 70px rgba(0,0,0,.4);
+    box-shadow:0 25px 80px rgba(0,0,0,.45);
+    padding:22px;
+    animation:smartNoteModalIn .22s ease;
 }
 
-.note-close-btn{
-    position:absolute;
-    top:12px;
-    left:12px;
-    z-index:10;
-    width:32px;
-    height:32px;
-    border:0;
-    border-radius:10px;
-    cursor:pointer;
-    background:rgba(255,255,255,.08);
-    color:var(--text-primary);
-    font-size:20px;
+@keyframes smartNoteModalIn{
+    from{
+        opacity:0;
+        transform:translateY(15px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
 }
 
-.note-modal-title{
-    font-size:1.3rem;
+
+.smart-note-modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.smart-note-modal-title{
+    font-size:1.1rem;
     font-weight:900;
-    margin-bottom:8px;
 }
 
-.note-subject{
-    color:var(--text-secondary);
-    margin-bottom:15px;
-}
-
-.note-textarea{
-    width:100%;
-    min-height:180px;
-    resize:vertical;
-    padding:14px;
-    border-radius:14px;
+.smart-note-close{
+    width:34px;
+    height:34px;
+    border-radius:10px;
     border:1px solid rgba(255,255,255,.1);
-    background:rgba(255,255,255,.04);
+    background:rgba(255,255,255,.05);
     color:var(--text-primary);
+    cursor:pointer;
+    font-size:1.1rem;
+}
+
+
+/* ---------- ورودی‌ها ---------- */
+
+.smart-note-field{
+    margin-bottom:14px;
+}
+
+.smart-note-field label{
+    display:block;
+    margin-bottom:7px;
+    font-size:.78rem;
+    color:var(--text-secondary);
+    font-weight:700;
+}
+
+.smart-note-input,
+.smart-note-textarea,
+.smart-note-subject{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.035);
+    color:var(--text-primary);
+    border-radius:12px;
+    padding:11px 13px;
     outline:none;
     font-family:inherit;
-    font-size:.95rem;
-    line-height:1.8;
-    box-sizing:border-box;
 }
 
-.note-textarea:focus{
-    border-color:var(--accent);
+.smart-note-input:focus,
+.smart-note-textarea:focus,
+.smart-note-subject:focus{
+    border-color:rgba(45,212,191,.45);
 }
 
-.note-image-area{
-    margin-top:15px;
+.smart-note-textarea{
+    min-height:170px;
+    resize:vertical;
+    line-height:1.9;
 }
 
-.note-upload-btn{
+
+/* ---------- آپلود عکس ---------- */
+
+.smart-note-upload{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:10px 15px;
+    gap:7px;
+    padding:10px 14px;
     border-radius:12px;
+    border:1px dashed rgba(255,255,255,.15);
+    background:rgba(255,255,255,.035);
+    color:var(--text-primary);
     cursor:pointer;
-    background:rgba(255,255,255,.07);
-    border:1px solid rgba(255,255,255,.1);
+    font-size:.8rem;
 }
 
-#noteImagePreview img{
+.smart-note-upload:hover{
+    background:rgba(255,255,255,.07);
+}
+
+.smart-note-image-preview{
+    margin-top:10px;
+}
+
+.smart-note-image-preview img{
     display:block;
     max-width:100%;
-    max-height:250px;
-    margin-top:12px;
-    border-radius:12px;
+    max-height:260px;
+    border-radius:13px;
+    object-fit:contain;
+    border:1px solid rgba(255,255,255,.08);
 }
 
-.note-modal-actions{
+
+/* ---------- دکمه‌ها ---------- */
+
+.smart-note-modal-actions{
     display:flex;
     justify-content:flex-end;
     gap:8px;
     margin-top:18px;
 }
 
-@media(max-width:600px){
+.smart-note-save-btn,
+.smart-note-cancel-btn,
+.smart-note-delete-btn{
+    border:0;
+    border-radius:11px;
+    padding:10px 15px;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:800;
+}
 
-    .notes-header{
+.smart-note-save-btn{
+    background:var(--accent);
+    color:#061312;
+}
+
+.smart-note-cancel-btn{
+    background:rgba(255,255,255,.07);
+    color:var(--text-primary);
+}
+
+.smart-note-delete-btn{
+    background:rgba(239,68,68,.12);
+    color:#ff8585;
+    border:1px solid rgba(239,68,68,.2);
+}
+
+
+/* =========================================================
+   نمایش کامل نکته
+   ========================================================= */
+
+.smart-note-view-title{
+    font-size:1.35rem;
+    font-weight:900;
+    margin-bottom:8px;
+    line-height:1.6;
+}
+
+.smart-note-view-subject{
+    color:var(--text-secondary);
+    font-size:.8rem;
+    margin-bottom:18px;
+}
+
+.smart-note-view-text{
+    line-height:2;
+    white-space:pre-wrap;
+    color:var(--text-primary);
+    padding:15px;
+    border-radius:14px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+}
+
+.smart-note-view-image{
+    display:block;
+    width:auto;
+    max-width:100%;
+    max-height:500px;
+    margin:15px auto 0;
+    border-radius:15px;
+    object-fit:contain;
+}
+
+
+/* ---------- موبایل ---------- */
+
+@media(max-width:700px){
+
+    .smart-notes-section{
+        padding:15px;
+    }
+
+    .smart-notes-header{
         flex-direction:column;
         align-items:stretch;
     }
 
-    .notes-add-btn{
+    .smart-notes-toolbar{
+        flex-direction:column;
+    }
+
+    .smart-notes-toolbar button{
         width:100%;
     }
 
-    .note-modal-box{
-        padding:20px;
+    .smart-subjects{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .smart-subject-btn{
+        width:100%;
+    }
+
+    .smart-note-modal-box{
+        padding:17px;
+    }
+
+}
+
+@media(max-width:430px){
+
+    .smart-subjects{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .smart-note-item{
+        padding:9px;
+    }
+
+    .smart-note-item-number{
+        width:34px;
+        height:34px;
+    }
+
+    .smart-note-modal-actions{
+        flex-direction:column;
+    }
+
+    .smart-note-modal-actions button{
+        width:100%;
     }
 
 }
