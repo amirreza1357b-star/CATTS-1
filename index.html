@@ -1110,27 +1110,77 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 }
 
 .smart-notes-search{
-    flex:1;
-    min-width:0;
-    height:44px;
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    height:48px;
     padding:0 15px;
-    border-radius:13px;
+    margin-bottom:18px;
+    border-radius:14px;
     border:1px solid rgba(255,255,255,.09);
     background:rgba(255,255,255,.035);
-    color:var(--text-primary);
-    outline:none;
+}
+.smart-notes-search span{ font-size:1.1rem; opacity:.7; flex:none; }
+.smart-notes-search input{
+    flex:1; min-width:0; height:100%;
+    border:none; background:transparent; outline:none;
+    color:var(--text-primary); font-family:inherit; font-size:.92rem;
+}
+.smart-notes-search input::placeholder{ color:var(--text-secondary); }
+        /* رفع ناهماهنگی اسم کلاس دکمه‌های درس */
+.smart-notes-subjects{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:15px;
+}
+
+/* دکمه‌ی «افزودن نکته» - حالا شبیه بقیه دکمه‌های اپ */
+.smart-note-add-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border:none;
+    border-radius:13px;
+    padding:11px 18px;
+    background:linear-gradient(120deg,var(--accent),#22b563 120%);
+    color:#06210f;
+    font-weight:900;
     font-family:inherit;
+    font-size:.88rem;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(45,212,191,.25);
+    transition:transform .15s ease, box-shadow .15s ease;
+    white-space:nowrap;
 }
+.smart-note-add-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(45,212,191,.3); }
+.smart-note-add-btn:active{ transform:translateY(0); }
 
-.smart-notes-search:focus{
-    border-color:rgba(45,212,191,.45);
-    box-shadow:0 0 15px rgba(45,212,191,.08);
+/* لایت‌باکس بزرگ‌نمایی عکس (کلیک روی عکس = گنده می‌شه، دوباره کلیک یا ✕ یا Esc = برمی‌گرده) */
+#smart-image-lightbox{
+    position:fixed; inset:0; z-index:999999;
+    display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.85); backdrop-filter:blur(6px);
+    padding:24px; cursor:zoom-out;
 }
-
-.smart-notes-search::placeholder{
-    color:var(--text-secondary);
+#smart-image-lightbox.show{ display:flex; }
+#smart-image-lightbox img{
+    max-width:92vw; max-height:88vh; border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5); cursor:default;
 }
-
+#smart-image-lightbox-close{
+    position:absolute; top:20px; left:20px;
+    width:42px; height:42px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.2);
+    background:rgba(255,255,255,.1); color:#fff;
+    font-size:1.2rem; cursor:pointer;
+}
+.smart-note-image-preview img,
+.smart-note-view-image{ cursor:zoom-in; }
 
 /* ---------- عنوان درس ---------- */
 
