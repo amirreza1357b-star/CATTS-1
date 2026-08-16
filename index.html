@@ -418,30 +418,6 @@ if (typeof window.faNum === 'undefined') {
         .history-detail-block h4 { font-size:0.85rem; color:var(--gold); margin-bottom:6px; }
         .history-detail-block p { font-size:0.88rem; color:var(--text-primary); line-height:1.8; white-space:pre-wrap; }
 
-        #countdown-badge { position: relative; }
-        .announcement-dot {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #22c55e;
-            box-shadow: 0 0 6px #22c55e, 0 0 0 2px var(--card-bg, #1a1530);
-            animation: fadeInUp .3s ease;
-        }
-        .announcement-box {
-            background: linear-gradient(120deg, rgba(34,197,94,0.12), rgba(34,197,94,0.03));
-            border: 1px solid rgba(34,197,94,0.35);
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            font-size: 0.82rem;
-            line-height: 1.8;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-        }
-
         .history-container, .error-container {
             max-height: 350px;
             overflow-y: auto;
@@ -955,6 +931,35 @@ input, select {
 }
 #countdown-popup.show { display: block; animation: fadeInUp 0.2s ease; }
 #countdown-popup button { margin-top:6px; font-size:0.68rem; background:none; border:none; color:var(--accent); cursor:pointer; padding:0; }
+
+/* ===== دکمه‌ی اعلان (کنار موشک) ===== */
+#announcement-badge {
+    position: absolute; top: 0; left: 96px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #0ea5a3);
+    display: none; align-items: center; justify-content: center;
+    font-size: 1.1rem; cursor: pointer; border: none; color: #fff;
+    box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+    transition: transform 0.2s ease;
+}
+#announcement-badge.visible { display: flex; }
+#announcement-badge:hover { transform: scale(1.08) rotate(6deg); }
+.announcement-unread-dot {
+    position: absolute; top: -2px; left: -2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ef4444; border: 2px solid var(--card-bg, #1a1530);
+    animation: fadeInUp .3s ease;
+}
+#announcement-popup {
+    position: absolute; top: 46px; left: 96px; z-index: 50;
+    background: var(--card-bg); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+    border: var(--border-accent); border-radius: 14px; padding: 12px 14px;
+    font-size: 0.8rem; color: var(--text-primary); line-height: 1.8;
+    max-width: min(300px, calc(100vw - 40px)); white-space: pre-wrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    display: none;
+}
+#announcement-popup.show { display: block; animation: fadeInUp 0.2s ease; }
 
 /* ===== تحلیل عمیق غلط‌نامه ===== */
 .error-analysis-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
@@ -1812,9 +1817,12 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب" style="position:absolute; top:0; left:0; background:var(--card-bg); border:var(--border); color:var(--text-primary); width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease;">🌙</button>
         <button id="countdown-badge" onclick="toggleCountdownPopup()" title="روزهای باقی‌مانده">🚀</button>
         <div id="countdown-popup">
-            <div id="announcement-slot"></div>
             <div id="countdown-popup-text">در حال محاسبه...</div>
             <button onclick="setCountdownDate()">✏️ تغییر تاریخ</button>
+        </div>
+        <button id="announcement-badge" onclick="toggleAnnouncementPopup()" title="اعلان جدید">📣<span id="announcement-unread-dot" style="display:none;" class="announcement-unread-dot"></span></button>
+        <div id="announcement-popup">
+            <div id="announcement-popup-text"></div>
         </div>
         <h1>سامانه جامع تحلیل و تست‌زنی</h1>
         <p>ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی</p>
@@ -2221,28 +2229,34 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
    ========================================================================== */
 
 /* ---------------------------------------------------------------------- */
-/* پیام اعلان کنار دکمه‌ی 🚀 — فقط از همینجا (با ویرایش کد) قابل تغییره،   */
-/* از داخل خودِ برنامه هیچ‌جا قابل نوشتن/تغییر نیست.                        */
-/* هر وقت این متن رو عوض کنی یا خالی بذاری، خودکار برای کاربر «جدید» حساب  */
-/* می‌شه و دوباره گرد سبز کنار موشک ظاهر می‌شه؛ با باز کردن پاپ‌آپ موشک،    */
-/* پیام دیده و به‌عنوان «خونده‌شده» ثبت می‌شه.                              */
+/* پیام اعلان — دکمه‌ی 📣 کنار موشک                                        */
+/* فقط از همینجا (با ویرایش کد) قابل تغییره، از داخل خودِ برنامه هیچ‌جا     */
+/* قابل نوشتن/تغییر نیست. تا وقتی این متن خالی است، دکمه اصلاً دیده نمی‌شود؛ */
+/* به محض این‌که متنی بذاری، دکمه ظاهر می‌شود با یک گرد قرمز (پیام جدید،    */
+/* مثل تلگرام). با زدن دکمه، پیام باز می‌شود و گرد قرمز محو می‌شود. اگر بعداً */
+/* متن را عوض کنی، دوباره برای کاربر «جدید» حساب می‌شود و گرد قرمز برمی‌گردد.*/
 /* ---------------------------------------------------------------------- */
 const APP_ANNOUNCEMENT = "";
-function checkAnnouncementBadge(){
-    const badge = document.getElementById('countdown-badge');
-    if(!badge) return;
-    let dot = document.getElementById('announcement-dot');
+function updateAnnouncementButton(){
+    const btn = document.getElementById('announcement-badge');
+    const dot = document.getElementById('announcement-unread-dot');
+    if(!btn) return;
     const text = APP_ANNOUNCEMENT.trim();
+    if(!text){ btn.classList.remove('visible'); return; }
+    btn.classList.add('visible');
     const seen = localStorage.getItem('seen_announcement_text') || '';
-    if(!text || seen === text){ if(dot) dot.remove(); return; }
-    if(!dot){ dot = document.createElement('span'); dot.id = 'announcement-dot'; dot.className = 'announcement-dot'; badge.appendChild(dot); }
+    if(dot) dot.style.display = (seen === text) ? 'none' : 'block';
 }
-function renderAnnouncementBox(){
-    const slot = document.getElementById('announcement-slot'); if(!slot) return;
-    const text = APP_ANNOUNCEMENT.trim();
-    slot.innerHTML = text ? `<div class="announcement-box">📣 ${escapeHtml(text).replace(/\n/g,'<br>')}</div>` : '';
-    if(text) localStorage.setItem('seen_announcement_text', text);
-    checkAnnouncementBadge();
+function toggleAnnouncementPopup(){
+    const pop = document.getElementById('announcement-popup'); if(!pop) return;
+    const willShow = !pop.classList.contains('show');
+    if(willShow){
+        document.getElementById('announcement-popup-text').textContent = APP_ANNOUNCEMENT.trim();
+        localStorage.setItem('seen_announcement_text', APP_ANNOUNCEMENT.trim());
+        updateAnnouncementButton();
+        document.getElementById('countdown-popup')?.classList.remove('show');
+    }
+    pop.classList.toggle('show', willShow);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -3455,15 +3469,18 @@ function renderCountdownText(){
 function toggleCountdownPopup(){
     const pop = document.getElementById('countdown-popup'); if(!pop) return;
     const willShow = !pop.classList.contains('show');
-    if(willShow){ renderCountdownText(); renderAnnouncementBox(); }
+    if(willShow){ renderCountdownText(); document.getElementById('announcement-popup')?.classList.remove('show'); }
     pop.classList.toggle('show', willShow);
     if(willShow && !getCountdownDate()) setTimeout(setCountdownDate, 250);
 }
-function initCountdown(){ renderCountdownText(); checkAnnouncementBadge(); }
+function initCountdown(){ renderCountdownText(); updateAnnouncementButton(); }
 document.addEventListener('click', (e) => {
     const pop = document.getElementById('countdown-popup');
     const badge = document.getElementById('countdown-badge');
     if(pop && pop.classList.contains('show') && !pop.contains(e.target) && e.target !== badge) pop.classList.remove('show');
+    const apop = document.getElementById('announcement-popup');
+    const abadge = document.getElementById('announcement-badge');
+    if(apop && apop.classList.contains('show') && !apop.contains(e.target) && !abadge?.contains(e.target)) apop.classList.remove('show');
 });
 
 /* ---------------------------------------------------------------------- */
