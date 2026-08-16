@@ -1938,7 +1938,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
               <div id="planner-modal-title" class="planner-modal-title">🗓️ برنامه روز</div>
               <button class="planner-close" onclick="closePlannerModal()">✕</button>
             </div>
-            <div class="planner-modal-intro"><span>⚡</span><div><strong>پارت‌های دلخواه برای یک روز قدرتمند</strong><small>هر تعداد پارت خواستی اضافه کن؛ برای هر پارت بازه شروع تا پایان را مشخص کن و زمان مفید را ببین.</small></div></div>
+            <div class="planner-modal-intro"><span>⚡</span><div><strong>۹ پارت برای یک روز قدرتمند</strong><small>درس، ساعت و وضعیت هر پارت را مشخص کن؛ تیک بزن تا پیشرفت روزت را ببینی.</small></div></div>
             <div class="parts-summary">
               <div><b id="parts-done-count">۰</b><span>پارت انجام‌شده</span></div>
               <div><b id="parts-filled-count">۰</b><span>پارت برنامه‌ریزی‌شده</span></div>
@@ -3033,7 +3033,7 @@ const PLANNER_DAYS = [
     { key:'panjshanbe', name:'پنجشنبه', emoji:'🎯', c1:'#fbbf24', c2:'#f97316' },
     { key:'jome', name:'جمعه', emoji:'✨', c1:'#c084fc', c2:'#22d3ee' }
 ];
-let PLANNER_PARTS = 0;
+const PLANNER_PARTS = 9;
 function emptyPlannerParts(){ return Array.from({length:PLANNER_PARTS}, () => ({ subject:'', time:'', done:false })); }
 function normalizePlannerDay(v){
     const base = { parts: emptyPlannerParts(), notes:'', updatedAt:0 };
@@ -3087,7 +3087,7 @@ function plannerStats(p){
 function plannerPreview(v){
     const p = normalizePlannerDay(v), s = plannerStats(p);
     const first = p.parts.find(x => x.subject || x.time);
-    if(!first) return 'هنوز پارت اضافه نشده';
+    if(!first) return '۹ پارت آماده‌ی برنامه‌ریزی';
     return `${first.subject || 'درس جدید'}${first.time ? ' • ' + first.time : ''}  ·  ${faNum(s.done)}/۹ انجام شد`;
 }
 function archiveSummary(days){
@@ -4883,263 +4883,6 @@ loadSmartNotes();
         if(modal?.classList.contains('show') && (e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); saveSmartNote(); }
     });
 })();
-</script>
-
-<script>
-(function(){
-'use strict';
-
-/* =========================================================
-   PATCH 2026.08 — پایدارسازی حساب، حذف‌ها، هدف، غلط‌نامه، برنامه و تاریخچه
-   این بخش عمداً در انتهای فایل قرار می‌گیرد تا توابع قبلی را بدون حذف
-   کد اصلی، با نسخه‌های جدید override کند.
-   ========================================================= */
-
-/* ---------- 1) حساب کاربری: پنل واقعی را داخل پنجره منتقل کن ---------- */
-let __cloudPanelParent = null;
-let __cloudPanelNext = null;
-function toggleCloudAccountModal(force){
-    const overlay = document.getElementById('cloud-account-modal-overlay');
-    const slot = document.getElementById('cloud-account-modal-slot');
-    const panel = document.getElementById('neo-cloud-panel');
-    if(!overlay || !slot || !panel) return;
-    const open = typeof force === 'boolean' ? force : !overlay.classList.contains('open');
-    if(open){
-        if(!__cloudPanelParent){
-            __cloudPanelParent = panel.parentNode;
-            __cloudPanelNext = panel.nextSibling;
-        }
-        slot.appendChild(panel);
-        overlay.classList.add('open');
-        setTimeout(()=>document.getElementById('neo-auth-email')?.focus(),80);
-        try{ authRefreshUI(); }catch(e){}
-    }else{
-        if(__cloudPanelParent){
-            if(__cloudPanelNext && __cloudPanelNext.parentNode === __cloudPanelParent) __cloudPanelParent.insertBefore(panel,__cloudPanelNext);
-            else __cloudPanelParent.appendChild(panel);
-        }
-        overlay.classList.remove('open');
-    }
-}
-
-/* ---------- 2) سطل زباله مرکزی ---------- */
-const TRASH_KEY='study_trash_v2';
-function getTrash(){ return safeParse(TRASH_KEY,[]); }
-function setTrash(v){ safeSet(TRASH_KEY,Array.isArray(v)?v:[]); }
-function trashAdd(type,item,label){
-    const t=getTrash();
-    const id=String(item?.id ?? item?.subject ?? Date.now());
-    t.unshift({trashId:'trash_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),type,id,label:item?.title||item?.examName||item?.desc||label||type,item,deletedAt:nowTs()});
-    setTrash(t.slice(0,500));
-}
-function trashRemove(trashId){
-    const t=getTrash().filter(x=>x.trashId!==trashId); setTrash(t); renderTrash(); scheduleCloudSync();
-}
-function trashRestore(trashId){
-    const t=getTrash(); const x=t.find(a=>a.trashId===trashId); if(!x) return;
-    try{
-        if(x.type==='history') setHistory([x.item,...getHistory().filter(a=>String(a.id)!==String(x.item.id))]);
-        else if(x.type==='error') setErrors([x.item,...getErrors().filter(a=>String(a.id)!==String(x.item.id))]);
-        else if(x.type==='goal'){
-            const g=getSubjectGoals(); g[x.item.subject]=x.item.goal||x.item; setSubjectGoals(g);
-        } else if(x.type==='planner'){
-            const p=getWeeklyPlan(); p[x.item.dayKey]=x.item.day; setWeeklyPlan(p);
-        } else if(x.type==='note'){
-            if(!smartNotes[x.item.subject]) smartNotes[x.item.subject]=[]; smartNotes[x.item.subject].push(x.item.note||x.item); saveSmartNotes();
-        }
-        setTrash(t.filter(a=>a.trashId!==trashId));
-        refreshEverything(); renderTrash(); scheduleCloudSync();
-    }catch(e){ alert('بازیابی انجام نشد: '+e.message); }
-}
-function trashEmpty(){ if(!getTrash().length) return; if(!confirm('همه موارد سطل زباله برای همیشه حذف شوند؟')) return; setTrash([]); renderTrash(); scheduleCloudSync(); }
-function renderTrash(){
-    const box=document.getElementById('trash-list'); if(!box) return;
-    const names={history:'📊 سابقه آزمون',error:'❌ غلط‌نامه',goal:'🎯 هدف',planner:'🗓️ برنامه هفتگی',note:'📝 نکته'};
-    const t=getTrash();
-    box.innerHTML=t.length?t.map(x=>`<div class="trash-card"><div><b>${escapeHtml(names[x.type]||x.type)}</b><div class="trash-title">${escapeHtml(x.label||'بدون عنوان')}</div><small>${new Date(x.deletedAt).toLocaleString('fa-IR')}</small></div><div class="trash-actions"><button class="btn btn-success" onclick="trashRestore('${x.trashId}')">↩️ بازیابی</button><button class="btn btn-danger" onclick="trashRemove('${x.trashId}')">🗑️ حذف کامل</button></div></div>`).join(''):`<div class="trash-empty">🗑️<br><b>سطل زباله خالی است</b><small>موارد حذف‌شده اینجا موقتاً نگه‌داری می‌شوند.</small></div>`;
-}
-function openTrash(){ document.getElementById('trash-tab-btn')?.click(); renderTrash(); }
-
-/* ---------- 3) تاریخچه آزمون: اطلاعات کامل ---------- */
-function saveResult(){
-    const subject=document.getElementById('subject')?.value||'';
-    const examName=document.getElementById('exam-name')?.value.trim()||'';
-    const topic=document.getElementById('topic-name')?.value.trim()||'';
-    const correct=Number(document.getElementById('correct')?.value)||0;
-    const wrong=Number(document.getElementById('wrong')?.value)||0;
-    const unanswered=Number(document.getElementById('unanswered')?.value)||0;
-    const totalManual=Number(document.getElementById('total-tests')?.value)||0;
-    const total=totalManual>0?totalManual:correct+wrong+unanswered;
-    if(!subject){alert('لطفاً درس را انتخاب کن.');return;}
-    if(total<=0){alert('تعداد تست را وارد کن.');return;}
-    if(correct+wrong+unanswered>total){alert('مجموع صحیح، غلط و نزده از کل تست‌ها بیشتر است.');return;}
-    const raw=(correct*3)-wrong, max=total*3;
-    const percent=Math.max(0,Number(((raw/max)*100).toFixed(1)));
-    const ts=nowTs();
-    const notes=[...document.querySelectorAll('#exam-note-checklist input:checked')].map(x=>x.value);
-    const item={id:ts,subject,topic,examName,percent,totalTests:total,correct,wrong,unanswered,blank:Math.max(0,total-correct-wrong-unanswered),satisfaction:document.getElementById('exam-satisfaction')?.value||'',wrongReason:document.getElementById('exam-wrong-reason')?.value.trim()||'',unansweredReason:document.getElementById('exam-unanswered-reason')?.value.trim()||'',notes,questionDetails:[],date:new Date().toLocaleDateString('fa-IR'),timestamp:new Date().toISOString(),updatedAt:ts};
-    const h=getHistory(); h.unshift(item); setHistory(h); localStorage.setItem('smart_reminder_last_activity',String(ts));
-    ['correct','wrong','unanswered','total-tests','exam-name','topic-name','exam-wrong-reason','exam-unanswered-reason'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-    document.querySelectorAll('#exam-note-checklist input').forEach(x=>x.checked=false);
-    updateUI(); scheduleCloudSync(); alert('✅ نتیجه آزمون با جزئیات کامل ثبت شد.');
-}
-function deleteItem(id){
-    const item=getHistory().find(x=>String(x.id)===String(id)); if(!item)return;
-    trashAdd('history',item,'سابقه آزمون '+(item.examName||item.subject));
-    setHistory(getHistory().filter(x=>String(x.id)!==String(id)));
-    addTombstone('deleted_history_ids',id); updateUI(); renderTrash(); scheduleCloudSync();
-}
-function clearHistory(){
-    const h=getHistory(); if(!h.length)return;
-    if(!confirm('همه سوابق به سطل زباله منتقل شوند؟'))return;
-    h.forEach(x=>{trashAdd('history',x,'سابقه آزمون '+(x.examName||x.subject));addTombstone('deleted_history_ids',x.id);});
-    setHistory([]);updateUI();renderTrash();scheduleCloudSync();
-}
-
-function openHistoryDetails(id){
-    const item=getHistory().find(x=>String(x.id)===String(id)); if(!item)return;
-    const old=document.getElementById('history-detail-modal'); old?.remove();
-    const details=(item.questionDetails||[]).map((q,i)=>`<div class="question-detail"><b>سؤال ${faNum(i+1)}</b><span>${escapeHtml(q.status||'غلط')}</span><small>${escapeHtml(q.reason||'علت ثبت نشده')}</small></div>`).join('')||'<div class="detail-empty">برای این آزمون هنوز جزئیات سؤال‌به‌سؤال ثبت نشده است.</div>';
-    const notes=(item.notes||[]).map(x=>`<span class="detail-chip">${escapeHtml(x)}</span>`).join('')||'<span class="detail-muted">نکته‌ای انتخاب نشده.</span>';
-    const ov=document.createElement('div');ov.id='history-detail-modal';ov.className='patch-modal';ov.innerHTML=`<div class="patch-modal-box"><button class="patch-close" onclick="this.closest('.patch-modal').remove()">✕</button><h2>📊 جزئیات ${escapeHtml(item.examName||'آزمون')}</h2><div class="detail-grid"><div><b>درس</b><span>${escapeHtml(item.subject)}</span></div><div><b>مبحث</b><span>${escapeHtml(item.topic||'-')}</span></div><div><b>درصد</b><span>${faNum(item.percent)}٪</span></div><div><b>کل</b><span>${faNum(item.totalTests)}</span></div><div><b>درست</b><span>${faNum(item.correct||0)}</span></div><div><b>غلط</b><span>${faNum(item.wrong||0)}</span></div><div><b>نزده</b><span>${faNum(item.unanswered||0)}</span></div><div><b>رضایت</b><span>${escapeHtml(item.satisfaction||'-')}</span></div></div><h3>🧠 نکته‌های مرتبط</h3><div class="detail-chips">${notes}</div><h3>❌ علت غلط</h3><p>${escapeHtml(item.wrongReason||'ثبت نشده')}</p><h3>⏳ علت نزدن</h3><p>${escapeHtml(item.unansweredReason||'ثبت نشده')}</p><h3>🔎 سؤال‌های غلط</h3><div>${details}</div></div>`;document.body.appendChild(ov);
-}
-
-/* ---------- 4) غلط‌نامه حرفه‌ای با مرور 1/2/3 و تحلیل ---------- */
-const PATCH_ERROR_TAGS=[
- {v:'بی‌دقتی (محاسباتی)',t:'😵 بی‌دقتی (محاسباتی)'},{v:'کمبود وقت',t:'⏱️ کمبود وقت'},{v:'تله طراح',t:'🎯 تله طراح'},{v:'بی‌دقتی (مفهومی)',t:'🧩 بی‌دقتی (مفهومی)'},{v:'مفهومی',t:'📚 مفهومی'},{v:'بلد نبودم',t:'❓ بلد نبودم'}
-];
-const PATCH_DIFFICULTY=['آسان','متوسط','دشوار'];
-const PATCH_TIME=['کم‌تر از زمان استاندارد','مطابق زمان استاندارد','بیشتر از زمان استاندارد'];
-function saveErrorItem(){
-    const subject=document.getElementById('error-subject')?.value||'';const desc=document.getElementById('error-desc')?.value.trim()||'';if(!desc){alert('مشخصات تست را وارد کن.');return;}
-    const ts=nowTs();const e={id:ts,subject,desc,tag:document.getElementById('error-tag')?.value||'مفهومی',difficulty:document.getElementById('error-difficulty')?.value||'متوسط',timeStatus:document.getElementById('error-time-status')?.value||'مطابق زمان استاندارد',reviewTarget:Number(document.getElementById('error-review-count')?.value)||1,reviewsDone:0,reviewChecks:[],correction:'',date:new Date().toLocaleDateString('fa-IR'),updatedAt:ts};
-    const a=getErrors();a.unshift(e);setErrors(a);document.getElementById('error-desc').value='';loadErrors();scheduleCloudSync();
-}
-function deleteError(id){const e=getErrors().find(x=>String(x.id)===String(id));if(!e)return;trashAdd('error',e,e.desc);setErrors(getErrors().filter(x=>String(x.id)!==String(id)));addTombstone('deleted_error_ids',id);loadErrors();renderTrash();scheduleCloudSync();}
-function patchToggleReview(id,n){const a=getErrors();const e=a.find(x=>String(x.id)===String(id));if(!e)return;e.reviewChecks=e.reviewChecks||[];if(e.reviewChecks.includes(n))e.reviewChecks=e.reviewChecks.filter(x=>x!==n);else e.reviewChecks.push(n);e.reviewsDone=e.reviewChecks.filter(x=>x).length;e.updatedAt=nowTs();setErrors(a);loadErrors();scheduleCloudSync();}
-function patchEditError(id){const e=getErrors().find(x=>String(x.id)===String(id));if(!e)return;const correction=prompt('اصلاح / راه‌حل این تست را بنویس:',e.correction||'');if(correction===null)return;e.correction=correction;e.updatedAt=nowTs();setErrors(getErrors());loadErrors();scheduleCloudSync();}
-function loadErrors(){
-    const a=getErrors();const box=document.getElementById('error-list');if(box){const subjects=[...new Set(a.map(x=>x.subject))];box.innerHTML=subjects.length?subjects.map(s=>`<div class="error-subject-group"><div class="error-subject-head">${escapeHtml(s)} <span>${faNum(a.filter(x=>x.subject===s).length)} مورد</span></div>${a.filter(x=>x.subject===s).map(e=>{const target=Math.max(1,Number(e.reviewTarget)||1),done=new Set(e.reviewChecks||[]);return `<div class="patch-error-card"><div class="patch-error-top"><div><b>${escapeHtml(e.desc)}</b><div class="patch-meta">${escapeHtml(e.tag)} · ${escapeHtml(e.difficulty)} · ${escapeHtml(e.timeStatus)}</div></div><button class="delete-btn" onclick="deleteError(${e.id})">🗑️</button></div><div class="review-row"><span>مرور ${faNum(e.reviewsDone||0)} از ${faNum(target)}</span>${Array.from({length:target},(_,i)=>`<button class="review-check ${done.has(i+1)?'done':''}" onclick="patchToggleReview(${e.id},${i+1})">${done.has(i+1)?'✓':'○'} ${faNum(i+1)}</button>`).join('')}</div><div class="patch-error-actions"><button onclick="patchEditError(${e.id})">✏️ اصلاح</button><button onclick="showErrorAnalysis(${e.id})">🧠 تحلیل مشاور</button></div>${e.correction?`<div class="correction-box">${escapeHtml(e.correction)}</div>`:''}</div>`;}).join('')}</div>`).join(''):'<div class="detail-empty">غلط‌نامه خالی است.</div>';}
-    const stats=document.getElementById('error-tag-stats');if(stats){const c={};a.forEach(e=>c[e.tag]=(c[e.tag]||0)+1);stats.innerHTML=Object.entries(c).map(([k,v])=>`<span class="detail-chip">${escapeHtml(k)}: ${faNum(v)}</span>`).join('')||'<span class="detail-muted">داده‌ای نیست.</span>';}
-    renderErrorDeepAnalysis(a);
-}
-function showErrorAnalysis(id){const e=getErrors().find(x=>String(x.id)===String(id));if(!e)return;const advice=generateCounselorAnalysis(e);const ov=document.createElement('div');ov.className='patch-modal';ov.innerHTML=`<div class="patch-modal-box"><button class="patch-close" onclick="this.closest('.patch-modal').remove()">✕</button><h2>🧠 تحلیل مشاور — ${escapeHtml(e.subject)}</h2><div class="analysis-hero"><b>${escapeHtml(e.desc)}</b><span>${escapeHtml(e.tag)} · ${escapeHtml(e.difficulty)} · ${escapeHtml(e.timeStatus)}</span></div>${advice.map(x=>`<div class="analysis-card"><b>${escapeHtml(x.title)}</b><p>${escapeHtml(x.text)}</p></div>`).join('')}</div>`;document.body.appendChild(ov);}
-function generateCounselorAnalysis(e){
- const out=[];const tag=e.tag||'';if(tag.includes('بی‌دقتی'))out.push({title:'علت اصلی',text:'قبل از ثبت پاسخ، یک مکث کوتاه برای بررسی علامت‌ها، واحدها، محاسبات و انتقال داده‌ها داشته باش.'});
- else if(tag==='کمبود وقت')out.push({title:'مدیریت زمان',text:'اگر سؤال در بازه استاندارد حل نشد، علامت بزن و عبور کن؛ برگشت دوم باید هدفمند باشد.'});
- else if(tag==='تله طراح')out.push({title:'تله طراح',text:'گزینه‌های نزدیک به پاسخ را با شرط‌های سؤال تطبیق بده و کلمات کلیدی را دوباره بخوان.'});
- else if(tag==='مفهومی')out.push({title:'ضعف مفهومی',text:'این تست را بدون نگاه به پاسخ دوباره حل کن و سپس مفهوم پشت راه‌حل را در یک نکته کوتاه ثبت کن.'});
- else out.push({title:'تسلط',text:'مفهوم پایه این تست را مرور کن و سپس یک تست هم‌تیپ را با زمان استاندارد بزن.'});
- out.push({title:'سطح سؤال',text:e.difficulty==='دشوار'?'سؤال دشوار را به چند گام کوچک تقسیم کن و از راه‌حل‌های طولانی بدون برنامه دوری کن.':e.difficulty==='آسان'?'در سؤال آسان، هدف اصلی کاهش بی‌دقتی و پاسخ‌گویی سریع است.':'در سطح متوسط، دقت و زمان را هم‌زمان کنترل کن.'});
- out.push({title:'زمان',text:e.timeStatus==='کم‌تر از زمان استاندارد'?'سرعت خوب است؛ مراقب افت دقت باش.':e.timeStatus==='بیشتر از زمان استاندارد'?'برای این تیپ سؤال یک سقف زمانی تعیین کن و بعد از آن موقتاً عبور کن.':'زمانت مناسب است؛ تمرکز را روی کیفیت حل نگه دار.'});
- out.push({title:'برنامه مرور',text:`این تست را ${Math.max(1,Number(e.reviewTarget)||1)} بار مرور کن و هر بار بدون دیدن راه‌حل ابتدا خودت پاسخ بده.`});
- return out;
-}
-
-/* ---------- 5) هدف‌ها: آرشیو خودکار ---------- */
-const GOAL_ARCHIVE_KEY='subject_goal_archive_v2';
-function getGoalArchive(){return safeParse(GOAL_ARCHIVE_KEY,[])}function setGoalArchive(a){safeSet(GOAL_ARCHIVE_KEY,a)}
-function archiveOldGoals(){
- const g=getSubjectGoals(), now=new Date(), archive=getGoalArchive(), changed=[];
- Object.entries(g).forEach(([subject,goal])=>{
-   const created=Number(goal.createdAt||goal.updatedAt||0);const monthStart=created?new Date(created):now;const monthly=Number(goal.monthly)||0;const start=new Date(now.getFullYear(),now.getMonth(),1);const tests=sumGoalTests(subject,localDateKey(start),localDateKey(now));
-   const expired=created && now-monthStart>=30*86400000;const completed=monthly>0&&tests>=monthly;
-   if(expired||completed){archive.unshift({id:'goal-'+Date.now()+'-'+Math.random(),subject,goal,tests,reason:completed?'تکمیل هدف':'پایان یک ماه',archivedAt:now.toISOString()});delete g[subject];changed.push(subject);}
- });
- if(changed.length){setSubjectGoals(g);setGoalArchive(archive.slice(0,200));scheduleCloudSync();}
-}
-function saveSubjectGoal(){
- const subject=document.getElementById('goal-subject-select').value,weekly=Number(document.getElementById('goal-weekly-input-v2').value)||0,monthly=Number(document.getElementById('goal-monthly-input-v2').value)||0;if(weekly<=0&&monthly<=0){alert('حداقل یکی از هدف‌ها را وارد کن.');return;}
- const g=getSubjectGoals();g[subject]={weekly,monthly,createdAt:g[subject]?.createdAt||nowTs(),updatedAt:nowTs()};setSubjectGoals(g);renderGoalDashboard();renderGoalManager();scheduleCloudSync();
-}
-function deleteSubjectGoal(subject){const g=getSubjectGoals();if(!g[subject])return;trashAdd('goal',{id:subject,subject,goal:g[subject]},'هدف '+subject);delete g[subject];setSubjectGoals(g);addTombstone('deleted_goal_subjects',subject);renderGoalDashboard();renderGoalManager();renderTrash();scheduleCloudSync();}
-
-/* ---------- 6) برنامه هفتگی: تعداد پارت آزاد + بازه زمانی ---------- */
-let PLANNER_PARTS=0;
-function emptyPlannerParts(){return []}
-function normalizePlannerDay(v){const base={parts:[],notes:'',updatedAt:0};if(!v||typeof v!=='object')return base;base.parts=Array.isArray(v.parts)?v.parts.map(x=>Object.assign({subject:'',start:'',end:'',time:'',done:false},x)):[];base.notes=v.notes||'';base.updatedAt=v.updatedAt||0;return base;}
-function plannerStats(p){const parts=normalizePlannerDay(p).parts;let done=0,filled=0,minutes=0;parts.forEach(x=>{if(x.done)done++;if(x.subject||x.start||x.end)filled++;if(x.start&&x.end){const [a,b]=x.start.split(':').map(Number),[c,d]=x.end.split(':').map(Number);let m=(c*60+d)-(a*60+b);if(m<0)m+=1440;if(m>0)minutes+=m;}});return {done,filled,minutes,percent:filled?Math.round(done/filled*100):0};}
-function renderPlannerParts(parts){const body=document.querySelector('#planner-parts-body');if(!body)return;const p=Array.isArray(parts)?parts:[];body.innerHTML=p.map((x,i)=>`<div class="planner-part-row"><div class="part-number"><span>${faNum(i+1)}</span></div><div><input class="planner-part-subject" data-i="${i}" value="${escapeAttr(x.subject||'')}" placeholder="مثلاً حسابان — مشتق"></div><div class="time-range"><input class="planner-part-start" data-i="${i}" type="time" value="${x.start||x.time||''}"><span>تا</span><input class="planner-part-end" data-i="${i}" type="time" value="${x.end||''}"></div><div class="part-check-wrap"><label class="part-check"><input type="checkbox" class="planner-part-done" data-i="${i}" ${x.done?'checked':''}><span>✓</span></label></div><div><button type="button" class="mini-delete-part" onclick="removePlannerPart(${i})">✕</button></div></div>`).join('');body.querySelectorAll('input').forEach(e=>e.addEventListener('input',updatePlannerLiveStats));updatePlannerLiveStats();}
-function collectPlannerParts(){return [...document.querySelectorAll('.planner-part-subject')].map((e,i)=>({subject:e.value.trim(),start:document.querySelector(`.planner-part-start[data-i="${i}"]`)?.value||'',end:document.querySelector(`.planner-part-end[data-i="${i}"]`)?.value||'',done:!!document.querySelector(`.planner-part-done[data-i="${i}"]`)?.checked}));}
-function updatePlannerLiveStats(){const s=plannerStats({parts:collectPlannerParts()});const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set('parts-done-count',faNum(s.done));set('parts-filled-count',faNum(s.filled));set('parts-progress-percent',faNum(s.percent)+'٪');set('parts-useful-time',formatUsefulMinutes(s.minutes));}
-function formatUsefulMinutes(m){return `${faNum(Math.floor(m/60))} ساعت و ${faNum(m%60)} دقیقه`}
-function addPlannerPart(){const parts=collectPlannerParts();parts.push({subject:'',start:'',end:'',done:false});renderPlannerParts(parts);}
-function removePlannerPart(i){const p=collectPlannerParts();p.splice(i,1);renderPlannerParts(p);}
-function openPlannerDay(key){const d=PLANNER_DAYS.find(x=>x.key===key);if(!d)return;plannerCurrentKey=key;const p=normalizePlannerDay(getWeeklyPlan()[key]);document.getElementById('planner-modal-title').innerHTML=`<span class="modal-day-icon" style="--c1:${d.c1};--c2:${d.c2}">${d.emoji}</span><span>برنامه ${d.name}</span>`;document.getElementById('planner-notes').value=p.notes||'';renderPlannerParts(p.parts);document.getElementById('planner-modal').classList.add('show');}
-function savePlannerDay(){if(!plannerCurrentKey)return;const plan=getWeeklyPlan();plan[plannerCurrentKey]={parts:collectPlannerParts(),notes:document.getElementById('planner-notes').value.trim(),updatedAt:nowTs()};setWeeklyPlan(plan);initWeeklyPlanner();closePlannerModal();updateDailyVitals();scheduleCloudSync();}
-function clearPlannerDay(){if(!plannerCurrentKey)return;const plan=getWeeklyPlan(),day=plan[plannerCurrentKey];if(!day)return;if(!confirm('این برنامه به سطل زباله منتقل شود؟'))return;trashAdd('planner',{id:plannerCurrentKey,dayKey:plannerCurrentKey,day},'برنامه '+(PLANNER_DAYS.find(x=>x.key===plannerCurrentKey)?.name||''));delete plan[plannerCurrentKey];setWeeklyPlan(plan);addTombstone('deleted_planner_days',plannerWeekKey()+'|'+plannerCurrentKey);initWeeklyPlanner();closePlannerModal();renderTrash();scheduleCloudSync();}
-function initWeeklyPlanner(){ensureWeeklyArchive();const grid=document.getElementById('planner-grid');if(!grid)return;const plan=getWeeklyPlan();grid.innerHTML=PLANNER_DAYS.map(d=>{const p=normalizePlannerDay(plan[d.key]),s=plannerStats(p);return `<button class="planner-day-card" style="--day-c1:${d.c1};--day-c2:${d.c2}" onclick="openPlannerDay('${d.key}')"><div class="planner-day-head"><div class="planner-day-name"><span class="planner-day-emoji">${d.emoji}</span>${d.name}</div><span class="planner-day-count">${faNum(s.done)}/${faNum(s.filled)}</span></div><span class="planner-progress"><span style="width:${s.percent}%"></span></span><div class="planner-preview">${s.filled?escapeHtml(p.parts.filter(x=>x.subject||x.start).slice(0,2).map(x=>`${x.subject||'درس'} ${x.start||''}${x.end?' تا '+x.end:''}`).join(' · ')):'هنوز پارتی اضافه نشده'}</div><span class="planner-day-open"><b>مدیریت پارت‌ها</b><span>＋</span></span></button>`}).join('');renderPlannerArchives();updateDailyVitals();}
-
-/* ---------- 7) نکته: فایل کم‌حجم + crop ---------- */
-const NOTE_FILE_MAX=5*1024*1024, NOTE_FILE_TOTAL=10*1024*1024;
-function previewSmartNoteImage(event){const files=[...(event.target.files||[])];event.target.value='';files.forEach(file=>{if(file.size>NOTE_FILE_MAX){alert('حجم هر تصویر بیشتر از ۵ مگابایت است. لطفاً تصویر را کوچک‌تر کن.');return;}openPatchCropper(file);});}
-function openPatchCropper(file){const r=new FileReader();r.onload=e=>{const src=e.target.result;const ov=document.createElement('div');ov.className='patch-modal';ov.id='patch-cropper';ov.innerHTML=`<div class="patch-modal-box crop-box"><button class="patch-close" onclick="this.closest('.patch-modal').remove()">✕</button><h2>✂️ برش و تنظیم تصویر</h2><canvas id="patch-canvas" width="700" height="430"></canvas><label>بزرگ‌نمایی <input id="patch-zoom" type="range" min="1" max="3" step=".01" value="1"></label><div class="patch-actions"><button class="btn btn-danger" onclick="this.closest('.patch-modal').remove()">انصراف</button><button class="btn btn-success" onclick="confirmPatchCrop()">✓ تأیید و افزودن</button></div></div>`;document.body.appendChild(ov);const img=new Image();img.onload=()=>{window.__patchCrop={img,zoom:1};drawPatchCrop()};img.src=src;document.getElementById('patch-zoom').oninput=e=>{window.__patchCrop.zoom=Number(e.target.value);drawPatchCrop()};};r.readAsDataURL(file);}
-function drawPatchCrop(){const c=document.getElementById('patch-canvas'),ctx=c?.getContext('2d'),s=window.__patchCrop;if(!c||!ctx||!s)return;ctx.clearRect(0,0,c.width,c.height);const scale=Math.max(c.width/s.img.width,c.height/s.img.height)*s.zoom;const w=s.img.width*scale,h=s.img.height*scale;ctx.drawImage(s.img,(c.width-w)/2,(c.height-h)/2,w,h);ctx.strokeStyle='#22d3ee';ctx.lineWidth=3;ctx.strokeRect(30,30,c.width-60,c.height-60);}
-function confirmPatchCrop(){const c=document.getElementById('patch-canvas');if(!c||!window.__patchCrop)return;const out=document.createElement('canvas'),size=900;out.width=size;out.height=Math.round(size*(c.height-60)/(c.width-60));const ctx=out.getContext('2d');ctx.drawImage(c,30,30,c.width-60,c.height-60,0,0,out.width,out.height);const data=out.toDataURL('image/jpeg',.78);if(data.length>NOTE_FILE_MAX*1.4){alert('تصویر هنوز بزرگ است؛ بزرگ‌نمایی را کم کن یا تصویر کوچک‌تری انتخاب کن.');return;}smartNoteImages.push(data);renderSmartNoteImagePreview();document.getElementById('patch-cropper')?.remove();}
-function handleSmartNoteImageFiles(fileList){[...fileList||[]].forEach(f=>openPatchCropper(f));}
-
-function previewSmartNoteFile(event){const files=[...(event.target.files||[])];event.target.value='';const total=smartNoteFiles.reduce((n,x)=>n+x.size,0);files.forEach(f=>{if(f.size>NOTE_FILE_MAX){alert(`فایل «${f.name}» بیشتر از ۵ مگابایت است.`);return;}if(total+f.size>NOTE_FILE_TOTAL){alert('حجم مجموع فایل‌های این نکته نمی‌تواند بیشتر از ۱۰ مگابایت باشد.');return;}const r=new FileReader();r.onload=e=>{smartNoteFiles.push({name:f.name,size:f.size,type:f.type,data:e.target.result});renderSmartNoteFiles();};r.readAsDataURL(f);});}
-let smartNoteFiles=[];function renderSmartNoteFiles(){const b=document.getElementById('smartNoteFilePreview');if(!b)return;b.innerHTML=smartNoteFiles.map((f,i)=>`<div class="note-file-row"><span>📎 ${escapeHtml(f.name)}</span><button onclick="smartNoteFiles.splice(${i},1);renderSmartNoteFiles()">✕</button></div>`).join('');}
-
-/* ---------- 8) جزئیات سوال غلط داخل تاریخچه ---------- */
-function editQuestionDetails(id){const h=getHistory(),item=h.find(x=>String(x.id)===String(id));if(!item)return;const q=prompt('شماره‌های سوال غلط را با فاصله بنویس؛ مثال: ۳ ۷ ۱۲');if(q===null)return;item.questionDetails=q.split(/[,،\s]+/).filter(Boolean).map(n=>({number:n,status:'غلط',reason:''}));item.updatedAt=nowTs();setHistory(h);updateUI();scheduleCloudSync();}
-
-/* ---------- 9) داده ابری: سطل زباله + هدف آرشیو را هم sync کن ---------- */
-const __oldCollectBackupData=window.collectBackupData;
-function collectBackupData(){const d=__oldCollectBackupData?__oldCollectBackupData():{};d.version=7;d.trash=getTrash();d.goalArchive=getGoalArchive();d.smartNotes=smartNotes;d.smartNoteFilesVersion=1;return d;}
-const __oldApplyBackupData=window.applyBackupData;
-function applyBackupData(data,opt){if(__oldApplyBackupData)__oldApplyBackupData(data,opt);if(data?.trash){setTrash(data.trash)}if(data?.goalArchive){setGoalArchive(data.goalArchive)}if(data?.smartNotes&&typeof data.smartNotes==='object'){smartNotes=data.smartNotes;saveSmartNotes()}refreshEverything();renderTrash();}
-
-/* ---------- 10) UI تزریقی ---------- */
-function injectPatchUI(){
- const style=document.createElement('style');style.textContent=`
-.patch-modal{position:fixed;inset:0;z-index:5000;background:rgba(3,2,12,.76);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:16px}.patch-modal-box{position:relative;width:min(850px,100%);max-height:92vh;overflow:auto;padding:24px;border-radius:24px;background:linear-gradient(145deg,#171332,#090817);border:1px solid rgba(34,211,238,.25);box-shadow:0 30px 90px rgba(0,0,0,.55)}body.light-mode .patch-modal-box{background:linear-gradient(145deg,#fffaf0,#f4ead7);color:#2a1f10}.patch-close{position:absolute;left:14px;top:14px;width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);color:var(--text-primary);border:1px solid rgba(255,255,255,.1);cursor:pointer}.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.detail-grid>div,.analysis-card,.question-detail{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}.detail-grid b,.detail-grid span{display:block}.detail-grid b{color:var(--accent);font-size:.72rem}.detail-grid span{margin-top:4px;font-weight:800}.detail-chips{display:flex;flex-wrap:wrap;gap:7px}.detail-chip{padding:7px 10px;border-radius:999px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2)}.detail-muted,.detail-empty{color:var(--text-secondary);padding:14px}.question-detail{display:grid;grid-template-columns:100px 100px 1fr;margin-bottom:8px}.analysis-hero{padding:16px;border-radius:18px;background:linear-gradient(135deg,rgba(34,211,238,.09),rgba(168,85,247,.09));margin:15px 0}.analysis-hero b,.analysis-hero span{display:block}.analysis-hero span{color:var(--text-secondary);margin-top:5px}.analysis-card{margin:9px 0}.analysis-card b{color:var(--gold)}.trash-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:15px;border-radius:17px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);margin-bottom:9px}.trash-title{font-weight:900;margin-top:5px}.trash-card small{color:var(--text-secondary)}.trash-actions{display:flex;gap:7px}.trash-actions .btn{min-width:115px}.trash-empty{text-align:center;padding:45px;color:var(--text-secondary)}.trash-empty b,.trash-empty small{display:block;margin-top:8px}.error-subject-group{margin-bottom:18px}.error-subject-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin-bottom:8px;border-radius:13px;background:linear-gradient(90deg,rgba(34,211,238,.08),rgba(99,102,241,.06));color:var(--accent);font-weight:900}.error-subject-head span{font-size:.7rem;color:var(--text-secondary)}.patch-error-card{padding:14px;margin-bottom:9px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}.patch-error-top{display:flex;justify-content:space-between;gap:12px}.patch-meta{font-size:.72rem;color:var(--text-secondary);margin-top:5px}.review-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}.review-check{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-primary);border-radius:9px;padding:7px 9px;cursor:pointer}.review-check.done{background:linear-gradient(135deg,var(--accent),var(--purple));color:#06121b;border-color:transparent}.patch-error-actions{display:flex;gap:7px;margin-top:9px}.patch-error-actions button{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-primary);border-radius:10px;padding:7px 10px;cursor:pointer}.correction-box{margin-top:9px;padding:10px;border-radius:12px;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.15);white-space:pre-wrap}.time-range{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:5px}.time-range input{margin:0}.mini-delete-part{border:1px solid rgba(244,63,94,.25);background:rgba(244,63,94,.07);color:var(--danger);border-radius:9px;min-height:38px;cursor:pointer}.crop-box canvas{display:block;width:100%;max-height:55vh;border-radius:16px;margin:12px 0;background:#000}.patch-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.note-file-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04);margin-top:5px}.note-file-row button{border:0;background:none;color:var(--danger);cursor:pointer}@media(max-width:700px){.detail-grid{grid-template-columns:repeat(2,1fr)}.trash-card{align-items:stretch;flex-direction:column}.trash-actions button{flex:1}.question-detail{grid-template-columns:1fr}.patch-modal-box{padding:16px}.parts-table .daily-row{grid-template-columns:42px 1fr 1.7fr 55px 45px!important}}
-`;
- document.head.appendChild(style);
-
- // تب سطل زباله
- const tabs=document.querySelector('.tabs');if(tabs&&!document.getElementById('trash-tab-btn')){const b=document.createElement('button');b.id='trash-tab-btn';b.className='tab-btn';b.textContent='🗑️ سطل زباله';b.onclick=()=>{document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));document.getElementById('tab-trash').classList.add('active');b.classList.add('active');renderTrash();};tabs.appendChild(b);}
- // کنترل‌های برنامه هفتگی: شروع بدون پارت و افزودن آزاد
- const ps=document.querySelector('.parts-summary');if(ps&&!document.getElementById('parts-useful-time')){const d=document.createElement('div');d.innerHTML='<b id="parts-useful-time">۰ ساعت و ۰ دقیقه</b><span>زمان مفید</span>';ps.appendChild(d);}
- const pb=document.getElementById('planner-parts-body');if(pb&&!document.getElementById('add-planner-part-btn')){const controls=document.createElement('div');controls.id='planner-part-controls';controls.style.cssText='display:flex;gap:8px;margin:10px 0;flex-wrap:wrap';controls.innerHTML='<button id="add-planner-part-btn" type="button" class="btn btn-primary" onclick="addPlannerPart()">＋ اضافه کردن پارت</button><button type="button" class="btn btn-danger" onclick="renderPlannerParts([]);updatePlannerLiveStats()">🧹 حذف پارت‌های این روز</button>';pb.parentNode.insertBefore(controls,pb);}
- const main=document.querySelector('.main-container');if(main&&!document.getElementById('tab-trash')){const sec=document.createElement('div');sec.id='tab-trash';sec.className='tab-content';sec.innerHTML=`<div class="glass-card"><div class="section-title">🗑️ سطل زباله امن</div><p style="color:var(--text-secondary);line-height:1.9">مواردی که حذف می‌کنی اینجا می‌مانند. می‌توانی بازیابی‌شان کنی یا فقط از داخل سطل زباله برای همیشه حذفشان کنی.</p><div style="display:flex;gap:8px;margin:12px 0"><button class="btn btn-danger" onclick="trashEmpty()">🗑️ خالی کردن کامل</button></div><div id="trash-list"></div></div>`;main.appendChild(sec);}
-
- // ثبت آزمون: فیلدهای جدید
- const exam=document.getElementById('total-tests')?.parentElement?.parentElement;if(exam&&!document.getElementById('unanswered')){const box=document.createElement('div');box.className='patch-extra-fields';box.innerHTML=`<div class="input-group"><input type="number" id="unanswered" min="0" placeholder="نزده"></div><select id="exam-satisfaction"><option value="">میزان رضایت از آزمون</option><option>خیلی کم</option><option>کم</option><option>متوسط</option><option>خوب</option><option>عالی</option></select><input id="exam-wrong-reason" placeholder="علت کلی غلط‌ها"><input id="exam-unanswered-reason" placeholder="علت کلی نزدن‌ها"><div class="exam-note-divider"></div><button type="button" class="btn btn-purple" onclick="openExamNotePicker()">🧠 انتخاب نکته‌های مؤثر</button><div id="exam-note-checklist" style="display:none"></div>`;exam.appendChild(box);}
- // غلط نامه fields
- const errorForm=document.getElementById('error-tag')?.parentElement;if(errorForm&&!document.getElementById('error-difficulty')){const b=document.createElement('div');b.innerHTML=`<div class="input-group"><select id="error-difficulty"><option>آسان</option><option selected>متوسط</option><option>دشوار</option></select><select id="error-time-status"><option>کم‌تر از زمان استاندارد</option><option selected>مطابق زمان استاندارد</option><option>بیشتر از زمان استاندارد</option></select></div><select id="error-review-count"><option value="1">🔁 ۱ بار مرور</option><option value="2">🔁 ۲ بار مرور</option><option value="3">🔁 ۳ بار مرور</option></select>`;errorForm.appendChild(b);}
- // فایل در نکته
- const upload=document.getElementById('smartNoteImageInput')?.parentElement;if(upload&&!document.getElementById('smartNoteFileInput')){const l=document.createElement('label');l.className='smart-note-upload';l.innerHTML='📎 افزودن فایل <input id="smartNoteFileInput" type="file" multiple hidden onchange="previewSmartNoteFile(event)">';upload.parentElement.insertBefore(l,document.getElementById('smartNoteImagePreview'));const pv=document.createElement('div');pv.id='smartNoteFilePreview';document.getElementById('smartNoteImagePreview').after(pv);}
- // انتقال اطلاعات محلی به حساب بعد از ورود
- const ub=document.getElementById('neo-user-box');if(ub&&!document.getElementById('patch-local-to-cloud')){const b=document.createElement('button');b.id='patch-local-to-cloud';b.className='btn btn-primary';b.style.cssText='width:100%;margin-top:8px;font-size:.78rem';b.textContent='☁️ انتقال اطلاعات این دستگاه به حساب';b.onclick=syncLocalDataToAccount;ub.appendChild(b);}
- // آیکون کنار موشک: پیام کاربر
- const rocket=document.getElementById('countdown-badge');if(rocket&&!document.getElementById('user-message-btn')){const m=document.createElement('button');m.id='user-message-btn';m.title='پیام';m.innerHTML='✉️<i id="user-message-dot"></i>';m.onclick=openNewMessages;rocket.after(m);}
-}
-function openExamNotePicker(){const box=document.getElementById('exam-note-checklist');if(!box)return;const values=['بی‌دقتی محاسباتی','بی‌دقتی مفهومی','کمبود وقت','تله طراح','ضعف مفهومی','عدم تسلط','فراموشی فرمول','اشتباه در خواندن صورت سؤال','اشتباه در علامت','اشتباه در واحد','محاسبه طولانی','نیاز به مرور'];box.style.display='block';box.innerHTML='<div class="detail-chips">'+values.map((x,i)=>`<label class="detail-chip"><input type="checkbox" value="${x}"> ${x}</label>`).join('')+'</div><div style="margin-top:8px;color:var(--text-secondary);font-size:.72rem">نکته‌های ثبت‌شده پایین صفحه هم می‌توانند برای آزمون‌های بعدی مرور شوند.</div>';}
-function openUserMessagePanel(){const old=document.getElementById('user-message-panel');if(old){old.remove();return;}const ov=document.createElement('div');ov.id='user-message-panel';ov.className='patch-modal';ov.innerHTML=`<div class="patch-modal-box" style="width:min(520px,100%)"><button class="patch-close" onclick="this.closest('.patch-modal').remove()">✕</button><h2>✉️ پیام به سازنده</h2><p style="color:var(--text-secondary);line-height:1.9">اگر پیشنهادی، گزارش خطا یا پیامی داری اینجا بنویس.</p><textarea id="user-message-text" rows="6" placeholder="پیامت را بنویس..."></textarea><button class="btn btn-primary" onclick="sendUserMessage()">🚀 ارسال پیام</button></div>`;document.body.appendChild(ov);}
-function sendUserMessage(){const t=document.getElementById('user-message-text')?.value.trim();if(!t)return alert('پیام خالی است.');const arr=safeParse('user_messages_v1',[]);arr.unshift({id:nowTs(),text:t,createdAt:new Date().toISOString(),status:'new'});safeSet('user_messages_v1',arr);document.getElementById('user-message-panel')?.remove();showReminderToast('پیام ذخیره شد ✨','پیامت برای ارسال در سیستم آماده شد.');}
-function markNewMessage(text){const d=document.getElementById('user-message-dot');if(d)d.classList.add('show');if(text){const a=safeParse('admin_messages_v1',[]);a.unshift({id:nowTs(),text,createdAt:new Date().toISOString(),read:false});safeSet('admin_messages_v1',a);} }
-function openNewMessages(){const a=safeParse('admin_messages_v1',[]);const old=document.getElementById('new-messages-panel');if(old){old.remove();return;}const ov=document.createElement('div');ov.id='new-messages-panel';ov.className='patch-modal';ov.innerHTML=`<div class="patch-modal-box" style="width:min(520px,100%)"><button class="patch-close" onclick="this.closest('.patch-modal').remove()">✕</button><h2>🔔 پیام‌ها</h2>${a.length?a.map(x=>`<div class="analysis-card"><b>${new Date(x.createdAt).toLocaleString('fa-IR')}</b><p>${escapeHtml(x.text)}</p></div>`).join(''):'<div class="detail-empty">پیام جدیدی نیست.</div>'}</div>`;document.body.appendChild(ov);safeSet('admin_messages_v1',a.map(x=>({...x,read:true})));document.getElementById('user-message-dot')?.classList.remove('show');}
-function syncLocalDataToAccount(){if(!getSupabaseClient())return alert('اتصال ابری در دسترس نیست.');if(!confirm('اطلاعات این دستگاه با حساب فعلی ادغام شود؟'))return;cloudSyncNow();}
-
-
-/* ---------- 11) ذخیره نکته با فایل ---------- */
-const __oldSaveSmartNote=window.saveSmartNote;
-function saveSmartNote(){
- const before=smartNotes; if(__oldSaveSmartNote)__oldSaveSmartNote();
- // فایل‌ها به آخرین نکته همان درس اضافه شوند
- if(smartNoteFiles.length){const subject=document.getElementById('smartNoteSubjectInput')?.value||currentSmartSubject;const arr=smartNotes[subject]||[];const n=arr.find(x=>x.id===editingSmartNoteId)||arr[0];if(n){n.files=smartNoteFiles.slice();saveSmartNotes();}}
- smartNoteFiles=[];renderSmartNoteFiles();scheduleCloudSync();
-}
-
-/* ---------- 12) اتصال اولیه ---------- */
-window.addEventListener('load',()=>{
- setTimeout(()=>{injectPatchUI();archiveOldGoals();renderTrash();loadErrors();initWeeklyPlanner();updateUI();},120);
-});
-setInterval(()=>{try{archiveOldGoals();}catch(e){}},60*60*1000);
-
-})();
-
 </script>
 </body>
 </html>
