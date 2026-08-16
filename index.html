@@ -1873,6 +1873,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 
     <!-- تب چهارم: هدف‌گذاری و پشتیبان‌گیری -->
     <div id="tab-settings" class="tab-content">
+        <div id="neo-cloud-panel-anchor"></div>
         <div class="glass-card" id="neo-cloud-panel">
           <div class="section-title">☁️ حساب کاربری</div>
           <p class="neo-muted">با یک حساب، اطلاعات برنامه روی همه‌ی دستگاه‌هات همگام می‌شود. حذف‌ها هم بین دستگاه‌ها به‌درستی همگام می‌شوند.</p>
@@ -1881,7 +1882,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             <input id="neo-auth-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
             <div class="neo-cloud-actions" style="margin-top:10px;"><button class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
           </div>
-          <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-email"></b></span><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
+          <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-email"></b></span><button class="btn btn-purple" onclick="manualCloudSync()" style="padding:6px 12px;font-size:.75rem;">🔄 همگام‌سازی</button><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
           <div id="neo-cloud-status" class="neo-cloud-status">هنوز وارد حساب نشده‌ای</div>
         </div>
 
@@ -3341,10 +3342,26 @@ function applyBackupData(data, { merge } = { merge:false }){
         setSubjectGoals(g.merged); safeSet('deleted_goal_subjects', g.tomb);
         const dl = mergeArrayWithTombstones(getDailyGoalLog(), data.dailyGoalLog||[], [], []);
         setDailyGoalLog(dl.merged);
-        const localDays = getWeeklyStore().days || {};
-        const remoteDays = (data.weeklyPlannerStore && data.weeklyPlannerStore.days) || {};
-        const pd = mergeKeyedObject(localDays, remoteDays, getTombstones('deleted_planner_days'), data.deletedPlannerDays||[]);
-        setWeeklyStore({ weekKey: plannerWeekKey(), days: pd.merged }); safeSet('deleted_planner_days', pd.tomb);
+        /* رفع باگ: قبلاً کلید حذف (Tombstone) روزهای برنامه هفتگی به‌صورت
+           «هفته|روز» ذخیره می‌شد، اما هنگام ادغام فقط با کلید «روز» (بدون
+           هفته) مقایسه می‌شد؛ در نتیجه هیچ حذفی واقعاً تشخیص داده نمی‌شد و
+           روزهای پاک‌شده دوباره از نسخه‌ی ابری برمی‌گشتند. اینجا هر دو طرف
+           را با همان کلید ترکیبی می‌سازیم تا با Tombstone درست مقایسه شوند. */
+        const localStoreNow = getWeeklyStore();
+        const wk = localStoreNow.weekKey || plannerWeekKey();
+        const localDays = (localStoreNow.weekKey === wk ? localStoreNow.days : {}) || {};
+        const remoteStore = data.weeklyPlannerStore || {};
+        const remoteWk = remoteStore.weekKey || wk;
+        const remoteDays = remoteStore.days || {};
+        const prefixDays = (obj, w) => { const out = {}; Object.entries(obj||{}).forEach(([k,v]) => { out[w + '|' + k] = v; }); return out; };
+        const pd = mergeKeyedObject(prefixDays(localDays, wk), prefixDays(remoteDays, remoteWk), getTombstones('deleted_planner_days'), data.deletedPlannerDays||[]);
+        const mergedDays = {};
+        Object.entries(pd.merged).forEach(([k, v]) => {
+            const sep = k.indexOf('|');
+            const w = k.slice(0, sep), dayKey = k.slice(sep + 1);
+            if(w === wk) mergedDays[dayKey] = v; // فقط روزهای متعلق به هفته‌ی جاری نگه داشته می‌شوند
+        });
+        setWeeklyStore({ weekKey: wk, days: mergedDays }); safeSet('deleted_planner_days', pd.tomb);
         const ar = mergeArrayWithTombstones(getWeeklyArchives(), data.weeklyPlannerArchives||[], [], []);
         setWeeklyArchives(ar.merged);
         const localTs = Number(localStorage.getItem('countdown_target_date_ts')||0);
@@ -3557,6 +3574,16 @@ async function cloudSyncNow(){
         cloudBusy = false;
     }
 }
+/* دکمه‌ی «همگام‌سازی» دستی: برای وقتی که کاربر مدتی خارج از حساب کار کرده و
+   می‌خواهد مطمئن شود همه‌ی اطلاعات محلی‌اش با ابر ادغام شده است. */
+async function manualCloudSync(){
+    const client = getSupabaseClient();
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    const { data:{ session } } = await client.auth.getSession();
+    if(!session?.user){ setCloudStatus('اول باید وارد حساب شوی.'); return; }
+    setCloudStatus('☁️ در حال دریافت و ادغام کامل اطلاعات...');
+    await pullAndMergeFromCloud();
+}
 function scheduleCloudSync(){
     if(applyingRemote) return; // از حلقه‌ی برگشتی جلوگیری کن
     const client = getSupabaseClient();
@@ -3588,6 +3615,21 @@ function toggleCloudAccountModal(force){
     if(!overlay) return;
     const open = typeof force === 'boolean' ? force : !overlay.classList.contains('open');
     overlay.classList.toggle('open', open);
+    /* رفع باگ: پنجره‌ی حساب کاربری از صفحه اول خالی باز می‌شد چون هیچ محتوایی
+       داخل #cloud-account-modal-slot قرار نمی‌گرفت. اینجا خودِ پنل واقعی حساب
+       کاربری (#neo-cloud-panel) را موقتاً از تب «اهداف و پشتیبان» به داخل
+       مودال منتقل می‌کنیم؛ با بستن مودال، دوباره به جای اصلی‌اش برمی‌گردد.
+       این‌طوری همیشه یک نسخه‌ی واحد و کاملاً سالم از فرم ورود/ثبت‌نام وجود دارد. */
+    const slot = document.getElementById('cloud-account-modal-slot');
+    const panel = document.getElementById('neo-cloud-panel');
+    const anchor = document.getElementById('neo-cloud-panel-anchor');
+    if(slot && panel && anchor){
+        if(open && panel.parentElement !== slot){
+            slot.appendChild(panel);
+        } else if(!open && panel.parentElement === slot){
+            anchor.parentElement.insertBefore(panel, anchor);
+        }
+    }
 }
 function initCloud(){
     getSupabaseClient();
