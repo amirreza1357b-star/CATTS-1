@@ -1609,886 +1609,3322 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         flex-direction:column;
     }
 
+    .smart-note-modal-actions button{
+        width:100%;
+    }
+
 }
     </style>
+
+    <meta name="theme-color" content="#100c24">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="سامانه تست‌زنی">
+<link rel="manifest" href="./manifest.json">
 </head>
 <body>
-    <div class="main-container">
-        <!-- هدر و اطلاعات برنامه -->
-        <header>
-            <div class="eyebrow">سامانه جامع تحلیل تست و عملکرد آموزشی</div>
-            <h1>مدیریت پیشرفته آزمون و مطالعه</h1>
-            <p>سیستم یکپارچه تحلیل درصدها، غلط‌نامه هوشمند و برنامه‌ریزی درسی</p>
-        </header>
+<button id="cloud-account-btn" onclick="toggleCloudAccountModal()"><span class="dot" id="cloud-account-dot"></span><span class="label">حساب کاربری</span></button>
+<div id="cloud-account-modal-overlay" onclick="if(event.target===this)toggleCloudAccountModal(false)">
+  <div id="cloud-account-modal" style="position:relative;">
+    <button id="cloud-account-modal-close" onclick="toggleCloudAccountModal(false)">✕</button>
+    <div id="cloud-account-modal-slot"></div>
+  </div>
+</div>
 
-        <!-- تب‌های ناوبری اصلی -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('home')">🏠 داشبورد و تایمر</button>
-            <button class="tab-btn" onclick="switchTab('exam')">📝 ثبت آزمون و درصدها</button>
-            <button class="tab-btn" onclick="switchTab('errors')">❌ غلط‌نامه هوشمند</button>
-            <button class="tab-btn" onclick="switchTab('planner')">📅 برنامه هفتگی</button>
-            <button class="tab-btn" onclick="switchTab('notes')">💡 نکات و چک‌لیست</button>
-            <button class="tab-btn" onclick="switchTab('trash')">🗑️ سطل زباله</button>
+<div class="main-container">
+    <header>
+        <div id="smart-date-line" class="smart-date-line" title="برای تنظیم دستی تاریخ کلیک کن" onclick="openDateSettings()"></div>
+        <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب" style="position:absolute; top:0; left:0; background:var(--card-bg); border:var(--border); color:var(--text-primary); width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease;">🌙</button>
+        <button id="countdown-badge" onclick="toggleCountdownPopup()" title="روزهای باقی‌مانده">🚀</button>
+        <div id="countdown-popup">
+            <div id="countdown-popup-text">در حال محاسبه...</div>
+            <button onclick="setCountdownDate()">✏️ تغییر تاریخ</button>
         </div>
+        <h1>سامانه جامع تحلیل و تست‌زنی</h1>
+        <p>ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی</p>
+    </header>
 
-        <!-- تب ۱: داشبورد و تایمر -->
-        <div id="tab-home" class="tab-content active">
-            <div class="glass-card home-goal-card">
-                <div class="goal-home-inner">
-                    <div class="goal-ring" style="--goal-progress: 0%;">
-                        <div class="goal-ring-content">
-                            <strong id="home-goal-percent">۰٪</strong>
-                            <small>پیشرفت هدف</small>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="goal-title">هدف‌گذاری مطالعاتی هفتگی</div>
-                        <div class="goal-subtitle" id="home-goal-status">هنوز هدفی ثبت نشده است.</div>
-                        <div class="goal-progress-bar">
-                            <div class="goal-progress-fill" id="home-goal-fill" style="width: 0%;"></div>
-                        </div>
-                        <div class="goal-mini-grid">
-                            <div class="goal-mini"><b id="home-goal-target">۰ ساعت</b><span>هدف کل</span></div>
-                            <div class="goal-mini"><b id="home-goal-done">۰ ساعت</b><span>مطالعه شده</span></div>
-                            <div class="goal-mini"><b id="home-goal-left">۰ ساعت</b><span>باقیمانده</span></div>
-                        </div>
-                    </div>
-                </div>
+    <!-- منوی تب‌ها -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-timer', this)">⏱️ تایمر و ثبت آزمون</button>
+        <button class="tab-btn" onclick="switchTab('tab-stats', this)">📊 نمودار و آمار دروس</button>
+        <button class="tab-btn" onclick="switchTab('tab-errors', this)">❌ غلط‌نامه و مرور</button>
+        <button class="tab-btn" onclick="switchTab('tab-settings', this)">⚙️ اهداف و پشتیبان</button>
+        <button class="tab-btn" onclick="switchTab('tab-planner', this)">🗓️ برنامه هفتگی</button>
+    </div>
+
+    <!-- تب اول: تایمر و ثبت -->
+    <div id="tab-timer" class="tab-content active">
+        <!-- آمار کلی سریع -->
+        <div class="stats-container">
+            <div class="stat-box">
+                <h3>کل آزمون‌ها</h3>
+                <p id="stat-total">0</p>
             </div>
-
-            <div class="stats-container">
-                <div class="stat-box">
-                    <h3>میانگین کل درصدها</h3>
-                    <p id="stat-avg-percent">۰٪</p>
-                </div>
-                <div class="stat-box">
-                    <h3>تست‌های غلط بررسی شده</h3>
-                    <p id="stat-total-errors">۰</p>
-                </div>
-                <div class="stat-box">
-                    <h3>آزمون‌های ثبت شده</h3>
-                    <p id="stat-total-exams">۰</p>
-                </div>
-                <div class="stat-box">
-                    <h3>ساعت مطالعه کل</h3>
-                    <p id="stat-total-study">۰ ساعت</p>
-                </div>
+            <div class="stat-box">
+                <h3>میانگین کل دروس</h3>
+                <p id="stat-avg">0%</p>
             </div>
-
-            <div class="glass-card timer-section">
-                <div class="section-title">⏱️ تایمر هوشمند مطالعاتی (پومودورو / زمان‌سنج آزمون)</div>
-                <div class="timer-mode-badge" id="timer-mode-name">حالت آزاد مطالعه</div>
-                <div class="timer-display" id="timer-ring-box">
-                    <div class="timer-core-dot"></div>
-                    <div class="timer-hud">
-                        <span class="timer-label">STUDY TIMER</span>
-                        <span class="timer-digits" id="timer-display">۰۰:۰۰:۰۰</span>
-                        <span class="timer-sub" id="timer-sub-text">آماده شروع</span>
-                    </div>
-                </div>
-                <div class="controls">
-                    <button class="btn btn-success" onclick="startTimer()">شروع</button>
-                    <button class="btn btn-danger" onclick="pauseTimer()">توقف موقت</button>
-                    <button class="btn btn-purple" onclick="resetTimer()">بازنشانی</button>
-                    <button class="btn btn-primary" onclick="saveStudySessionToLog()">ثبت ساعت مطالعه</button>
-                </div>
+            <div class="stat-box">
+                <h3>بهترین عملکرد</h3>
+                <p id="stat-best">0%</p>
+            </div>
+            <div class="stat-box">
+                <h3>🔥 استریک روزانه</h3>
+                <p id="stat-streak">0</p>
             </div>
         </div>
 
-        <!-- تب ۲: ثبت آزمون و درصدها -->
-        <div id="tab-exam" class="tab-content">
-            <div class="glass-card">
-                <div class="section-title">📝 ثبت نتایج آزمون و جزئیات عملکرد</div>
-                <div class="grid-two">
-                    <div>
-                        <label>نام درس / مبحث:</label>
-                        <input type="text" id="exam-subject" placeholder="مثلاً: ریاضی پیشرفته - تابع">
-
-                        <label>نام آزمون:</label>
-                        <input type="text" id="exam-name" placeholder="مثلاً: آزمون جامع قلمچی / گاج">
-
-                        <div class="input-group">
-                            <div>
-                                <label>تعداد صحیح:</label>
-                                <input type="number" id="exam-correct" placeholder="۰" min="0" oninput="calculateInstantPercent()">
-                            </div>
-                            <div>
-                                <label>تعداد غلط:</label>
-                                <input type="number" id="exam-wrong" placeholder="۰" min="0" oninput="calculateInstantPercent()">
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <div>
-                                <label>تعداد نزده:</label>
-                                <input type="number" id="exam-blank" placeholder="۰" min="0">
-                            </div>
-                            <div>
-                                <label>درصد نهایی محاسبه شده:</label>
-                                <input type="text" id="exam-calc-percent" readonly placeholder="۰٪" style="font-weight:bold; color:var(--accent);">
-                            </div>
-                        </div>
-
-                        <label>توضیحات آزمون و نکات رضایت:</label>
-                        <textarea id="exam-notes" placeholder="توضیحات درباره نحوه آزمون، سطح دشواری و میزان رضایت از عملکرد..." style="min-height:90px;"></textarea>
-
-                        <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveExamRecord()">ثبت نهایی آزمون در تاریخچه</button>
-                    </div>
-                    <div>
-                        <label>تاریخچه آزمون‌های ثبت شده:</label>
-                        <div class="history-container" id="exam-history-list">
-                            <!-- لیست تاریخچه آزمون‌ها اینجا تزریق می‌شود -->
-                        </div>
-                    </div>
-                </div>
+        <div class="glass-card daily-vitals-card">
+            <div class="daily-vitals-head"><div><div class="section-title">⭕ داشبورد امروز</div><div class="goal-subtitle">در یک نگاه ببین امروز چقدر برنامه را اجرا کردی و چقدر تست زدی.</div></div><button class="mini-date-btn" onclick="openDateSettings()">⚙️ تاریخ</button></div>
+            <div class="daily-vitals-grid">
+                <div class="daily-ring-card"><div class="daily-ring study" id="daily-study-ring" style="--p:0%"><div><b id="daily-study-percent">۰٪</b><span>مطالعه</span></div></div><strong>مطالعه امروز</strong><small id="daily-study-caption">۰ از ۹ پارت انجام شده</small></div>
+                <div class="daily-ring-card"><div class="daily-ring action" id="daily-action-ring" style="--p:0%"><div><b id="daily-action-percent">۰٪</b><span>عملکرد</span></div></div><strong>عملکرد امروز</strong><small id="daily-action-caption">۰ تست ثبت شده</small></div>
             </div>
         </div>
 
-        <!-- تب ۳: غلط‌نامه هوشمند -->
-        <div id="tab-errors" class="tab-content">
-            <div class="glass-card">
-                <div class="section-title">❌ غلط‌نامه هوشمند با تحلیل جامع مشاوره‌ای</div>
-                <div class="grid-two">
-                    <div>
-                        <label>درس مربوطه:</label>
-                        <select id="error-subject-select">
-                            <option value="ریاضی">ریاضی</option>
-                            <option value="فیزیک">فیزیک</option>
-                            <option value="شیمی">شیمی</option>
-                            <option value="زیست‌شناسی">زیست‌شناسی</option>
-                            <option value="عمومی">عمومی / سایر</option>
-                        </select>
-
-                        <div class="input-group">
-                            <div>
-                                <label>سطح سوال:</label>
-                                <select id="error-difficulty">
-                                    <option value="آسان">آسان</option>
-                                    <option value="متوسط" selected>متوسط</option>
-                                    <option value="دشوار">دشوار</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>مدت زمان صرف شده:</label>
-                                <select id="error-time-status">
-                                    <option value="کمتر از زمان استاندارد">کمتر از زمان استاندارد</option>
-                                    <option value="مطابق زمان استاندارد" selected>مطابق زمان استاندارد</option>
-                                    <option value="بیشتر از زمان استاندارد">بیشتر از زمان استاندارد</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <label>علت دقیق خطا (تحلیل مشاوره‌ای):</label>
-                        <select id="error-reason-select">
-                            <option value="بی‌دقتی محاسباتی">۱) بی‌دقتی (محاسباتی)</option>
-                            <option value="کمبود وقت">۲) کمبود وقت</option>
-                            <option value="تله طراح">۳) تله طراح</option>
-                            <option value="بی‌دقتی مفهومی (قاطی کردن دو مفهوم)">۴) بی‌دقتی (مفهومی - قاطی کردن مفاهیم)</option>
-                            <option value="ضعف مفهومی">۵) مفهومی (عدم تسلط کافی بر مبحث)</option>
-                            <option value="عدم تسلط و بلد نبودن">۶) بلد نبودن و عدم آموزش کامل</option>
-                        </select>
-
-                        <label>تعداد دفعات مرور لازم:</label>
-                        <select id="error-review-count">
-                            <option value="1">۱ بار مرور</option>
-                            <option value="2" selected>۲ بار مرور</option>
-                            <option value="3">۳ بار مرور</option>
-                        </select>
-
-                        <label>شرح سوال یا نکته اصلاحی:</label>
-                        <textarea id="error-description" placeholder="متن سوال غلط یا نکته آموزشی مهم برای رفع اشکال..."></textarea>
-
-                        <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveErrorRecord()">افزودن به غلط‌نامه</button>
-                    </div>
-                    <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                            <label style="margin:0;">لیست غلط‌نامه تفکیک‌شده بر اساس درس:</label>
-                            <select id="error-filter-subject" onchange="renderErrorList()" style="width:150px; margin:0; padding:6px;">
-                                <option value="all">همه درس‌ها</option>
-                                <option value="ریاضی">ریاضی</option>
-                                <option value="فیزیک">فیزیک</option>
-                                <option value="شیمی">شیمی</option>
-                                <option value="زیست‌شناسی">زیست‌شناسی</option>
-                                <option value="عمومی">عمومی</option>
-                            </select>
-                        </div>
-                        <div class="error-container" id="error-list-container">
-                            <!-- لیست غلط‌ها اینجا قرار می‌گیرد -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- تب ۴: برنامه هفتگی پویا -->
-        <div id="tab-planner" class="tab-content">
-            <div class="glass-card planner-hero">
-                <div class="planner-hero-emoji">📅</div>
+        <div class="glass-card home-goal-card goal-dashboard-v2">
+            <div class="goal-dashboard-head">
                 <div>
-                    <div class="planner-hero-title">برنامه مطالعاتی هفتگی و پارت‌بندی پویا</div>
-                    <div class="planner-hero-sub">پارت‌های مطالعه را به دلخواه اضافه کنید، بازه زمانی تعیین کنید و ساعت مفید مطالعه را سنجش کنید.</div>
+                    <div class="section-title">🎯 هدف‌گذاری تفکیکی درس‌ها</div>
+                    <div class="goal-subtitle">برای هر درس هدف جدا بگذار، تعداد تستی که در هر روز جلو رفتی را همین‌جا ثبت کن و پیشرفت هفتگی و ماهانه را ببین.</div>
                 </div>
+                <button class="btn btn-primary goal-add-btn" onclick="openGoalManager()">＋ افزودن / ویرایش هدف</button>
             </div>
 
-            <div class="glass-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <div class="section-title" style="margin:0;">تنظیم پارت‌های روزانه</div>
-                    <button class="btn btn-primary" onclick="addNewPlannerPart()">+ افزودن پارت جدید</button>
-                </div>
-                <div id="planner-parts-container">
-                    <!-- پارت‌های پویا اینجا ساخته می‌شوند -->
-                </div>
-                <button class="btn btn-success" style="width:100%; margin-top:15px;" onclick="saveWeeklyPlannerData()">ذخیره برنامه هفتگی</button>
-            </div>
-        </div>
-
-        <!-- تب ۵: نکات و چک‌لیست -->
-        <div id="tab-notes" class="tab-content">
-            <div class="glass-card smart-notes-section">
-                <div class="smart-notes-header">
-                    <div>
-                        <h2 class="smart-notes-title">💡 نکات مهم و چک‌لیست مرور</h2>
-                        <p class="smart-notes-subtitle">مدیریت نکات کلیدی دروس به همراه پیوست تصویر و قابلیت جستجوی پیشرفته</p>
-                    </div>
-                    <button class="smart-note-add-btn" onclick="openAddNoteModal()">+ افزودن نکته جدید</button>
-                </div>
-
-                <div class="smart-subjects" id="smart-notes-subject-filters">
-                    <!-- دکمه‌های فیلتر درس -->
-                </div>
-
-                <div class="smart-notes-search">
-                    <span>🔍</span>
-                    <input type="text" id="smart-note-search-input" placeholder="جستجو در متن نکات، عنوان یا مبحث..." oninput="renderSmartNotesList()">
-                </div>
-
-                <div class="smart-notes-current">
-                    <span class="smart-notes-current-title" id="smart-notes-current-label">همه نکات</span>
-                    <span class="smart-notes-count" id="smart-notes-count-label">۰ نکته</span>
-                </div>
-
-                <div class="smart-notes-list" id="smart-notes-list-container">
-                    <!-- لیست نکات -->
-                </div>
-            </div>
-        </div>
-
-        <!-- تب ۶: سطل زباله -->
-        <div id="tab-trash" class="tab-content">
-            <div class="glass-card">
-                <div class="section-title">🗑️ سطل زباله (بازیابی یا حذف دائمی موارد پاک شده)</div>
-                <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:15px;">هر موردی که به اشتباه یا عمد از بخش‌های مختلف حذف کنید ابتدا به اینجا منتقل می‌شود تا در صورت نیاز بتوانید آن را بازگردانی کنید.</p>
-                <div class="history-container" id="trash-list-container">
-                    <!-- اقلام سطل زباله -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال افزودن / ویرایش نکته -->
-    <div id="smartNoteModal">
-        <div class="smart-note-modal-box">
-            <div class="smart-note-modal-header">
-                <div class="smart-note-modal-title" id="smart-note-modal-main-title">افزودن نکته جدید</div>
-                <button class="smart-note-close" onclick="closeSmartNoteModal()">✕</button>
-            </div>
-
-            <input type="hidden" id="edit-note-id">
-
-            <div class="smart-note-field">
-                <label>عنوان نکته:</label>
-                <input type="text" id="smart-note-title-input" class="smart-note-input" placeholder="مثلاً: فرمول طلایی حل مسائل حرکت‌شناسی">
-            </div>
-
-            <div class="grid-two">
-                <div class="smart-note-field">
-                    <label>انتخاب درس:</label>
-                    <select id="smart-note-subject-select" class="smart-note-subject">
-                        <option value="ریاضی">ریاضی</option>
-                        <option value="فیزیک">فیزیک</option>
-                        <option value="شیمی">شیمی</option>
-                        <option value="زیست‌شناسی">زیست‌شناسی</option>
-                        <option value="عمومی">عمومی</option>
+            <div class="daily-goal-entry">
+                <div class="daily-entry-title">📅 امروز چقدر تست زدی؟</div>
+                <div class="daily-entry-grid">
+                    <input type="date" id="daily-log-date" aria-label="تاریخ ثبت تست">
+                    <select id="daily-log-subject" aria-label="درس">
+                        <option value="حسابان">حسابان</option><option value="آمار (گسسته)">آمار (گسسته)</option><option value="هندسه">هندسه</option><option value="شیمی">شیمی</option><option value="فیزیک">فیزیک</option><option value="زیست">زیست</option><option value="زمین‌شناسی">زمین‌شناسی</option>
                     </select>
+                    <input type="number" id="daily-log-count" min="1" placeholder="تعداد تست">
+                    <button class="btn btn-success" onclick="addDailyGoalTests()">ثبت تست روز</button>
                 </div>
-                <div class="smart-note-field">
-                    <label>افزودن عکس (پیوست):</label>
-                    <label class="smart-note-upload" for="smart-note-image-file">
-                        <span>📷 انتخاب تصویر</span>
-                        <input type="file" id="smart-note-image-file" accept="image/*" multiple style="display:none;" onchange="handleSmartNoteImages(this)">
-                    </label>
+                <div class="calendar-note">📱 تاریخ به‌صورت خودکار از تاریخ دستگاه/لپ‌تاپ گرفته می‌شود. می‌توانی تاریخ دیگری هم انتخاب کنی.</div>
+            </div>
+
+            <div id="goal-cards-grid" class="goal-cards-grid"></div>
+            <div id="goal-empty-state" class="goal-empty-state">هنوز هدفی برای درس‌ها تعیین نکرده‌ای. از «افزودن / ویرایش هدف» شروع کن ✨</div>
+        </div>
+
+        <div class="grid-two">
+            <!-- تایمر -->
+            <div class="glass-card timer-section">
+                <div class="section-title">⏱️ تایمر آزمون</div>
+                <select id="track-select" onchange="updateTimerSubjects()">
+                    <option value="تجربی">🧬 رشته تجربی</option>
+                    <option value="ریاضی">📐 رشته ریاضی</option>
+                </select>
+                <select id="subject" onchange="calculateSubjectTime()">
+                    <option value="">⏱️ بدون انتخاب درس — تایمر آزاد</option>
+                </select>
+                <input type="number" id="question-count" placeholder="تعداد تست (مثلاً ۲۰)" min="1" oninput="calculateSubjectTime()">
+                <div class="rate-hint" id="rate-hint">برای تایمر آزاد، دقیقه و ثانیه را خودت وارد کن.</div>
+                <div id="auto-time-result" class="timer-mode-badge">تایمر آزاد</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <input type="number" id="minutes" placeholder="دقیقه" value="30" min="0">
+                    <input type="number" id="seconds" placeholder="ثانیه" value="0" min="0" max="59">
+                </div>
+
+                <div class="timer-display" id="timer"><div class="timer-hud"><i class="timer-core-dot"></i><span class="timer-label">FOCUS MODE</span><span class="timer-digits">30:00</span><span class="timer-sub">MINUTES · SECONDS</span></div></div>
+
+                <div class="controls">
+                    <button class="btn btn-success" id="startPauseBtn" onclick="toggleTimer()">شروع</button>
+                    <button class="btn btn-danger" onclick="resetTimer()">بازنشانی</button>
                 </div>
             </div>
 
-            <div class="smart-note-image-preview" id="smart-note-image-preview-container"></div>
+            <!-- ثبت نتیجه و تاریخچه -->
+            <div>
+                <div class="glass-card">
+                    <div class="section-title">📝 ثبت نتیجه آزمون</div>
+                    <input type="text" id="exam-name" placeholder="نام آزمون / منبع (مثلاً: آزمون قلمچی ۲۵ مرداد)">
+                    <input type="text" id="topic-name" placeholder="مبحث تست‌ها (مثلاً: تابع، فصل ۳ زیست)">
+                    <div class="input-group">
+                        <input type="number" id="correct" placeholder="صحیح" min="0">
+                        <input type="number" id="wrong" placeholder="غلط" min="0">
+                    </div>
+                    <input type="number" id="total-tests" placeholder="تعداد کل تست‌ها" min="0">
+                    <button class="btn btn-primary" style="width:100%; margin-top:5px;" onclick="saveResult()">
+                        💾 ثبت در تاریخچه
+                    </button>
+                </div>
 
-            <div class="smart-note-field" style="margin-top:14px;">
-                <label>متن کامل نکته / توضیحات (سازنده زیر نکته درج می‌شود):</label>
-                <textarea id="smart-note-text-input" class="smart-note-textarea" placeholder="متن توضیحات نکته، فرمول‌ها یا نکات تستی..."></textarea>
-            </div>
-
-            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:10px; text-align:left;">
-                سازنده: امیررضا رضائیان (طراح سیستم)
-            </div>
-
-            <div class="smart-note-modal-actions">
-                <button class="smart-note-cancel-btn" onclick="closeSmartNoteModal()">انصراف</button>
-                <button class="smart-note-save-btn" onclick="saveSmartNoteData()">ذخیره نکته</button>
+                <div class="glass-card">
+                    <div class="section-title">📊 تاریخچه اخیر سوابق</div>
+                    <select id="history-subject-filter" onchange="updateUI()" style="margin-bottom:12px;">
+                        <option value="all">همه دروس</option>
+                        <option value="حسابان">حسابان</option>
+                        <option value="آمار (گسسته)">آمار (گسسته)</option>
+                        <option value="هندسه">هندسه</option>
+                        <option value="شیمی">شیمی</option>
+                        <option value="فیزیک">فیزیک</option>
+                        <option value="زیست">زیست</option>
+                        <option value="زمین‌شناسی">زمین‌شناسی</option>
+                    </select>
+                    <div class="history-container" id="history-list">
+                        <!-- آیتم‌ها -->
+                    </div>
+                    <button class="btn btn-danger" style="margin-top: 10px; font-size: 0.85rem; padding: 8px; width:100%;" onclick="clearHistory()">حذف کل تاریخچه</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- مودال نمایش کامل نکته -->
-    <div id="smartNoteViewModal">
-        <div class="smart-note-modal-box">
-            <div class="smart-note-modal-header">
-                <div class="smart-note-modal-title">جزئیات کامل نکته</div>
-                <button class="smart-note-close" onclick="closeSmartNoteViewModal()">✕</button>
+    <!-- تب دوم: نمودار و آمار تفکیکی دروس -->
+    <div id="tab-stats" class="tab-content">
+        <div class="glass-card study-log-card">
+            <div class="section-title">📚 گزارش تست‌زنی؛ روزانه، هفتگی و ماهانه</div>
+            <div class="study-stat-grid">
+                <div class="study-period-card"><div class="big" id="stats-today-tests">۰</div><div class="label">تست امروز</div></div>
+                <div class="study-period-card"><div class="big" id="stats-week-tests">۰</div><div class="label">تست این هفته</div></div>
+                <div class="study-period-card"><div class="big" id="stats-month-tests">۰</div><div class="label">تست این ماه</div></div>
+                <div class="study-period-card"><div class="big" id="stats-total-tests">۰</div><div class="label">کل تست‌های ثبت‌شده</div></div>
             </div>
-            <div class="smart-note-view-title" id="view-note-title"></div>
-            <div class="smart-note-view-subject" id="view-note-subject"></div>
-            <div class="smart-note-view-text" id="view-note-text"></div>
-            <div class="smart-note-view-gallery" id="view-note-gallery"></div>
-            <div style="margin-top:15px; font-size:0.75rem; color:var(--text-secondary); text-align:left;">
-                طراح و توسعه‌دهنده: امیررضا رضائیان
+            <div class="section-title" style="margin-top:22px;">📅 تعداد تست‌های ۷ روز اخیر</div>
+            <div class="daily-bars" id="daily-bars"></div>
+            <div style="overflow-x:auto;">
+                <table class="topic-table">
+                    <thead><tr><th>درس</th><th>مبحث</th><th>تست</th><th>درصد</th><th>آزمون</th><th>تاریخ</th></tr></thead>
+                    <tbody id="topic-log-body"></tbody>
+                </table>
             </div>
-            <div class="smart-note-modal-actions" style="margin-top:20px;">
-                <button class="smart-note-delete-btn" id="view-note-delete-btn">حذف نکته</button>
-                <button class="smart-note-cancel-btn" onclick="closeSmartNoteViewModal()">بستن</button>
+        </div>
+        <div class="glass-card">
+            <div class="section-title">📈 نمودار روند پیشرفت درصدهای شما</div>
+            <select id="chart-subject-filter" onchange="updateChart()">
+                <option value="all">همه دروس</option>
+                <option value="حسابان">حسابان</option>
+                <option value="آمار (گسسته)">آمار (گسسته)</option>
+                <option value="هندسه">هندسه</option>
+                <option value="شیمی">شیمی</option>
+                <option value="فیزیک">فیزیک</option>
+                <option value="زیست">زیست</option>
+                <option value="زمین‌شناسی">زمین‌شناسی</option>
+            </select>
+            <div style="position: relative; height:300px; width:100%">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">🕸️ مقایسه دروس با هم</div>
+            <div style="position: relative; height:320px; width:100%; max-width:420px; margin:0 auto;">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass-card" id="insights-card">
+            <div class="section-title">🧠 تحلیل هوشمند نقاط ضعف</div>
+            <div id="insights-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">📚 میانگین عملکرد تفکیکی بر اساس هر درس</div>
+            <div id="subject-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                <!-- کارت‌های هر درس به صورت پویا ساخته می‌شود -->
             </div>
         </div>
     </div>
 
-    <!-- لایت‌باکس عکس -->
-    <div id="smart-image-lightbox" onclick="closeSmartLightbox()">
-        <button id="smart-image-lightbox-close" onclick="closeSmartLightbox()">✕</button>
-        <img id="smart-lightbox-img" src="" alt="Zoomed">
+    <!-- تب سوم: غلط‌نامه و تست‌های نیازمند مرور -->
+    <div id="tab-errors" class="tab-content">
+        <div class="glass-card">
+            <div class="section-title">❌ ثبت تست غلط یا شک‌دار جهت مرور بعدی</div>
+            <select id="error-subject">
+                <option value="حسابان">حسابان</option>
+                <option value="آمار (گسسته)">آمار (گسسته)</option>
+                <option value="هندسه">هندسه</option>
+                <option value="شیمی">شیمی</option>
+                <option value="فیزیک">فیزیک</option>
+                <option value="زیست">زیست</option>
+                <option value="زمین‌شناسی">زمین‌شناسی</option>
+            </select>
+            <input type="text" id="error-desc" placeholder="شماره تست یا مبحث مربوطه (مثلاً: تست شماره ۱۵ فصل تابع)">
+            <select id="error-tag">
+                <option value="مفهومی">🧩 مفهومی (اصلاً بلد نبودم)</option>
+                <option value="بی‌دقتی">😵 بی‌دقتی (اشتباه محاسباتی)</option>
+                <option value="زمان">⏱️ کمبود وقت</option>
+                <option value="تله">🎯 تله‌ی طراحی سؤال</option>
+            </select>
+            <button class="btn btn-purple" style="width:100%;" onclick="saveErrorItem()">افزودن به غلط‌نامه</button>
+        </div>
+
+        <div class="glass-card" id="error-tag-stats-card">
+            <div class="section-title">🏷️ آمار الگوی خطا</div>
+            <div id="error-tag-stats" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+        </div>
+
+        <div class="glass-card" id="error-deep-analysis-card">
+            <div class="section-title">🔬 تحلیل عمیق غلط‌نامه به تفکیک درس</div>
+            <div id="error-deep-analysis" class="error-analysis-grid"></div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">📌 لیست تست‌های نیازمند مرور</div>
+            <div class="error-container" id="error-list">
+                <!-- لیست غلط‌ها -->
+            </div>
+        </div>
     </div>
 
+    <!-- تب چهارم: هدف‌گذاری و پشتیبان‌گیری -->
+    <div id="tab-settings" class="tab-content">
+        <div id="neo-cloud-panel-anchor"></div>
+        <div class="glass-card" id="neo-cloud-panel">
+          <div class="section-title">☁️ حساب کاربری</div>
+          <p class="neo-muted">با یک حساب، اطلاعات برنامه روی همه‌ی دستگاه‌هات همگام می‌شود. حذف‌ها هم بین دستگاه‌ها به‌درستی همگام می‌شوند.</p>
+          <div id="neo-auth-box" class="neo-auth-box">
+            <input id="neo-auth-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
+            <input id="neo-auth-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
+            <div class="neo-cloud-actions" style="margin-top:10px;"><button class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
+          </div>
+          <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-email"></b></span><button class="btn btn-purple" onclick="manualCloudSync()" style="padding:6px 12px;font-size:.75rem;">🔄 همگام‌سازی</button><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
+          <div id="neo-cloud-status" class="neo-cloud-status">هنوز وارد حساب نشده‌ای</div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">🎯 مدیریت هدف‌های درسی</div>
+            <div class="goal-manager-panel">
+                <div class="goal-settings-grid">
+                    <select id="goal-subject-select">
+                        <option value="حسابان">حسابان</option><option value="آمار (گسسته)">آمار (گسسته)</option><option value="هندسه">هندسه</option><option value="شیمی">شیمی</option><option value="فیزیک">فیزیک</option><option value="زیست">زیست</option><option value="زمین‌شناسی">زمین‌شناسی</option>
+                    </select>
+                    <input type="number" id="goal-weekly-input-v2" min="1" placeholder="هدف هفتگی این درس">
+                    <input type="number" id="goal-monthly-input-v2" min="1" placeholder="هدف ماهانه این درس">
+                    <button class="btn btn-primary" onclick="saveSubjectGoal()">✨ ذخیره هدف این درس</button>
+                </div>
+                <div id="goal-manager-list" class="goal-manager-list"></div>
+            </div>
+        </div>
+
+        <div class="glass-card reminder-card">
+            <div class="section-title">🔔 یادآور هوشمند مطالعه</div>
+            <div style="color:var(--text-secondary);font-size:.84rem;line-height:1.9">اگر یک روز وارد برنامه نشوی یا تستی ثبت نکنی، برنامه به تو یادآوری می‌کند تا زنجیره مطالعه‌ات قطع نشود.</div>
+            <div class="reminder-status"><span id="reminder-dot" class="reminder-dot"></span><div><b id="reminder-status-text">یادآور خاموش است</b><div id="reminder-last-text" style="font-size:.7rem;color:var(--text-secondary);margin-top:3px">در حال بررسی آخرین فعالیت...</div></div></div>
+            <div class="reminder-actions"><button class="btn btn-success" onclick="enableSmartReminder()">🔔 فعال‌سازی نوتیفیکیشن</button><button class="btn btn-purple" onclick="checkSmartReminder(true)">🧠 بررسی یادآور</button></div>
+            <div class="reminder-note">این قابلیت برای بررسی و نمایش یادآور به اینترنت نیاز ندارد. نوتیفیکیشن مرورگر فقط بعد از اجازه شما فعال می‌شود و در نسخه تک‌فایلی HTML، وقتی صفحه کاملاً بسته است، نمی‌توان زمان‌بندی سیستم‌عامل را تضمین کرد.</div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title">💾 پشتیبان‌گیری و بازیابی اطلاعات</div>
+            <p style="color: var(--text-secondary); margin-bottom: 8px; font-size: 0.9rem;">می‌توانید از تمام اطلاعات سوابق و غلط‌نامه خود فایل خروجی بگیرید یا اطلاعات قبلی را بازیابی کنید.</p>
+            <p style="color: var(--warning); margin-bottom: 15px; font-size: 0.78rem; line-height:1.8;">⚠️ اطلاعات داخل همین مرورگر و همین آدرس فایل ذخیره می‌شود؛ خاموش‌کردن لپ‌تاپ مشکلی ایجاد نمی‌کند، اما اگر فایل را جابه‌جا/کپی کنید، مرورگر را عوض کنید یا Cache را پاک کنید، اطلاعات از دسترس خارج می‌شود. برای اطمینان کامل، هر چند وقت یک‌بار «دانلود فایل پشتیبان» را بزنید یا با ایمیل وارد حساب کاربری شوید.</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" style="flex:1;" onclick="exportData()">📥 دانلود فایل پشتیبان</button>
+                <label class="btn btn-primary" style="flex:1; cursor:pointer; margin:0; text-align:center;">
+                    📤 بارگذاری پشتیبان <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+                </label>
+            </div>
+            <button class="btn btn-purple" style="width:100%; margin-top:10px;" onclick="printReport()">🖨️ چاپ گزارش عملکرد</button>
+        </div>
+    </div>
+
+    <!-- تب پنجم: برنامه هفتگی -->
+    <div id="tab-planner" class="tab-content">
+        <div class="planner-hero">
+            <div class="planner-hero-emoji">🗓️✨</div>
+            <div>
+                <div class="planner-hero-title">برنامه هفتگی من</div>
+                <div class="planner-hero-sub">هر روز رو خودت بنویس؛ همین‌جا دقیقاً ذخیره می‌مونه.</div>
+            </div>
+        </div>
+        <div class="planner-grid" id="planner-grid"><!-- دکمه‌های روزهای هفته اینجا ساخته می‌شوند --></div>
+        <div id="planner-modal" class="planner-modal" onclick="closePlannerModal(event)">
+          <div class="planner-modal-box" onclick="event.stopPropagation()">
+            <div class="planner-modal-head">
+              <div id="planner-modal-title" class="planner-modal-title">🗓️ برنامه روز</div>
+              <button class="planner-close" onclick="closePlannerModal()">✕</button>
+            </div>
+            <div class="planner-modal-intro"><span>⚡</span><div><strong>۹ پارت برای یک روز قدرتمند</strong><small>درس، ساعت و وضعیت هر پارت را مشخص کن؛ تیک بزن تا پیشرفت روزت را ببینی.</small></div></div>
+            <div class="parts-summary">
+              <div><b id="parts-done-count">۰</b><span>پارت انجام‌شده</span></div>
+              <div><b id="parts-filled-count">۰</b><span>پارت برنامه‌ریزی‌شده</span></div>
+              <div><b id="parts-progress-percent">۰٪</b><span>پیشرفت روز</span></div>
+            </div>
+            <div class="daily-table parts-table">
+              <div class="daily-row daily-head"><div>پارت</div><div>درس / مبحث</div><div>ساعت</div><div>انجام شد</div></div>
+              <div id="planner-parts-body"></div>
+            </div>
+            <div class="planner-notes"><label>📝 یادداشت روز</label><textarea id="planner-notes" placeholder="مرور، تعداد تست، نکته مهم یا برنامه خاص امروز..."></textarea></div>
+            <div class="planner-modal-actions"><button class="btn btn-success" onclick="savePlannerDay()">💾 ذخیره برنامه</button><button class="btn btn-danger" onclick="clearPlannerDay()">🗑️ پاک کردن برنامه</button></div>
+          </div>
+        </div>
+        <div class="planner-archive-wrap">
+          <div class="planner-archive-head"><div><div class="section-title">🗂️ هفته‌های ذخیره‌شده</div><div class="goal-subtitle">هر هفته که تمام شود، برنامه همان هفته خودکار اینجا بایگانی می‌شود.</div></div><button class="btn btn-purple" onclick="archiveCurrentWeek(true)">📦 ذخیره همین هفته</button></div>
+          <div id="planner-archives" class="planner-archives"></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="date-settings-panel" class="date-settings-panel" onclick="closeDateSettings(event)">
+  <div class="date-settings-box" onclick="event.stopPropagation()">
+    <h3>📅 تاریخ امروز برنامه</h3>
+    <p>اگر تقویم دستگاهت شمسی باشد، تاریخ خودکار از همان تقویم نمایش داده می‌شود. اگر نبود، می‌توانی تاریخ شمسی را دستی تنظیم کنی.</p>
+    <div class="date-setting-grid">
+      <input id="manual-jy" type="number" placeholder="سال" min="1300" max="1600">
+      <input id="manual-jm" type="number" placeholder="ماه" min="1" max="12">
+      <input id="manual-jd" type="number" placeholder="روز" min="1" max="31">
+    </div>
+    <div class="date-setting-actions">
+      <button class="btn btn-success" onclick="saveManualDate()">💾 ذخیره</button>
+      <button class="btn btn-danger" onclick="clearManualDate()">↺ خودکار</button>
+    </div>
+  </div>
+</div>
+
+<div id="reminder-toast" class="reminder-toast"></div>
+
+<p style="text-align:center; color:var(--text-secondary); font-size:0.75rem; margin-top:16px; opacity:0.7; letter-spacing:0.5px;">
+    <span style="color:var(--gold-dim);">✦</span> سازنده: امیررضا رضائیان <span style="color:var(--gold-dim);">✦</span>
+</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ==========================================================================
+   سامانه جامع تحلیل و تست‌زنی — نسخه نهایی و یکپارچه (Ultimate 2026)
+   یک نسخه‌ی تمیز و بدون تکرار از تمام منطق برنامه.
+   نکته مهم: این فایل قبلاً حاوی ده‌ها تابع تکراری (هر کدام در یک <script>
+   جدا) بود که آخرین‌شان بی‌سروصدا نسخه‌های قبلی را override می‌کرد. همه‌ی
+   آن‌ها اینجا در یک نسخه‌ی واحد و قابل‌اعتماد جمع شده‌اند.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------- */
+/* 0) ابزارهای پایه                                                        */
+/* ---------------------------------------------------------------------- */
+function faNum(n){ return String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]); }
+function enNum(s){ return String(s).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)); }
+function escapeHtml(str){
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function escapeAttr(str){ return escapeHtml(str).replace(/`/g, '&#96;'); }
+function nowTs(){ return Date.now(); }
+function safeParse(key, fallback){
+    try{ const v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; }
+    catch(e){ return fallback; }
+}
+function safeSet(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function localDateKey(d = new Date()){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function startOfWeek(d = new Date()){
+    const x = new Date(d); x.setHours(0,0,0,0);
+    const day = x.getDay(); // Sunday = 0
+    const diff = day === 0 ? -6 : 1 - day; // شروع از دوشنبه
+    x.setDate(x.getDate() + diff);
+    return x;
+}
+function isSameMonth(a, b = new Date()){
+    return a && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 1) موتور همگام‌سازی عمومی مبتنی بر Tombstone (رفع باگ «حذف برمی‌گرده») */
+/* ---------------------------------------------------------------------- */
+/*
+  علت اصلی باگ: وقتی یک آیتم حذف می‌شد، فقط از آرایه‌ی محلی برداشته می‌شد؛
+  هیچ ردی از «این آیتم حذف شده» نگه داشته نمی‌شد. بعد، هر بار sync با ابر
+  انجام می‌شد، چون طرف مقابل (یا نسخه‌ی قدیمی‌تر روی خود مرورگر) هنوز آن
+  آیتم را داشت، دوباره به لیست محلی اضافه می‌شد.
+  راه‌حل استاندارد و حرفه‌ای: هر حذف، یک «Tombstone» (سنگ‌قبر) با timestamp
+  ثبت می‌کند. در merge، هر آیتمی که تاریخ ساختش قدیمی‌تر از تاریخ حذفش
+  باشد، برای همیشه کنار گذاشته می‌شود — even اگر در نسخه‌ی دیگر هنوز باشد.
+*/
+const TOMBSTONE_RETENTION_MS = 120 * 24 * 60 * 60 * 1000; // ۱۲۰ روز نگه‌داری رد حذف کافی‌ست
+
+function getTombstones(key){ return safeParse(key, []); }
+function addTombstone(key, id){
+    const list = getTombstones(key);
+    list.push({ id, deletedAt: nowTs() });
+    safeSet(key, list);
+}
+function pruneTombstones(list){
+    const cutoff = nowTs() - TOMBSTONE_RETENTION_MS;
+    return (list || []).filter(t => t.deletedAt > cutoff);
+}
+function mergeTombstoneLists(a, b){
+    const map = new Map();
+    [...(a||[]), ...(b||[])].forEach(t => {
+        if(!t || t.id == null) return;
+        const cur = map.get(t.id);
+        if(!cur || t.deletedAt > cur.deletedAt) map.set(t.id, t);
+    });
+    return pruneTombstones(Array.from(map.values()));
+}
+function itemStamp(item){
+    return Number(item.updatedAt || item.timestamp || item.ts || item.id || 0);
+}
+/* ادغام دو آرایه از رکوردهای دارای id، با احترام کامل به حذف‌های هرکدام */
+function mergeArrayWithTombstones(localArr, remoteArr, localTomb, remoteTomb){
+    const tomb = mergeTombstoneLists(localTomb, remoteTomb);
+    const tombMap = new Map(tomb.map(t => [String(t.id), t.deletedAt]));
+    const map = new Map();
+    [...(remoteArr||[]), ...(localArr||[])].forEach(item => {
+        if(!item || item.id == null) return;
+        const key = String(item.id);
+        const existing = map.get(key);
+        if(!existing || itemStamp(item) >= itemStamp(existing)) map.set(key, item);
+    });
+    const merged = Array.from(map.values()).filter(item => {
+        const dAt = tombMap.get(String(item.id));
+        if(dAt == null) return true;
+        return itemStamp(item) > dAt; // فقط اگر بعد از حذف دوباره ساخته شده باشد نگه دار
+    });
+    return { merged, tomb };
+}
+/* ادغام دو آبجکت کلید-دار (مثل اهداف درسی یا برنامه‌ی روزها) */
+function mergeKeyedObject(localObj, remoteObj, localTomb, remoteTomb){
+    const tomb = mergeTombstoneLists(localTomb, remoteTomb);
+    const tombMap = new Map(tomb.map(t => [String(t.id), t.deletedAt]));
+    const keys = new Set([...Object.keys(localObj||{}), ...Object.keys(remoteObj||{})]);
+    const merged = {};
+    keys.forEach(k => {
+        const lv = (localObj||{})[k], rv = (remoteObj||{})[k];
+        let winner;
+        if(lv && rv) winner = itemStamp(lv) >= itemStamp(rv) ? lv : rv;
+        else winner = lv || rv;
+        if(!winner) return;
+        const dAt = tombMap.get(String(k));
+        if(dAt != null && itemStamp(winner) <= dAt) return; // حذف‌شده، برنگردان
+        merged[k] = winner;
+    });
+    return { merged, tomb };
+}
+
+/* ---------------------------------------------------------------------- */
+/* 2) تاریخچه‌ی آزمون‌ها (History)                                         */
+/* ---------------------------------------------------------------------- */
+function getHistory(){ return safeParse('study_tracker_data', []); }
+function setHistory(arr){ safeSet('study_tracker_data', arr); }
+
+function saveResult(){
+    const subject = document.getElementById('subject')?.value || '';
+    const examName = document.getElementById('exam-name')?.value.trim() || '';
+    const topic = document.getElementById('topic-name')?.value.trim() || '';
+    const correct = Number(document.getElementById('correct')?.value) || 0;
+    const wrong = Number(document.getElementById('wrong')?.value) || 0;
+    const totalManual = Number(document.getElementById('total-tests')?.value) || 0;
+    const total = totalManual > 0 ? totalManual : correct + wrong;
+
+    if(!subject){ alert('لطفاً درس را انتخاب کن.'); return; }
+    if(correct < 0 || wrong < 0 || totalManual < 0){ alert('مقادیر نمی‌توانند منفی باشند.'); return; }
+    if(total <= 0){ alert('تعداد تست را وارد کن.'); return; }
+    if(correct + wrong > total){ alert('مجموع صحیح و غلط از تعداد کل تست‌ها بیشتر است.'); return; }
+
+    const raw = (correct * 3) - wrong;
+    const max = total * 3;
+    let percent = max > 0 ? Number(((raw / max) * 100).toFixed(1)) : 0;
+    if(percent < 0) percent = 0;
+
+    const history = getHistory();
+    const ts = nowTs();
+    history.unshift({
+        id: ts,
+        subject, topic, examName, percent,
+        totalTests: total,
+        date: new Date().toLocaleDateString('fa-IR'),
+        timestamp: new Date().toISOString(),
+        updatedAt: ts
+    });
+    setHistory(history);
+    localStorage.setItem('smart_reminder_last_activity', String(ts));
+
+    ['correct','wrong','total-tests','exam-name','topic-name'].forEach(id => {
+        const e = document.getElementById(id); if(e) e.value = '';
+    });
+
+    updateUI();
+    scheduleCloudSync();
+    alert('✅ نتیجه آزمون ثبت شد.');
+}
+
+function deleteItem(id){
+    let history = getHistory();
+    const before = history.length;
+    history = history.filter(item => item.id !== id);
+    if(history.length !== before){
+        setHistory(history);
+        addTombstone('deleted_history_ids', id);
+    }
+    updateUI();
+    scheduleCloudSync();
+}
+
+function clearHistory(){
+    if(!confirm('آیا کل تاریخچه پاک شود؟ این کار غیرقابل بازگشت است.')) return;
+    const ids = getHistory().map(x => x.id);
+    setHistory([]);
+    const tomb = getTombstones('deleted_history_ids');
+    ids.forEach(id => tomb.push({ id, deletedAt: nowTs() }));
+    safeSet('deleted_history_ids', pruneTombstones(tomb));
+    updateUI();
+    scheduleCloudSync();
+}
+
+function calculateStreak(history){
+    if(!history.length) return 0;
+    const uniqueDays = [...new Set(history.map(item => item.date))];
+    const todayStr = new Date().toLocaleDateString('fa-IR');
+    let streak = 0;
+    let cursor = new Date();
+    if(!uniqueDays.includes(todayStr)) cursor.setDate(cursor.getDate() - 1);
+    while(true){
+        const dStr = cursor.toLocaleDateString('fa-IR');
+        if(uniqueDays.includes(dStr)){ streak++; cursor.setDate(cursor.getDate() - 1); }
+        else break;
+    }
+    return streak;
+}
+
+function updateUI(){
+    const history = getHistory();
+    const listContainer = document.getElementById('history-list');
+    if(listContainer){
+        const filter = document.getElementById('history-subject-filter')?.value || 'all';
+        const filtered = filter === 'all' ? history : history.filter(x => x.subject === filter);
+        listContainer.innerHTML = filtered.length ? filtered.map(item => `
+            <div class="history-item">
+                <div class="item-info">
+                    <span class="item-subject">${escapeHtml(item.subject || '—')}</span>
+                    <span class="item-date">${escapeHtml(item.date || '')}${item.topic ? ' · ' + escapeHtml(item.topic) : ''}</span>
+                    ${item.examName ? `<span class="exam-badge">${escapeHtml(item.examName)}</span>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:15px">
+                    <span class="score-percent">${faNum(item.percent)}٪</span>
+                    <button class="delete-btn" onclick="deleteItem(${item.id})">🗑️</button>
+                </div>
+            </div>`).join('') : `<p style="text-align:center;color:var(--text-secondary);padding:20px;">هنوز آزمونی ثبت نشده است.</p>`;
+    }
+
+    const totalScore = history.reduce((s,i) => s + (Number(i.percent) || 0), 0);
+    const best = history.length ? Math.max(...history.map(i => Number(i.percent) || 0)) : 0;
+    const set = (id, v) => { const e = document.getElementById(id); if(e) e.innerText = v; };
+    set('stat-total', faNum(history.length));
+    set('stat-avg', history.length ? (totalScore/history.length).toFixed(1) + '%' : '0%');
+    set('stat-best', best + '%');
+    set('stat-streak', faNum(calculateStreak(history)));
+
+    const subGrid = document.getElementById('subject-stats-grid');
+    if(subGrid){
+        const grouped = {};
+        history.forEach(i => {
+            if(!grouped[i.subject]) grouped[i.subject] = { sum:0, count:0 };
+            grouped[i.subject].sum += Number(i.percent) || 0;
+            grouped[i.subject].count++;
+        });
+        subGrid.innerHTML = Object.entries(grouped).map(([sub,v]) =>
+            `<div class="stat-box"><h3>${escapeHtml(sub)}</h3><p>${(v.sum/v.count).toFixed(1)}%</p><small style="color:var(--text-secondary)">${faNum(v.count)} آزمون</small></div>`
+        ).join('');
+    }
+
+    loadErrors();
+    generateInsights(history);
+    if(typeof updateChart === 'function' && myChart) updateChart();
+    if(typeof updateRadarChart === 'function') updateRadarChart();
+    updateStudyDashboard();
+    renderGoalDashboard();
+    updateDailyVitals();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 3) گزارش روزانه / هفتگی / ماهانه                                        */
+/* ---------------------------------------------------------------------- */
+function itemDate(item){ return item.timestamp ? new Date(item.timestamp) : null; }
+function countTests(filterFn){
+    return getHistory().reduce((sum, item) => filterFn(item, itemDate(item)) ? sum + (Number(item.totalTests) || 0) : sum, 0);
+}
+function updateStudyDashboard(){
+    const now = new Date(), todayKey = localDateKey(now), weekStart = startOfWeek(now);
+    const today = countTests((it,d) => d && localDateKey(d) === todayKey);
+    const week = countTests((it,d) => d && d >= weekStart && d <= now);
+    const month = countTests((it,d) => d && isSameMonth(d, now));
+    const all = getHistory().reduce((s,i) => s + (Number(i.totalTests) || 0), 0);
+    const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    set('stats-today-tests', faNum(today));
+    set('stats-week-tests', faNum(week));
+    set('stats-month-tests', faNum(month));
+    set('stats-total-tests', faNum(all));
+    renderDailyBars();
+    renderTopicLog();
+}
+function renderDailyBars(){
+    const box = document.getElementById('daily-bars'); if(!box) return;
+    const now = new Date(), days = [];
+    for(let i = 6; i >= 0; i--){ const d = new Date(now); d.setHours(0,0,0,0); d.setDate(d.getDate()-i); days.push(d); }
+    const values = days.map(d => countTests((it,x) => x && localDateKey(x) === localDateKey(d)));
+    const max = Math.max(...values, 1);
+    box.innerHTML = days.map((d,i) => {
+        const h = Math.max(4, (values[i]/max) * 125);
+        const label = d.toLocaleDateString('fa-IR', { weekday:'short' });
+        return `<div class="day-bar"><div class="day-bar-count">${faNum(values[i])}</div><div class="day-bar-fill" style="height:${h}px"></div><div class="day-bar-label">${label}</div></div>`;
+    }).join('');
+}
+function renderTopicLog(){
+    const body = document.getElementById('topic-log-body'); if(!body) return;
+    const rows = getHistory().slice(0, 30);
+    if(!rows.length){ body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px;">هنوز تستی ثبت نشده است.</td></tr>`; return; }
+    body.innerHTML = rows.map(it => `<tr>
+        <td>${escapeHtml(it.subject || '—')}</td>
+        <td><span class="topic-pill">${escapeHtml(it.topic || 'بدون مبحث')}</span></td>
+        <td>${faNum(it.totalTests || 0)}</td>
+        <td>${faNum(it.percent || 0)}٪</td>
+        <td><span class="exam-badge">${escapeHtml(it.examName || 'تمرین')}</span></td>
+        <td>${escapeHtml(it.date || '—')}</td>
+    </tr>`).join('');
+}
+
+/* ---------------------------------------------------------------------- */
+/* 4) تحلیل هوشمند نقاط ضعف                                                */
+/* ---------------------------------------------------------------------- */
+function generateInsights(history){
+    const container = document.getElementById('insights-list'); if(!container) return;
+    container.innerHTML = '';
+    if(history.length < 2){
+        container.innerHTML = `<p style="color:var(--text-secondary); font-size:0.9rem;">برای تحلیل، حداقل به ۲ آزمون ثبت‌شده نیاز است.</p>`;
+        return;
+    }
+    const bySubject = {};
+    history.slice().reverse().forEach(item => {
+        if(!bySubject[item.subject]) bySubject[item.subject] = [];
+        bySubject[item.subject].push(item.percent);
+    });
+    const insights = [];
+    for(const sub in bySubject){
+        const arr = bySubject[sub];
+        if(arr.length < 2) continue;
+        const recentCount = Math.min(3, Math.floor(arr.length / 2)) || 1;
+        const recent = arr.slice(-recentCount);
+        const earlier = arr.slice(0, arr.length - recentCount);
+        if(!earlier.length) continue;
+        const avgRecent = recent.reduce((a,b)=>a+b,0) / recent.length;
+        const avgEarlier = earlier.reduce((a,b)=>a+b,0) / earlier.length;
+        const diff = avgRecent - avgEarlier;
+        if(diff <= -8) insights.push({ type:'warn', text:`📉 «${sub}» در آزمون‌های اخیر نسبت به قبل حدود ${faNum(Math.abs(diff).toFixed(1))}٪ افت داشته. شاید وقتشه یه دوره مرور روی این درس بذارید.` });
+        else if(diff >= 8) insights.push({ type:'good', text:`📈 «${sub}» در آزمون‌های اخیر حدود ${faNum(diff.toFixed(1))}٪ بهبود داشته. همینطور ادامه بدید!` });
+    }
+    const overallAvgs = Object.entries(bySubject).map(([sub, arr]) => ({ sub, avg: arr.reduce((a,b)=>a+b,0)/arr.length }));
+    if(overallAvgs.length > 1){
+        const weakest = overallAvgs.reduce((min, cur) => cur.avg < min.avg ? cur : min);
+        if(weakest.avg < 60) insights.push({ type:'warn', text:`⚠️ «${weakest.sub}» با میانگین ${faNum(weakest.avg.toFixed(1))}٪ ضعیف‌ترین درس شماست. زمان بیشتری براش بذارید.` });
+    }
+    const errors = getErrors();
+    if(errors.length){
+        const errCount = {};
+        errors.forEach(e => { errCount[e.subject] = (errCount[e.subject] || 0) + 1; });
+        const topErrSub = Object.entries(errCount).sort((a,b) => b[1]-a[1])[0];
+        if(topErrSub && topErrSub[1] >= 3) insights.push({ type:'warn', text:`📌 شما ${faNum(topErrSub[1])} تست حل‌نشده در غلط‌نامه‌ی «${topErrSub[0]}» دارید. یه سر به تب غلط‌نامه بزنید.` });
+    }
+    if(!insights.length){ container.innerHTML = `<p style="color:var(--text-secondary); font-size:0.9rem;">فعلاً روند خاصی برای هشدار دادن پیدا نشد. به مسیرتون ادامه بدید 👍</p>`; return; }
+    insights.forEach(ins => {
+        const div = document.createElement('div');
+        div.style.cssText = `padding:12px 15px; border-radius:10px; font-size:0.9rem; background:${ins.type==='warn'?'rgba(244,63,94,0.1)':'rgba(74,222,128,0.1)'}; border:1px solid ${ins.type==='warn'?'var(--danger)':'var(--success)'};`;
+        div.innerText = ins.text;
+        container.appendChild(div);
+    });
+}
+
+/* ---------------------------------------------------------------------- */
+/* 5) نمودار خطی و راداری (Chart.js)                                       */
+/* ---------------------------------------------------------------------- */
+let myChart = null;
+let radarChart = null;
+const RADAR_SUBJECTS = ["حسابان","آمار (گسسته)","هندسه","شیمی","فیزیک","زیست","زمین‌شناسی"];
+
+function getChartThemeColors(){
+    const isLight = document.body.classList.contains('light-mode');
+    return {
+        grid: isLight ? 'rgba(40,30,10,0.08)' : 'rgba(255,255,255,0.1)',
+        ticks: isLight ? '#6b5d45' : '#9694b8',
+        legend: isLight ? '#2a1f10' : '#f8fafc'
+    };
+}
+function applyChartTheme(){
+    const c = getChartThemeColors();
+    if(myChart){
+        myChart.options.scales.y.grid.color = c.grid;
+        myChart.options.scales.x.grid.color = c.grid;
+        myChart.options.scales.y.ticks.color = c.ticks;
+        myChart.options.scales.x.ticks.color = c.ticks;
+        myChart.options.plugins.legend.labels.color = c.legend;
+        myChart.update();
+    }
+    if(radarChart){
+        radarChart.options.scales.r.angleLines.color = c.grid;
+        radarChart.options.scales.r.grid.color = c.grid;
+        radarChart.options.scales.r.pointLabels.color = c.ticks;
+        radarChart.options.scales.r.ticks.color = c.ticks;
+        radarChart.options.plugins.legend.labels.color = c.legend;
+        radarChart.update();
+    }
+}
+function initChart(){
+    const canvasEl = document.getElementById('progressChart');
+    if(typeof Chart === 'undefined'){
+        const wrap = canvasEl?.parentElement;
+        if(wrap){
+            const msg = document.createElement('div');
+            msg.style.cssText = 'text-align:center;color:var(--text-secondary);font-size:0.85rem;padding:20px;';
+            msg.textContent = '⚠️ نمودار به‌دلیل نبود اتصال اینترنت لود نشد. بقیه بخش‌های سامانه به‌طور عادی کار می‌کنند.';
+            wrap.appendChild(msg);
+        }
+        return;
+    }
+    const c = getChartThemeColors();
+    myChart = new Chart(canvasEl.getContext('2d'), {
+        type: 'line',
+        data: { labels: [], datasets: [{ label:'روند درصدها', data: [], borderColor:'#2dd4bf', backgroundColor:'rgba(45, 212, 191, 0.1)', borderWidth:3, fill:true, tension:0.3 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero:true, max:100, grid:{ color:c.grid }, ticks:{ color:c.ticks } },
+                x: { grid:{ color:c.grid }, ticks:{ color:c.ticks } }
+            },
+            plugins: { legend: { labels: { color: c.legend } } }
+        }
+    });
+    updateChart();
+}
+function updateChart(){
+    if(!myChart) return;
+    let history = getHistory().slice().reverse();
+    const filter = document.getElementById('chart-subject-filter')?.value || 'all';
+    if(filter !== 'all') history = history.filter(item => item.subject === filter);
+    myChart.data.labels = history.map(item => `${item.subject} (${item.date})`);
+    myChart.data.datasets[0].data = history.map(item => item.percent);
+    myChart.data.datasets[0].label = filter === 'all' ? 'روند درصدها (همه دروس)' : `روند درصدها - ${filter}`;
+    myChart.update();
+}
+function initRadarChart(){
+    if(typeof Chart === 'undefined') return;
+    const el = document.getElementById('radarChart'); if(!el) return;
+    const c = getChartThemeColors();
+    radarChart = new Chart(el.getContext('2d'), {
+        type: 'radar',
+        data: { labels: RADAR_SUBJECTS, datasets: [{ label:'میانگین درصد', data: RADAR_SUBJECTS.map(()=>0), borderColor:'#f5b942', backgroundColor:'rgba(245, 185, 66, 0.18)', borderWidth:2, pointBackgroundColor:'#f5b942' }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { min:0, max:100, angleLines:{ color:c.grid }, grid:{ color:c.grid }, pointLabels:{ color:c.ticks, font:{ size:11 } }, ticks:{ color:c.ticks, backdropColor:'transparent', stepSize:20 } } },
+            plugins: { legend: { labels: { color: c.legend } } }
+        }
+    });
+    updateRadarChart();
+}
+function updateRadarChart(){
+    if(!radarChart) return;
+    const history = getHistory();
+    radarChart.data.datasets[0].data = RADAR_SUBJECTS.map(sub => {
+        const items = history.filter(h => h.subject === sub);
+        if(!items.length) return 0;
+        return Number((items.reduce((s,i) => s + i.percent, 0) / items.length).toFixed(1));
+    });
+    radarChart.update();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 6) غلط‌نامه                                                              */
+/* ---------------------------------------------------------------------- */
+const tagLabels = { 'مفهومی':'🧩 مفهومی', 'بی‌دقتی':'😵 بی‌دقتی', 'زمان':'⏱️ کمبود وقت', 'تله':'🎯 تله‌ی سؤال' };
+const tagColors = { 'مفهومی':'#a855f7', 'بی‌دقتی':'#f43f5e', 'زمان':'#fbbf24', 'نامشخص':'#9694b8' };
+
+function getErrors(){ return safeParse('study_errors', []); }
+function setErrors(arr){ safeSet('study_errors', arr); }
+
+function saveErrorItem(){
+    const subject = document.getElementById('error-subject').value;
+    const desc = document.getElementById('error-desc').value.trim();
+    const tag = document.getElementById('error-tag').value;
+    if(!desc){ alert('لطفاً مشخصات تست را وارد کنید.'); return; }
+    const errors = getErrors();
+    const ts = nowTs();
+    errors.unshift({ id: ts, subject, desc, tag, date: new Date().toLocaleDateString('fa-IR'), updatedAt: ts });
+    setErrors(errors);
+    document.getElementById('error-desc').value = '';
+    loadErrors();
+    scheduleCloudSync();
+    alert('به غلط‌نامه اضافه شد.');
+}
+function deleteError(id){
+    let errors = getErrors();
+    const before = errors.length;
+    errors = errors.filter(item => item.id !== id);
+    if(errors.length !== before){
+        setErrors(errors);
+        addTombstone('deleted_error_ids', id);
+    }
+    loadErrors();
+    scheduleCloudSync();
+}
+function loadErrors(){
+    const errors = getErrors();
+    const container = document.getElementById('error-list');
+    if(container){
+        container.innerHTML = errors.length ? errors.map(item => {
+            const tagBadge = item.tag ? `<span style="font-size:0.75rem; color:var(--purple); border:1px solid var(--purple); border-radius:6px; padding:2px 6px; width:fit-content;">${escapeHtml(tagLabels[item.tag] || item.tag)}</span>` : '';
+            return `<div class="error-item">
+                <div class="item-info">
+                    <span class="item-subject">${escapeHtml(item.subject)}</span>
+                    <span style="color:var(--text-primary); font-size:0.95rem;">${escapeHtml(item.desc)}</span>
+                    ${tagBadge}
+                    <span class="item-date">${escapeHtml(item.date)}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteError(${item.id})">✅ حل شد</button>
+            </div>`;
+        }).join('') : `<p style="text-align:center; color:var(--text-secondary); padding:20px;">غلط‌نامه خالی است.</p>`;
+    }
+    const tagStatsContainer = document.getElementById('error-tag-stats');
+    if(tagStatsContainer){
+        if(!errors.length){
+            tagStatsContainer.innerHTML = `<p style="color:var(--text-secondary); font-size:0.85rem;">هنوز خطایی ثبت نشده.</p>`;
+        } else {
+            const counts = {};
+            errors.forEach(e => { const t = e.tag || 'نامشخص'; counts[t] = (counts[t] || 0) + 1; });
+            tagStatsContainer.innerHTML = Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([tag,count]) =>
+                `<div style="background:rgba(168,85,247,0.1); border:1px solid var(--purple); border-radius:10px; padding:8px 14px; font-size:0.85rem;">${escapeHtml(tagLabels[tag] || tag)}: ${faNum(count)}</div>`
+            ).join('');
+        }
+    }
+    renderErrorDeepAnalysis(errors);
+}
+function renderErrorDeepAnalysis(errors){
+    const box = document.getElementById('error-deep-analysis'); if(!box) return;
+    if(!errors.length){ box.innerHTML = `<p style="color:var(--text-secondary); font-size:0.85rem; grid-column:1/-1; text-align:center;">هنوز داده‌ای برای تحلیل نیست.</p>`; return; }
+    const bySubject = {};
+    errors.forEach(e => {
+        const s = e.subject || 'نامشخص';
+        if(!bySubject[s]) bySubject[s] = { total:0, tags:{} };
+        bySubject[s].total++;
+        const t = e.tag || 'نامشخص';
+        bySubject[s].tags[t] = (bySubject[s].tags[t] || 0) + 1;
+    });
+    const entries = Object.entries(bySubject).sort((a,b) => b[1].total - a[1].total);
+    box.innerHTML = entries.map(([subject, info]) => {
+        const dominant = Object.entries(info.tags).sort((a,b) => b[1]-a[1])[0];
+        const dominantLabel = dominant ? (tagLabels[dominant[0]] || dominant[0]) : '';
+        const barSegments = Object.entries(info.tags).map(([t,c]) => {
+            const pct = (c / info.total * 100).toFixed(0);
+            return `<span style="width:${pct}%; background:${tagColors[t] || '#9694b8'}" title="${escapeHtml(tagLabels[t] || t)}: ${faNum(c)}"></span>`;
+        }).join('');
+        const legend = Object.entries(info.tags).map(([t,c]) => `<span>${escapeHtml(tagLabels[t] || t)}: ${faNum(c)}</span>`).join('');
+        return `<div class="error-analysis-card">
+            <div class="error-analysis-subject">${escapeHtml(subject)} — ${faNum(info.total)} مورد</div>
+            ${dominantLabel ? `<div class="error-analysis-dominant">پرتکرارترین: ${escapeHtml(dominantLabel)}</div>` : ''}
+            <div class="error-analysis-bar">${barSegments}</div>
+            <div class="error-analysis-legend">${legend}</div>
+        </div>`;
+    }).join('');
+}
+
+/* ---------------------------------------------------------------------- */
+/* 7) تایمر (نسخه‌ی واحد و بدون drift)                                     */
+/* ---------------------------------------------------------------------- */
+const SUBJECT_RATES = {
+    "تجربی": { "زیست":60, "زمین‌شناسی":60, "فیزیک":80, "شیمی":60, "ریاضی":60 },
+    "ریاضی": { "حسابان":105, "هندسه":105, "آمار (گسسته)":105, "فیزیک":72, "شیمی":60 }
+};
+let timeLeft = 0, timerId = null, timerState = 'idle', timerTotal = 1800;
+let timerDisplay, minutesInput, secondsInput, startPauseBtn;
+
+function getInputSeconds(){
+    const m = parseInt(minutesInput?.value) || 0;
+    const s = parseInt(secondsInput?.value) || 0;
+    return m * 60 + s;
+}
+function ensureTimerHud(){
+    if(!timerDisplay) return null;
+    let hud = timerDisplay.querySelector('.timer-hud');
+    if(!hud){
+        timerDisplay.innerHTML = '<div class="timer-hud"><i class="timer-core-dot"></i><span class="timer-label">FOCUS MODE</span><span class="timer-digits"></span><span class="timer-sub">MINUTES · SECONDS</span></div>';
+        hud = timerDisplay.querySelector('.timer-hud');
+    }
+    return hud;
+}
+function renderTimerDisplay(totalSeconds){
+    if(!timerDisplay) return;
+    const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+    const m = Math.floor(sec/60), s = sec % 60;
+    ensureTimerHud();
+    const digits = timerDisplay.querySelector('.timer-digits');
+    const value = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    if(digits && digits.textContent !== value) digits.textContent = value;
+    const total = timerTotal || getInputSeconds() || sec || 1;
+    const progress = Math.max(0, Math.min(100, (sec/total) * 100));
+    timerDisplay.style.setProperty('--timer-progress', progress + '%');
+    timerDisplay.classList.add('timer-tick');
+    clearTimeout(timerDisplay._tickTimer);
+    timerDisplay._tickTimer = setTimeout(() => timerDisplay.classList.remove('timer-tick'), 320);
+}
+function syncDisplayFromInputs(){
+    if(timerState === 'idle'){ timerTotal = getInputSeconds() || 1800; renderTimerDisplay(timerTotal); }
+}
+function updateTimerSubjects(){
+    const track = document.getElementById('track-select')?.value || 'تجربی';
+    const select = document.getElementById('subject'); if(!select) return;
+    const current = select.value;
+    const subjects = Object.keys(SUBJECT_RATES[track]);
+    select.innerHTML = `<option value="">⏱️ بدون انتخاب درس — تایمر آزاد</option>` + subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+    if(subjects.includes(current)) select.value = current;
+    calculateSubjectTime();
+}
+function calculateSubjectTime(){
+    const track = document.getElementById('track-select')?.value || 'تجربی';
+    const subject = document.getElementById('subject')?.value || '';
+    const q = Number(document.getElementById('question-count')?.value) || 0;
+    const hint = document.getElementById('rate-hint'), badge = document.getElementById('auto-time-result');
+    if(!subject){
+        if(hint) hint.textContent = 'برای تایمر آزاد، دقیقه و ثانیه را خودت وارد کن.';
+        if(badge) badge.textContent = '⏱️ تایمر آزاد';
+        return;
+    }
+    const rate = SUBJECT_RATES[track][subject];
+    if(hint) hint.textContent = `در رشته ${track}، زمان پیشنهادی ${subject}: هر تست ${faNum(rate)} ثانیه`;
+    if(q > 0){
+        const total = q * rate, m = Math.floor(total/60), s = total % 60;
+        minutesInput.value = m; secondsInput.value = s;
+        if(badge) badge.textContent = `✨ ${faNum(q)} تست × ${faNum(rate)} ثانیه = ${faNum(m)}:${String(s).padStart(2,'0')}`;
+        if(timerState === 'idle'){ timerTotal = total; renderTimerDisplay(total); }
+    } else if(badge){
+        badge.textContent = `✨ زمان هر تست: ${faNum(rate)} ثانیه`;
+    }
+}
+function toggleTimer(){
+    if(timerState === 'running') pauseTimer();
+    else if(timerState === 'paused') resumeTimer();
+    else startTimer();
+}
+function playBeep(){
+    try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ringTimes = [0, 0.35, 1.1, 1.45, 2.2, 2.55, 3.3, 3.65];
+        ringTimes.forEach((delay, idx) => {
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = idx % 2 === 0 ? 988 : 784;
+            gain.gain.setValueAtTime(0.28, ctx.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
+            osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.3);
+        });
+    }catch(e){}
+    try{ if(navigator.vibrate) navigator.vibrate([300,150,300,150,300]); }catch(e){}
+}
+function startTimer(){
+    let total;
+    const subject = document.getElementById('subject')?.value || '';
+    const q = Number(document.getElementById('question-count')?.value) || 0;
+    if(subject && q > 0){
+        const track = document.getElementById('track-select').value;
+        total = q * SUBJECT_RATES[track][subject];
+        minutesInput.value = Math.floor(total/60); secondsInput.value = total % 60;
+    } else {
+        total = getInputSeconds();
+    }
+    if(!total || total <= 0){ alert('لطفاً تعداد تست یا زمان معتبری وارد کنید.'); return; }
+    timerTotal = total; timeLeft = total;
+    localStorage.setItem('timer_end_time', String(Date.now() + total * 1000));
+    localStorage.setItem('timer_total_seconds', String(total));
+    localStorage.removeItem('timer_paused_left');
+    timerDisplay.classList.add('timer-running');
+    timerState = 'running';
+    startPauseBtn.innerText = 'مکث'; startPauseBtn.className = 'btn btn-purple';
+    runTimerLoop();
+}
+function pauseTimer(){
+    if(timerId) clearTimeout(timerId); timerId = null;
+    const end = Number(localStorage.getItem('timer_end_time') || 0);
+    timeLeft = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    localStorage.removeItem('timer_end_time');
+    localStorage.setItem('timer_paused_left', String(timeLeft));
+    timerState = 'paused';
+    timerDisplay.classList.remove('timer-running');
+    startPauseBtn.innerText = 'ادامه'; startPauseBtn.className = 'btn btn-success';
+    renderTimerDisplay(timeLeft);
+}
+function resumeTimer(){
+    const total = Number(localStorage.getItem('timer_paused_left') || timeLeft || 0);
+    if(!total) return;
+    timeLeft = total;
+    localStorage.setItem('timer_end_time', String(Date.now() + total * 1000));
+    localStorage.removeItem('timer_paused_left');
+    timerState = 'running';
+    timerDisplay.classList.add('timer-running');
+    startPauseBtn.innerText = 'مکث'; startPauseBtn.className = 'btn btn-purple';
+    runTimerLoop();
+}
+function resetTimer(){
+    if(timerId) clearTimeout(timerId); timerId = null;
+    localStorage.removeItem('timer_end_time');
+    localStorage.removeItem('timer_paused_left');
+    localStorage.removeItem('timer_total_seconds');
+    timerState = 'idle';
+    if(timerDisplay) timerDisplay.classList.remove('timer-running');
+    if(startPauseBtn){ startPauseBtn.innerText = 'شروع'; startPauseBtn.className = 'btn btn-success'; }
+    timerTotal = getInputSeconds() || 1800;
+    renderTimerDisplay(timerTotal);
+}
+function runTimerLoop(){
+    if(timerId) clearTimeout(timerId);
+    const tick = () => {
+        const end = Number(localStorage.getItem('timer_end_time') || 0);
+        if(!end){ timerId = null; return; }
+        const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        timeLeft = remaining;
+        renderTimerDisplay(remaining);
+        if(remaining <= 0){
+            timerId = null;
+            localStorage.removeItem('timer_end_time');
+            timerDisplay.classList.remove('timer-running');
+            timerState = 'idle';
+            startPauseBtn.innerText = 'شروع'; startPauseBtn.className = 'btn btn-success';
+            playBeep();
+            if('Notification' in window && Notification.permission === 'granted'){
+                try{ new Notification('⏰ زمان تمام شد!', { body: 'وقت ثبت نتیجه آزمونت رسیده.' }); }catch(e){}
+            }
+            if(confirm('⏰ زمان آزمون به پایان رسید! می‌خواهید نتیجه را همین الان ثبت کنید؟')){
+                document.getElementById('correct').focus();
+                document.getElementById('correct').scrollIntoView({ behavior:'smooth', block:'center' });
+            }
+            return;
+        }
+        timerId = setTimeout(tick, Math.max(150, (end - Date.now()) % 1000 || 900));
+    };
+    tick();
+}
+function resumeTimerIfActive(){
+    const paused = parseInt(localStorage.getItem('timer_paused_left'));
+    if(paused > 0){
+        timeLeft = paused;
+        timerTotal = Number(localStorage.getItem('timer_total_seconds')) || paused;
+        renderTimerDisplay(timeLeft);
+        timerState = 'paused';
+        startPauseBtn.innerText = 'ادامه'; startPauseBtn.className = 'btn btn-success';
+        return;
+    }
+    const end = Number(localStorage.getItem('timer_end_time') || 0);
+    if(!end) return;
+    const remaining = Math.max(0, Math.round((end - Date.now()) / 1000));
+    if(!remaining){ localStorage.removeItem('timer_end_time'); return; }
+    timeLeft = remaining;
+    timerTotal = Number(localStorage.getItem('timer_total_seconds')) || remaining;
+    renderTimerDisplay(remaining);
+    timerState = 'running';
+    timerDisplay.classList.add('timer-running');
+    startPauseBtn.innerText = 'مکث'; startPauseBtn.className = 'btn btn-purple';
+    runTimerLoop();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 8) تم روز/شب و تب‌ها                                                    */
+/* ---------------------------------------------------------------------- */
+function applyStoredTheme(){
+    if(localStorage.getItem('theme_mode') === 'light'){
+        document.body.classList.add('light-mode');
+        const btn = document.getElementById('theme-toggle'); if(btn) btn.innerText = '☀️';
+    }
+}
+function toggleTheme(){
+    const isLight = document.body.classList.toggle('light-mode');
+    document.getElementById('theme-toggle').innerText = isLight ? '☀️' : '🌙';
+    localStorage.setItem('theme_mode', isLight ? 'light' : 'dark');
+    applyChartTheme();
+}
+function switchTab(tabId, btn){
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    if(tabId === 'tab-stats') updateChart();
+    const notesTab = document.getElementById('smartNotesSection');
+    if(notesTab) notesTab.classList.toggle('active', tabId === 'tab-timer');
+}
+/* ---------------------------------------------------------------------- */
+/* 9) هدف‌گذاری تفکیکی دروس + ثبت تست روزانه                                */
+/* ---------------------------------------------------------------------- */
+function getSubjectGoals(){ return safeParse('subject_goals_v2', {}); }
+function setSubjectGoals(g){ safeSet('subject_goals_v2', g); }
+function getDailyGoalLog(){ return safeParse('daily_goal_tests_v2', []); }
+function setDailyGoalLog(a){ safeSet('daily_goal_tests_v2', a); }
+function normalizeGoalDate(v){ return v || localDateKey(new Date()); }
+
+function sumGoalTests(subject, start, end){
+    return getDailyGoalLog().reduce((sum, x) => {
+        if(x.subject !== subject) return sum;
+        return x.date >= start && x.date <= end ? sum + (Number(x.count) || 0) : sum;
+    }, 0);
+}
+function weekKeyRange(){ const n = new Date(), s = startOfWeek(n); return [localDateKey(s), localDateKey(n)]; }
+function monthKeyRange(){ const n = new Date(), s = new Date(n.getFullYear(), n.getMonth(), 1); return [localDateKey(s), localDateKey(n)]; }
+
+function addDailyGoalTests(){
+    const subject = document.getElementById('daily-log-subject').value;
+    const count = Number(document.getElementById('daily-log-count').value) || 0;
+    const date = normalizeGoalDate(document.getElementById('daily-log-date').value);
+    if(count <= 0){ alert('تعداد تست را وارد کن.'); return; }
+    const log = getDailyGoalLog();
+    const ts = nowTs();
+    const same = log.find(x => x.subject === subject && x.date === date);
+    if(same){ same.count = (Number(same.count) || 0) + count; same.updatedAt = ts; }
+    else log.push({ id: ts, subject, count, date, updatedAt: ts });
+    setDailyGoalLog(log);
+    localStorage.setItem('smart_reminder_last_activity', String(ts));
+    document.getElementById('daily-log-count').value = '';
+    renderGoalDashboard();
+    scheduleCloudSync();
+    alert(`✅ ${faNum(count)} تست برای ${subject} در تاریخ ${date} ثبت شد.`);
+}
+function saveSubjectGoal(){
+    const subject = document.getElementById('goal-subject-select').value;
+    const weekly = Number(document.getElementById('goal-weekly-input-v2').value) || 0;
+    const monthly = Number(document.getElementById('goal-monthly-input-v2').value) || 0;
+    if(weekly <= 0 && monthly <= 0){ alert('حداقل یکی از هدف‌های هفتگی یا ماهانه را وارد کن.'); return; }
+    const goals = getSubjectGoals();
+    goals[subject] = { weekly, monthly, updatedAt: nowTs() };
+    setSubjectGoals(goals);
+    document.getElementById('goal-weekly-input-v2').value = '';
+    document.getElementById('goal-monthly-input-v2').value = '';
+    renderGoalDashboard(); renderGoalManager();
+    scheduleCloudSync();
+}
+function deleteSubjectGoal(subject){
+    const g = getSubjectGoals();
+    if(g[subject]) delete g[subject];
+    setSubjectGoals(g);
+    addTombstone('deleted_goal_subjects', subject);
+    renderGoalDashboard(); renderGoalManager();
+    scheduleCloudSync();
+}
+function editSubjectGoal(subject){
+    const g = getSubjectGoals()[subject] || {};
+    document.getElementById('goal-subject-select').value = subject;
+    document.getElementById('goal-weekly-input-v2').value = g.weekly || '';
+    document.getElementById('goal-monthly-input-v2').value = g.monthly || '';
+    openGoalManager();
+}
+function renderGoalManager(){
+    const box = document.getElementById('goal-manager-list'); if(!box) return;
+    const entries = Object.entries(getSubjectGoals() || {});
+    box.innerHTML = '';
+    if(!entries.length){
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:var(--text-secondary);text-align:center;padding:12px;';
+        empty.textContent = 'هنوز هدف درسی ثبت نشده است.';
+        box.appendChild(empty); return;
+    }
+    entries.forEach(([subject, v]) => {
+        const item = document.createElement('div'); item.className = 'goal-manager-item';
+        const left = document.createElement('div');
+        left.innerHTML = `<b>${escapeHtml(subject)}</b><br><small>هفتگی: ${faNum(v.weekly||0)} تست · ماهانه: ${faNum(v.monthly||0)} تست</small>`;
+        const actions = document.createElement('div'); actions.className = 'goal-manager-actions';
+        const editBtn = document.createElement('button'); editBtn.className = 'btn btn-primary'; editBtn.textContent = 'ویرایش';
+        editBtn.onclick = () => editSubjectGoal(subject);
+        const delBtn = document.createElement('button'); delBtn.className = 'btn btn-danger'; delBtn.textContent = 'حذف';
+        delBtn.onclick = () => { if(confirm(`هدف درس «${subject}» حذف شود؟`)) deleteSubjectGoal(subject); };
+        actions.appendChild(editBtn); actions.appendChild(delBtn);
+        item.appendChild(left); item.appendChild(actions);
+        box.appendChild(item);
+    });
+}
+function renderGoalDashboard(){
+    const box = document.getElementById('goal-cards-grid'), empty = document.getElementById('goal-empty-state');
+    if(!box) return;
+    const entries = Object.entries(getSubjectGoals());
+    if(!entries.length){ box.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
+    if(empty) empty.style.display = 'none';
+    const [ws, we] = weekKeyRange(), [ms, me] = monthKeyRange();
+    box.innerHTML = entries.map(([subject, g]) => {
+        const w = Number(g.weekly) || 0, m = Number(g.monthly) || 0;
+        const doneW = sumGoalTests(subject, ws, we), doneM = sumGoalTests(subject, ms, me);
+        const p = w ? Math.min(100, doneW/w*100) : 0, mp = m ? Math.min(100, doneM/m*100) : 0;
+        return `<div class="goal-subject-card ${p>=100?'completed':''}">
+            <div class="goal-subject-ring" style="--p:${p}%"><div><b>${faNum(Math.round(p))}٪</b><span>هفتگی</span></div></div>
+            <div><div class="goal-subject-name">${escapeHtml(subject)} ${p>=100?'🏆':''}</div>
+            <div class="goal-subject-meta">این هفته: <b>${faNum(doneW)}</b> از ${faNum(w)} تست<br>این ماه: <b>${faNum(doneM)}</b> از ${faNum(m)} تست</div>
+            <div class="goal-mini-progress" title="پیشرفت ماهانه"><i style="--w:${mp}%"></i></div>
+            <div style="font-size:.62rem;color:var(--text-secondary);margin-top:4px">پیشرفت ماهانه ${faNum(Math.round(mp))}٪</div></div></div>`;
+    }).join('');
+}
+function openGoalManager(){
+    const b = [...document.querySelectorAll('.tab-btn')].find(x => (x.getAttribute('onclick')||'').includes('tab-settings'));
+    if(b) switchTab('tab-settings', b);
+    setTimeout(() => document.getElementById('tab-settings')?.scrollIntoView({ behavior:'smooth', block:'start' }), 60);
+}
+function loadGoals(){
+    const d = document.getElementById('daily-log-date');
+    if(d && !d.value) d.value = localDateKey(new Date());
+    renderGoalDashboard(); renderGoalManager();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 10) شمارش معکوس                                                         */
+/* ---------------------------------------------------------------------- */
+function getCountdownDate(){ return localStorage.getItem('countdown_target_date') || ''; }
+function setCountdownDate(){
+    const current = getCountdownDate();
+    const input = prompt('تاریخ مورد نظرت رو به‌فرمت سال-ماه-روز میلادی وارد کن (مثلاً 2027-06-20):', current || '');
+    if(input === null) return;
+    const d = new Date(input);
+    if(isNaN(d.getTime())){ alert('تاریخ معتبر نیست.'); return; }
+    localStorage.setItem('countdown_target_date', input);
+    localStorage.setItem('countdown_target_date_ts', String(nowTs()));
+    renderCountdownText();
+    document.getElementById('countdown-popup')?.classList.add('show');
+    scheduleCloudSync();
+}
+function renderCountdownText(){
+    const el = document.getElementById('countdown-popup-text'); if(!el) return;
+    const target = getCountdownDate();
+    if(!target){ el.textContent = 'هنوز تاریخی تنظیم نکردی 👆'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const t = new Date(target); t.setHours(0,0,0,0);
+    const diffDays = Math.round((t - today) / 86400000);
+    if(diffDays > 0) el.textContent = `📅 ${faNum(diffDays)} روز مانده`;
+    else if(diffDays === 0) el.textContent = '🎯 امروز همون روزه!';
+    else el.textContent = `${faNum(Math.abs(diffDays))} روز از این تاریخ گذشته`;
+}
+function toggleCountdownPopup(){
+    const pop = document.getElementById('countdown-popup'); if(!pop) return;
+    const willShow = !pop.classList.contains('show');
+    if(willShow) renderCountdownText();
+    pop.classList.toggle('show', willShow);
+    if(willShow && !getCountdownDate()) setTimeout(setCountdownDate, 250);
+}
+function initCountdown(){ renderCountdownText(); }
+document.addEventListener('click', (e) => {
+    const pop = document.getElementById('countdown-popup');
+    const badge = document.getElementById('countdown-badge');
+    if(pop && pop.classList.contains('show') && !pop.contains(e.target) && e.target !== badge) pop.classList.remove('show');
+});
+
+/* ---------------------------------------------------------------------- */
+/* 11) تاریخ شمسی هوشمند                                                    */
+/* ---------------------------------------------------------------------- */
+const FA_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const FA_WEEKDAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+
+function deviceUsesPersianCalendar(){
+    try{ const o = new Intl.DateTimeFormat().resolvedOptions(); return o.calendar === 'persian' || o.calendar === 'persian-proleptic'; }
+    catch(e){ return false; }
+}
+function toJalali(date){
+    try{
+        const a = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year:'numeric', month:'numeric', day:'numeric' }).formatToParts(date);
+        const o = {}; a.forEach(x => o[x.type] = x.value);
+        return { y:Number(o.year), m:Number(o.month), d:Number(o.day) };
+    }catch(e){ return null; }
+}
+function jalaliToGregorian(jy, jm, jd){
+    let gy = jy + 621;
+    let jy2 = jy - 979;
+    let days = 365*jy2 + Math.floor(jy2/33)*8 + Math.floor((jy2%33+3)/4);
+    days += jm <= 6 ? (jm-1)*31 : (jm-7)*30 + 186;
+    days += jd - 1;
+    let gyDays = days + 79;
+    let gy2 = 1600 + 400*Math.floor(gyDays/146097);
+    gyDays %= 146097;
+    let leap = true;
+    if(gyDays >= 36525){ gyDays--; gy2 += 100*Math.floor(gyDays/36524); gyDays %= 36524; if(gyDays >= 365) gyDays++; }
+    gy2 += 4*Math.floor(gyDays/1461); gyDays %= 1461;
+    if(gyDays >= 366){ leap = false; gyDays--; gy2 += Math.floor(gyDays/365); gyDays %= 365; }
+    let gd = gyDays + 1;
+    const md = [0,31,(leap?29:28),31,30,31,30,31,31,30,31,30,31];
+    let gm = 1;
+    while(gd > md[gm]){ gd -= md[gm]; gm++; }
+    return new Date(gy2, gm-1, gd);
+}
+function currentJDate(){
+    const m = localStorage.getItem('manual_jdate');
+    const anchor = Number(localStorage.getItem('manual_jdate_anchor') || 0);
+    if(m){
+        const [y, mo, d] = m.split('-').map(Number);
+        let j = { y, m: mo, d };
+        if(anchor){
+            const a = new Date(anchor); a.setHours(0,0,0,0);
+            const n = new Date(); n.setHours(0,0,0,0);
+            const delta = Math.round((n - a) / 86400000);
+            if(delta > 0){
+                const g = jalaliToGregorian(j.y, j.m, j.d);
+                g.setDate(g.getDate() + delta);
+                const nj = toJalali(g);
+                if(nj) j = nj;
+            }
+        }
+        return { ...j, manual:true };
+    }
+    const j = toJalali(new Date());
+    return j ? { ...j, manual:false } : null;
+}
+function renderSmartDate(){
+    const e = document.getElementById('smart-date-line'); if(!e) return;
+    const j = currentJDate();
+    const show = !!j && (j.manual || deviceUsesPersianCalendar());
+    if(!show){ e.classList.remove('visible'); e.textContent = ''; return; }
+    e.textContent = `امروز ${FA_WEEKDAYS[new Date().getDay()]} ${faNum(j.d)} ${FA_MONTHS[j.m-1]} ماه`;
+    e.classList.add('visible');
+}
+function openDateSettings(){
+    const j = currentJDate() || toJalali(new Date());
+    if(j){
+        document.getElementById('manual-jy').value = j.y;
+        document.getElementById('manual-jm').value = j.m;
+        document.getElementById('manual-jd').value = j.d;
+    }
+    document.getElementById('date-settings-panel')?.classList.add('show');
+}
+function closeDateSettings(e){ if(e && e.target !== e.currentTarget) return; document.getElementById('date-settings-panel')?.classList.remove('show'); }
+function saveManualDate(){
+    const y = Number(document.getElementById('manual-jy').value);
+    const m = Number(document.getElementById('manual-jm').value);
+    const d = Number(document.getElementById('manual-jd').value);
+    if(y < 1300 || y > 1600 || m < 1 || m > 12 || d < 1 || d > 31){ alert('تاریخ شمسی معتبر وارد کن.'); return; }
+    localStorage.setItem('manual_jdate', `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+    localStorage.setItem('manual_jdate_anchor', String(Date.now()));
+    renderSmartDate();
+    document.getElementById('date-settings-panel')?.classList.remove('show');
+}
+function clearManualDate(){
+    localStorage.removeItem('manual_jdate'); localStorage.removeItem('manual_jdate_anchor');
+    renderSmartDate();
+    document.getElementById('date-settings-panel')?.classList.remove('show');
+}
+
+/* ---------------------------------------------------------------------- */
+/* 12) داشبورد امروز (رینگ‌های مطالعه/عملکرد)                               */
+/* ---------------------------------------------------------------------- */
+function updateDailyVitals(){
+    const today = localDateKey(new Date());
+    const plan = getWeeklyPlan();
+    const idx = (new Date().getDay() + 6) % 7;
+    const key = PLANNER_DAYS[idx]?.key;
+    const p = normalizePlannerDay(plan[key]);
+    const ps = plannerStats(p);
+    const tests = getHistory().reduce((n,x) => {
+        const d = x.timestamp ? new Date(x.timestamp) : null;
+        return d && localDateKey(d) === today ? n + (Number(x.totalTests) || 0) : n;
+    }, 0);
+    const goal = sumGoalTestsToday();
+    const action = goal ? Math.min(100, Math.round(tests / goal * 100)) : ps.percent;
+    const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    const ring = (id, v) => { const e = document.getElementById(id); if(e) e.style.setProperty('--p', v + '%'); };
+    set('daily-study-percent', faNum(ps.percent) + '٪');
+    set('daily-study-caption', `${faNum(ps.done)} از ${faNum(PLANNER_PARTS)} پارت انجام شده`);
+    ring('daily-study-ring', ps.percent);
+    set('daily-action-percent', faNum(action) + '٪');
+    set('daily-action-caption', goal ? `${faNum(tests)} از ${faNum(goal)} تست` : `${faNum(tests)} تست ثبت شده`);
+    ring('daily-action-ring', action);
+}
+function sumGoalTestsToday(){
+    const goals = getSubjectGoals();
+    let total = 0;
+    Object.values(goals).forEach(g => { total += Math.round((Number(g.weekly) || 0) / 7); });
+    return total;
+}
+
+/* ---------------------------------------------------------------------- */
+/* 13) برنامه هفتگی (۷ روز × ۹ پارت) + آرشیو هفته‌ها                        */
+/* ---------------------------------------------------------------------- */
+const PLANNER_DAYS = [
+    { key:'shanbe', name:'شنبه', emoji:'🌱', c1:'#22d3ee', c2:'#6366f1' },
+    { key:'yekshanbe', name:'یکشنبه', emoji:'🌊', c1:'#38bdf8', c2:'#8b5cf6' },
+    { key:'doshanbe', name:'دوشنبه', emoji:'🔥', c1:'#fb7185', c2:'#f59e0b' },
+    { key:'seshanbe', name:'سه‌شنبه', emoji:'🌙', c1:'#a78bfa', c2:'#06b6d4' },
+    { key:'chahar', name:'چهارشنبه', emoji:'⚡', c1:'#34d399', c2:'#22d3ee' },
+    { key:'panjshanbe', name:'پنجشنبه', emoji:'🎯', c1:'#fbbf24', c2:'#f97316' },
+    { key:'jome', name:'جمعه', emoji:'✨', c1:'#c084fc', c2:'#22d3ee' }
+];
+const PLANNER_PARTS = 9;
+function emptyPlannerParts(){ return Array.from({length:PLANNER_PARTS}, () => ({ subject:'', time:'', done:false })); }
+function normalizePlannerDay(v){
+    const base = { parts: emptyPlannerParts(), notes:'', updatedAt:0 };
+    if(!v || typeof v !== 'object') return base;
+    if(Array.isArray(v.parts)) base.parts = base.parts.map((x,i) => Object.assign(x, v.parts[i] || {}));
+    base.notes = v.notes || '';
+    base.updatedAt = v.updatedAt || 0;
+    return base;
+}
+function plannerWeekKey(d = new Date()){ return localDateKey(startOfWeek(d)); }
+function getWeeklyStore(){ return safeParse('weekly_planner_store_v2', {}); }
+function setWeeklyStore(v){ safeSet('weekly_planner_store_v2', v); }
+function getWeeklyPlan(){
+    const store = getWeeklyStore(); const wk = plannerWeekKey();
+    if(store.weekKey === wk && store.days) return store.days;
+    return {};
+}
+function setWeeklyPlan(days){
+    const store = getWeeklyStore();
+    store.weekKey = plannerWeekKey();
+    store.days = days;
+    setWeeklyStore(store);
+}
+function getWeeklyArchives(){ return safeParse('weekly_planner_archives_v1', []); }
+function setWeeklyArchives(a){ safeSet('weekly_planner_archives_v1', a); }
+function ensureWeeklyArchive(){
+    const wk = plannerWeekKey(); const store = getWeeklyStore();
+    if(!store.weekKey){ setWeeklyStore({ weekKey: wk, days: {} }); return; }
+    if(store.weekKey === wk) return;
+    const oldDays = store.days || {};
+    const has = Object.values(oldDays).some(v => { const p = normalizePlannerDay(v); return plannerStats(p).filled > 0 || p.notes; });
+    if(has){
+        const a = getWeeklyArchives();
+        if(!a.some(x => x.weekKey === store.weekKey)){
+            a.unshift({ id: 'week-' + store.weekKey, weekKey: store.weekKey, days: oldDays, savedAt: new Date().toISOString(), updatedAt: nowTs() });
+            setWeeklyArchives(a.slice(0, 52));
+        }
+    }
+    setWeeklyStore({ weekKey: wk, days: {} });
+}
+let plannerCurrentKey = null;
+
+function plannerStats(p){
+    const parts = p.parts || emptyPlannerParts();
+    return {
+        done: parts.filter(x => x.done).length,
+        filled: parts.filter(x => String(x.subject||'').trim() || String(x.time||'').trim()).length,
+        percent: Math.round((parts.filter(x => x.done).length / PLANNER_PARTS) * 100)
+    };
+}
+function plannerPreview(v){
+    const p = normalizePlannerDay(v), s = plannerStats(p);
+    const first = p.parts.find(x => x.subject || x.time);
+    if(!first) return '۹ پارت آماده‌ی برنامه‌ریزی';
+    return `${first.subject || 'درس جدید'}${first.time ? ' • ' + first.time : ''}  ·  ${faNum(s.done)}/۹ انجام شد`;
+}
+function archiveSummary(days){
+    const vals = Object.values(days || {}).map(normalizePlannerDay);
+    return { parts: vals.reduce((n,p) => n + plannerStats(p).filled, 0), done: vals.reduce((n,p) => n + plannerStats(p).done, 0) };
+}
+function archiveWeekLabel(wk){
+    const d = new Date(wk + 'T00:00:00'), end = new Date(d); end.setDate(end.getDate() + 6);
+    return `هفته ${d.toLocaleDateString('fa-IR')} تا ${end.toLocaleDateString('fa-IR')}`;
+}
+function renderPlannerArchives(){
+    const box = document.getElementById('planner-archives'); if(!box) return;
+    const a = getWeeklyArchives();
+    if(!a.length){ box.innerHTML = '<div class="planner-archive-empty">هنوز هفته‌ای به پایان نرسیده است؛ بعد از اولین تغییر هفته، گزارش اینجا ذخیره می‌شود ✨</div>'; return; }
+    box.innerHTML = a.map((x,i) => {
+        const z = archiveSummary(x.days);
+        return `<div class="planner-archive-card">
+            <div class="planner-archive-title">🏆 ${faNum(i+1)} — ${archiveWeekLabel(x.weekKey)}</div>
+            <div class="planner-archive-meta">${faNum(z.parts)} پارت برنامه‌ریزی‌شده · ${faNum(z.done)} پارت انجام‌شده<br>ذخیره‌شده در ${new Date(x.savedAt).toLocaleDateString('fa-IR')}</div>
+            <div class="planner-archive-actions">
+                <button class="primary" onclick="downloadWeeklyArchive(${i})">⬇️ دانلود رنگی</button>
+                <button onclick="viewWeeklyArchive(${i})">👁️ مشاهده</button>
+                <button onclick="deleteWeeklyArchive(${i})" style="background:rgba(244,63,94,.15);color:#ff8585;border:1px solid rgba(244,63,94,.3);">🗑️ حذف</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function downloadWeeklyArchive(index){
+    const a = getWeeklyArchives()[index]; if(!a) return;
+    const days = PLANNER_DAYS.map(d => {
+        const p = normalizePlannerDay(a.days?.[d.key]);
+        return `<section><h2>${d.emoji} ${d.name}</h2><table><tr><th>پارت</th><th>درس / مبحث</th><th>ساعت</th><th>وضعیت</th></tr>${p.parts.map((x,i) => `<tr><td>${faNum(i+1)}</td><td>${escapeHtml(x.subject||'—')}</td><td>${escapeHtml(x.time||'—')}</td><td>${x.done?'✓ انجام شد':'—'}</td></tr>`).join('')}</table>${p.notes ? `<p class="notes">📝 ${escapeHtml(p.notes)}</p>` : ''}</section>`;
+    }).join('');
+    const html = `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${archiveWeekLabel(a.weekKey)}</title><style>@page{size:A4;margin:14mm}body{font-family:Tahoma,Arial,sans-serif;background:#f4f7ff;color:#172033;padding:25px}header{background:linear-gradient(135deg,#06b6d4,#6366f1,#a855f7);color:white;border-radius:24px;padding:25px;margin-bottom:20px}h1{margin:0 0 6px}h2{color:#4f46e5}section{background:white;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 8px 25px #1111;page-break-inside:avoid}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:right}th{background:#eef2ff;color:#4338ca}.notes{background:#ecfeff;border-right:4px solid #06b6d4;padding:10px;border-radius:10px}</style></head><body><header><h1>📘 ${archiveWeekLabel(a.weekKey)}</h1><div>گزارش ذخیره‌شده برنامه هفتگی</div></header>${days}</body></html>`;
+    const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob), el = document.createElement('a');
+    el.href = url; el.download = `گزارش-هفته-${a.weekKey}.html`; el.click();
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+function viewWeeklyArchive(index){
+    const a = getWeeklyArchives()[index]; if(!a) return;
+    const days = PLANNER_DAYS.map(d => {
+        const p = normalizePlannerDay(a.days?.[d.key]);
+        return `<section><h2>${d.emoji} ${d.name}</h2><table><tr><th>پارت</th><th>درس / مبحث</th><th>ساعت</th><th>وضعیت</th></tr>${p.parts.map((x,i) => `<tr><td>${faNum(i+1)}</td><td>${escapeHtml(x.subject||'—')}</td><td>${escapeHtml(x.time||'—')}</td><td>${x.done?'✓ انجام شد':'—'}</td></tr>`).join('')}</table>${p.notes ? `<p class="notes">📝 ${escapeHtml(p.notes)}</p>` : ''}</section>`;
+    }).join('');
+    const html = `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>${archiveWeekLabel(a.weekKey)}</title><style>body{font-family:Tahoma,Arial,sans-serif;background:#f4f7ff;color:#172033;padding:25px}header{background:linear-gradient(135deg,#06b6d4,#6366f1,#a855f7);color:white;border-radius:24px;padding:25px;margin-bottom:20px}h1{margin:0 0 6px}h2{color:#4f46e5}section{background:white;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 8px 25px #1111}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:right}th{background:#eef2ff;color:#4338ca}.notes{background:#ecfeff;border-right:4px solid #06b6d4;padding:10px;border-radius:10px}</style></head><body><header><h1>📘 ${archiveWeekLabel(a.weekKey)}</h1><div>گزارش هفته</div></header>${days}</body></html>`;
+    const w = window.open('', '_blank');
+    if(!w){ alert('مرورگر پاپ‌آپ رو بلاک کرده؛ اجازه‌ی باز شدن پنجره را بده.'); return; }
+    w.document.write(html);
+    w.document.close();
+}
+    function deleteWeeklyArchive(index){
+    const archives = getWeeklyArchives();
+    const item = archives[index];
+    if(!item) return;
+    if(!confirm(`آرشیو «${archiveWeekLabel(item.weekKey)}» حذف شود؟`)) return;
+    archives.splice(index, 1);
+    setWeeklyArchives(archives);
+    addTombstone('deleted_planner_archives', item.id);
+    renderPlannerArchives();
+    scheduleCloudSync();
+}
+function initWeeklyPlanner(){
+    ensureWeeklyArchive(); renderPlannerArchives();
+    const grid = document.getElementById('planner-grid'); if(!grid) return;
+    const plan = getWeeklyPlan();
+    grid.innerHTML = PLANNER_DAYS.map((d,i) => {
+        const p = normalizePlannerDay(plan[d.key]), s = plannerStats(p);
+        return `<button type="button" class="planner-day-card" style="--day-c1:${d.c1};--day-c2:${d.c2};animation-delay:${i*0.04}s" onclick="openPlannerDay('${d.key}')">
+            <span class="planner-day-head"><span class="planner-day-name"><span class="planner-day-emoji">${d.emoji}</span>${d.name}</span><span class="planner-day-count">${s.done===9?'✓ کامل':s.filled?'در حال برنامه‌ریزی':'آماده'}</span></span>
+            <span class="planner-progress"><span style="width:${s.percent}%"></span></span>
+            <span class="planner-preview ${s.filled?'':'planner-empty'}">${escapeHtml(plannerPreview(p))}</span>
+            <span class="planner-day-open">باز کردن برنامه <b>۹ پارت</b><span>›</span></span>
+        </button>`;
+    }).join('');
+}
+function renderPlannerParts(parts){
+    const body = document.getElementById('planner-parts-body'); if(!body) return;
+    body.innerHTML = Array.from({length:PLANNER_PARTS}, (_,i) => {
+        const x = parts[i] || { subject:'', time:'', done:false };
+        return `<div class="daily-row planner-part-row" data-part="${i}">
+            <div class="part-number"><span>${faNum(i+1)}</span></div>
+            <div><input class="planner-part-subject" data-i="${i}" value="${escapeAttr(x.subject||'')}" placeholder="مثلاً حسابان — مشتق"></div>
+            <div><input class="planner-part-time" data-i="${i}" type="time" value="${escapeAttr(x.time||'')}"></div>
+            <div class="part-check-wrap"><label class="part-check"><input type="checkbox" class="planner-part-done" data-i="${i}" ${x.done?'checked':''}><span>✓</span></label></div>
+        </div>`;
+    }).join('');
+    body.querySelectorAll('input').forEach(el => el.addEventListener('input', updatePlannerLiveStats));
+    updatePlannerLiveStats();
+}
+function collectPlannerParts(){
+    return Array.from({length:PLANNER_PARTS}, (_,i) => ({
+        subject: document.querySelector(`.planner-part-subject[data-i="${i}"]`)?.value.trim() || '',
+        time: document.querySelector(`.planner-part-time[data-i="${i}"]`)?.value || '',
+        done: !!document.querySelector(`.planner-part-done[data-i="${i}"]`)?.checked
+    }));
+}
+function updatePlannerLiveStats(){
+    const s = plannerStats({ parts: collectPlannerParts() });
+    const set = (id,v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    set('parts-done-count', faNum(s.done));
+    set('parts-filled-count', faNum(s.filled));
+    set('parts-progress-percent', faNum(s.percent) + '٪');
+}
+function openPlannerDay(key){
+    const d = PLANNER_DAYS.find(x => x.key === key); if(!d) return;
+    plannerCurrentKey = key;
+    const p = normalizePlannerDay(getWeeklyPlan()[key]);
+    document.getElementById('planner-modal-title').innerHTML = `<span class="modal-day-icon" style="--c1:${d.c1};--c2:${d.c2}">${d.emoji}</span><span>برنامه ${d.name}</span>`;
+    document.getElementById('planner-notes').value = p.notes || '';
+    renderPlannerParts(p.parts);
+    document.getElementById('planner-modal').classList.add('show');
+}
+function closePlannerModal(e){ if(e && e.target !== e.currentTarget) return; document.getElementById('planner-modal')?.classList.remove('show'); plannerCurrentKey = null; }
+function savePlannerDay(){
+    if(!plannerCurrentKey) return;
+    const plan = getWeeklyPlan();
+    plan[plannerCurrentKey] = { parts: collectPlannerParts(), notes: document.getElementById('planner-notes').value.trim(), updatedAt: nowTs() };
+    setWeeklyPlan(plan);
+    initWeeklyPlanner(); closePlannerModal(); updateDailyVitals();
+    showReminderToast('برنامه روز ذخیره شد ✨', '۹ پارت امروزت با موفقیت ذخیره شد.');
+    scheduleCloudSync();
+}
+function clearPlannerDay(){
+    if(!plannerCurrentKey) return;
+    if(!confirm('برنامه این روز پاک شود؟')) return;
+    const plan = getWeeklyPlan();
+    delete plan[plannerCurrentKey];
+    setWeeklyPlan(plan);
+    addTombstone('deleted_planner_days', plannerWeekKey() + '|' + plannerCurrentKey);
+    initWeeklyPlanner(); closePlannerModal();
+    scheduleCloudSync();
+}
+function archiveCurrentWeek(manual){
+    const store = getWeeklyStore();
+    const days = store.days || {};
+    const has = Object.values(days).some(v => { const p = normalizePlannerDay(v); return plannerStats(p).filled > 0 || p.notes; });
+    if(!has){ if(manual) alert('برنامه‌ی این هفته هنوز خالی است؛ چیزی برای بایگانی نیست.'); return; }
+    const wk = store.weekKey || plannerWeekKey();
+    const a = getWeeklyArchives();
+    if(!a.some(x => x.weekKey === wk)){
+        a.unshift({ id:'week-'+wk, weekKey: wk, days, savedAt: new Date().toISOString(), updatedAt: nowTs() });
+        setWeeklyArchives(a.slice(0,52));
+    }
+    renderPlannerArchives();
+    scheduleCloudSync();
+    if(manual) alert('📦 هفته‌ی جاری بایگانی شد.');
+}
+
+/* ---------------------------------------------------------------------- */
+/* 14) یادآور هوشمند                                                        */
+/* ---------------------------------------------------------------------- */
+function getLastStudyActivity(){
+    let latest = Number(localStorage.getItem('smart_reminder_last_activity') || 0);
+    getHistory().forEach(x => { const t = Date.parse(x.timestamp||''); if(t > latest) latest = t; });
+    return latest;
+}
+function smartReminderEnabled(){ return localStorage.getItem('smart_reminder_enabled') === '1'; }
+function enableSmartReminder(){
+    if(!('Notification' in window)){ showReminderToast('مرورگر پشتیبانی نمی‌کند', 'Notification API در دسترس نیست؛ یادآور داخل برنامه همچنان کار می‌کند.'); return; }
+    Notification.requestPermission().then(p => {
+        if(p === 'granted'){
+            localStorage.setItem('smart_reminder_enabled', '1');
+            checkSmartReminder(true);
+            showReminderToast('یادآور فعال شد 🔔', 'از این به بعد کم‌کاری یک‌روزه را به تو یادآوری می‌کنم.');
+        } else {
+            showReminderToast('اجازه نوتیفیکیشن داده نشد', 'از تنظیمات مرورگر اجازه اعلان‌ها را فعال کن.');
+        }
+        updateReminderStatus();
+    });
+}
+function updateReminderStatus(){
+    const dot = document.getElementById('reminder-dot'), txt = document.getElementById('reminder-status-text'), last = document.getElementById('reminder-last-text');
+    if(!dot || !txt || !last) return;
+    const latest = getLastStudyActivity();
+    dot.classList.toggle('on', smartReminderEnabled());
+    txt.textContent = smartReminderEnabled() ? 'یادآور هوشمند فعال است' : 'یادآور خاموش است';
+    last.textContent = latest ? 'آخرین فعالیت: ' + new Date(latest).toLocaleString('fa-IR') : 'هنوز فعالیتی ثبت نشده است.';
+}
+function showReminderToast(title, msg){
+    let el = document.getElementById('reminder-toast');
+    if(!el){ el = document.createElement('div'); el.id = 'reminder-toast'; el.className = 'reminder-toast'; document.body.appendChild(el); }
+    el.innerHTML = '<strong>' + escapeHtml(title) + '</strong><div>' + escapeHtml(msg) + '</div>';
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 7000);
+}
+function checkSmartReminder(manual){
+    updateReminderStatus();
+    const latest = getLastStudyActivity();
+    const inactive = latest ? (Date.now() - latest >= 24*60*60*1000) : true;
+    if(!inactive && !manual) return;
+    const today = localDateKey(new Date());
+    if(!manual){
+        if(localStorage.getItem('smart_reminder_last_shown') === today) return;
+        localStorage.setItem('smart_reminder_last_shown', today);
+    }
+    const title = 'وقت برگشتن به مطالعه 📚';
+    const msg = latest ? 'بیش از یک روز است تستی ثبت نکرده‌ای. فقط با چند تست دوباره شروع کن!' : 'هنوز تستی ثبت نکرده‌ای؛ یک شروع کوچک برای امروز کافی است.';
+    if(inactive) showReminderToast(title, msg);
+    else if(manual) showReminderToast('همه‌چیز روبه‌راهه ✅', 'امروز فعالیت داشته‌ای؛ همینطور ادامه بده.');
+    if(inactive && smartReminderEnabled() && 'Notification' in window && Notification.permission === 'granted'){
+        try{ new Notification(title, { body: msg, tag:'smart-study-reminder' }); }catch(e){}
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+/* 15) پشتیبان‌گیری محلی (Export / Import)                                  */
+/* ---------------------------------------------------------------------- */
+function isValidHistoryArray(arr){ return Array.isArray(arr) && arr.every(item => item && typeof item === 'object' && typeof item.subject === 'string' && !isNaN(parseFloat(item.percent))); }
+function isValidErrorsArray(arr){ return Array.isArray(arr) && arr.every(item => item && typeof item === 'object' && typeof item.subject === 'string'); }
+
+function collectBackupData(){
+    return {
+        version: 4,
+        history: getHistory(),
+        errors: getErrors(),
+        deletedHistoryIds: getTombstones('deleted_history_ids'),
+        deletedErrorIds: getTombstones('deleted_error_ids'),
+        deletedGoalSubjects: getTombstones('deleted_goal_subjects'),
+        deletedPlannerDays: getTombstones('deleted_planner_days'),
+        subjectGoals: getSubjectGoals(),
+        dailyGoalLog: getDailyGoalLog(),
+        weeklyPlannerStore: getWeeklyStore(),
+        weeklyPlannerArchives: getWeeklyArchives(),
+        countdownTarget: getCountdownDate(),
+        countdownTargetTs: localStorage.getItem('countdown_target_date_ts') || '',
+        manualJDate: localStorage.getItem('manual_jdate') || '',
+        manualJDateAnchor: localStorage.getItem('manual_jdate_anchor') || '',
+        updatedAt: new Date().toISOString()
+    };
+}
+function exportData(){
+    const data = collectBackupData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = `StudyBackup_${localDateKey()}.json`; a.click();
+    URL.revokeObjectURL(url);
+}
+function applyBackupData(data, { merge } = { merge:false }){
+    if(!data || typeof data !== 'object') return;
+    if(data.history !== undefined && !isValidHistoryArray(data.history)) throw new Error('history نامعتبر است.');
+    if(data.errors !== undefined && !isValidErrorsArray(data.errors)) throw new Error('errors نامعتبر است.');
+
+    if(merge){
+        const h = mergeArrayWithTombstones(getHistory(), data.history||[], getTombstones('deleted_history_ids'), data.deletedHistoryIds||[]);
+        setHistory(h.merged); safeSet('deleted_history_ids', h.tomb);
+        const er = mergeArrayWithTombstones(getErrors(), data.errors||[], getTombstones('deleted_error_ids'), data.deletedErrorIds||[]);
+        setErrors(er.merged); safeSet('deleted_error_ids', er.tomb);
+        const g = mergeKeyedObject(getSubjectGoals(), data.subjectGoals||{}, getTombstones('deleted_goal_subjects'), data.deletedGoalSubjects||[]);
+        setSubjectGoals(g.merged); safeSet('deleted_goal_subjects', g.tomb);
+        const dl = mergeArrayWithTombstones(getDailyGoalLog(), data.dailyGoalLog||[], [], []);
+        setDailyGoalLog(dl.merged);
+        /* رفع باگ: قبلاً کلید حذف (Tombstone) روزهای برنامه هفتگی به‌صورت
+           «هفته|روز» ذخیره می‌شد، اما هنگام ادغام فقط با کلید «روز» (بدون
+           هفته) مقایسه می‌شد؛ در نتیجه هیچ حذفی واقعاً تشخیص داده نمی‌شد و
+           روزهای پاک‌شده دوباره از نسخه‌ی ابری برمی‌گشتند. اینجا هر دو طرف
+           را با همان کلید ترکیبی می‌سازیم تا با Tombstone درست مقایسه شوند. */
+        const localStoreNow = getWeeklyStore();
+        const wk = localStoreNow.weekKey || plannerWeekKey();
+        const localDays = (localStoreNow.weekKey === wk ? localStoreNow.days : {}) || {};
+        const remoteStore = data.weeklyPlannerStore || {};
+        const remoteWk = remoteStore.weekKey || wk;
+        const remoteDays = remoteStore.days || {};
+        const prefixDays = (obj, w) => { const out = {}; Object.entries(obj||{}).forEach(([k,v]) => { out[w + '|' + k] = v; }); return out; };
+        const pd = mergeKeyedObject(prefixDays(localDays, wk), prefixDays(remoteDays, remoteWk), getTombstones('deleted_planner_days'), data.deletedPlannerDays||[]);
+        const mergedDays = {};
+        Object.entries(pd.merged).forEach(([k, v]) => {
+            const sep = k.indexOf('|');
+            const w = k.slice(0, sep), dayKey = k.slice(sep + 1);
+            if(w === wk) mergedDays[dayKey] = v; // فقط روزهای متعلق به هفته‌ی جاری نگه داشته می‌شوند
+        });
+        setWeeklyStore({ weekKey: wk, days: mergedDays }); safeSet('deleted_planner_days', pd.tomb);
+        const ar = mergeArrayWithTombstones(getWeeklyArchives(), data.weeklyPlannerArchives||[], [], []);
+        setWeeklyArchives(ar.merged);
+        const localTs = Number(localStorage.getItem('countdown_target_date_ts')||0);
+        const remoteTs = Number(data.countdownTargetTs||0);
+        if(data.countdownTarget && remoteTs >= localTs){
+            localStorage.setItem('countdown_target_date', data.countdownTarget);
+            localStorage.setItem('countdown_target_date_ts', String(remoteTs||nowTs()));
+        }
+    } else {
+        if(data.history !== undefined) setHistory(data.history);
+        if(data.errors !== undefined) setErrors(data.errors);
+        if(data.deletedHistoryIds) safeSet('deleted_history_ids', data.deletedHistoryIds);
+        if(data.deletedErrorIds) safeSet('deleted_error_ids', data.deletedErrorIds);
+        if(data.deletedGoalSubjects) safeSet('deleted_goal_subjects', data.deletedGoalSubjects);
+        if(data.deletedPlannerDays) safeSet('deleted_planner_days', data.deletedPlannerDays);
+        if(data.subjectGoals !== undefined) setSubjectGoals(data.subjectGoals);
+        if(data.dailyGoalLog !== undefined) setDailyGoalLog(data.dailyGoalLog);
+        if(data.weeklyPlannerStore !== undefined) setWeeklyStore(data.weeklyPlannerStore);
+        if(data.weeklyPlannerArchives !== undefined) setWeeklyArchives(data.weeklyPlannerArchives);
+        if(data.manualJDate) localStorage.setItem('manual_jdate', data.manualJDate);
+        if(data.manualJDateAnchor) localStorage.setItem('manual_jdate_anchor', data.manualJDateAnchor);
+        if(data.countdownTarget) localStorage.setItem('countdown_target_date', data.countdownTarget);
+        if(data.countdownTargetTs) localStorage.setItem('countdown_target_date_ts', data.countdownTargetTs);
+    }
+    refreshEverything();
+}
+function importData(event){
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try{
+            const data = JSON.parse(e.target.result);
+            applyBackupData(data, { merge:false });
+            scheduleCloudSync();
+            alert('✅ همه‌ی اطلاعات بازیابی شد!');
+        }catch(err){ alert('فایل پشتیبان نامعتبر یا خراب است: ' + (err.message||'')); }
+        finally{ event.target.value = ''; }
+    };
+    reader.readAsText(file);
+}
+function refreshEverything(){
+    updateUI(); loadGoals(); loadErrors(); initWeeklyPlanner(); initCountdown();
+    renderSmartDate(); updateDailyVitals(); updateReminderStatus();
+    if(myChart) updateChart();
+    if(radarChart) updateRadarChart();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 16) گزارش قابل چاپ                                                       */
+/* ---------------------------------------------------------------------- */
+function printReport(){
+    const history = getHistory(), errors = getErrors();
+    if(!history.length){ alert('هنوز داده‌ای برای گزارش ثبت نشده.'); return; }
+    const avg = (history.reduce((s,i) => s+i.percent, 0) / history.length).toFixed(1);
+    const best = Math.max(...history.map(i => i.percent));
+    const rows = history.map(item => `<tr><td>${escapeHtml(item.subject)}</td><td>${item.percent}%</td><td>${item.totalTests || '-'}</td><td>${escapeHtml(item.date)}</td></tr>`).join('');
+    const win = window.open('', '_blank');
+    win.document.write(`<html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>گزارش عملکرد تحصیلی</title>
+        <style>body{font-family:Tahoma,sans-serif;padding:30px;color:#111}h1{text-align:center}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ccc;padding:8px;text-align:center}th{background:#eee}.summary{display:flex;justify-content:space-around;margin:20px 0;text-align:center}.summary div{border:1px solid #ccc;padding:10px 20px;border-radius:8px}</style></head><body>
+        <h1>گزارش عملکرد تحصیلی</h1><p style="text-align:center;color:#555;">تاریخ تولید گزارش: ${new Date().toLocaleDateString('fa-IR')}</p>
+        <div class="summary"><div><strong>${history.length}</strong><br>کل آزمون‌ها</div><div><strong>${avg}%</strong><br>میانگین کل</div><div><strong>${best}%</strong><br>بهترین عملکرد</div><div><strong>${errors.length}</strong><br>غلط‌های ثبت‌شده</div></div>
+        <table><thead><tr><th>درس</th><th>درصد</th><th>تعداد تست</th><th>تاریخ</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+    win.document.close(); win.focus(); win.print();
+}
+
+/* ---------------------------------------------------------------------- */
+/* 17) همگام‌سازی ابری با Supabase — نسخه‌ی درست و ادغام‌محور               */
+/* ---------------------------------------------------------------------- */
+/*
+  رفتار جدید:
+  - هیچ‌وقت داده‌ی محلی به‌طور کور به‌جای داده‌ی ابری نمی‌نشیند و برعکس.
+  - هر sync ابتدا نسخه‌ی ابری را می‌گیرد، با نسخه‌ی محلی (با احترام کامل
+    به تاریخچه‌ی حذف‌ها/Tombstones) ادغام می‌کند، نتیجه را هم محلی ذخیره
+    می‌کند و هم به ابر پس می‌فرستد. یعنی هر دو طرف همیشه به یک نسخه‌ی
+    نهایی و درست می‌رسند — چه چیزی جدید اضافه شده باشد چه چیزی حذف شده باشد.
+*/
+let sb = null, sbChannel = null, cloudBusy = false, autoSyncTimer = null, applyingRemote = false, cloudDebounce = null;
+
+const DEFAULT_CLOUD_CFG = {
+    url: 'https://yhglpaqeezjeyciavnhy.supabase.co',
+    key: 'sb_publishable_a6RafZQVKifR8oDSpZ8KGQ_5SnqxGf5'
+};
+function cloudCfg(){
+    const stored = safeParse('neo_cloud_cfg', null);
+    return stored && stored.url && stored.key ? stored : DEFAULT_CLOUD_CFG;
+}
+function setCloudStatus(text, ok){
+    const el = document.getElementById('neo-cloud-status');
+    if(el){ el.textContent = text; el.style.color = ok ? '#67e8f9' : ''; }
+}
+function getSupabaseClient(){
+    const c = cloudCfg();
+    if(!c.url || !c.key || !window.supabase) return null;
+    if(!sb) sb = window.supabase.createClient(c.url, c.key, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+    return sb;
+}
+
+function collectCloudData(){ return collectBackupData(); }
+
+async function authRefreshUI(){
+    const client = getSupabaseClient();
+    if(!client){ setCloudStatus('☁️ اتصال ابری در دسترس نیست؛ برنامه در حالت محلی است.'); return; }
+    const { data:{ session } } = await client.auth.getSession();
+    const ub = document.getElementById('neo-user-box'), ab = document.getElementById('neo-auth-box'), em = document.getElementById('neo-auth-user-email');
+    const dot = document.getElementById('cloud-account-dot');
+    if(session?.user){
+        if(ub) ub.style.display = 'flex';
+        if(ab) ab.style.display = 'none';
+        if(em) em.textContent = session.user.email || '';
+        if(dot) dot.classList.add('on');
+        setCloudStatus('☁️ وارد حساب هستی. در حال دریافت و ادغام اطلاعات...', true);
+        await pullAndMergeFromCloud();
+        subscribeRealtime(session.user.id);
+        if(localStorage.getItem('neo_auto_sync') !== '0') startAutoSync();
+    } else {
+        if(ub) ub.style.display = 'none';
+        if(ab) ab.style.display = 'grid';
+        if(dot) dot.classList.remove('on');
+        setCloudStatus('☁️ هنوز وارد حساب نشده‌ای؛ اطلاعات فقط روی همین دستگاه است.');
+        stopAutoSync();
+    }
+}
+window.authSignUp = async function(){
+    const client = getSupabaseClient();
+    const email = document.getElementById('neo-auth-email')?.value.trim();
+    const password = document.getElementById('neo-auth-password')?.value;
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!email || !password || password.length < 6){ setCloudStatus('ایمیل و رمز عبور معتبر (حداقل ۶ کاراکتر) وارد کن.'); return; }
+    setCloudStatus('در حال ساخت حساب...');
+    const { data, error } = await client.auth.signUp({ email, password });
+    if(error){ setCloudStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
+    setCloudStatus(data.session ? '✅ حساب ساخته شد و وارد شدی.' : '📩 حساب ساخته شد؛ ایمیل تأیید را باز کن و سپس وارد شو.', true);
+    await authRefreshUI();
+};
+window.authSignIn = async function(){
+    const client = getSupabaseClient();
+    const email = document.getElementById('neo-auth-email')?.value.trim();
+    const password = document.getElementById('neo-auth-password')?.value;
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!email || !password){ setCloudStatus('ایمیل و رمز عبور را وارد کن.'); return; }
+    setCloudStatus('در حال ورود...');
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if(error){ setCloudStatus('ورود ناموفق بود: ' + error.message); return; }
+    setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...', true);
+    await authRefreshUI();
+};
+window.authSignOut = async function(){
+    const client = getSupabaseClient(); if(!client) return;
+    stopAutoSync();
+    if(sbChannel){ try{ await client.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
+    await client.auth.signOut();
+    setCloudStatus('از حساب خارج شدی؛ اطلاعات محلی روی همین دستگاه باقی است.');
+    authRefreshUI();
+};
+
+/* اعمال ادغام‌شده‌ی داده‌ی دریافتی از ابر روی محلی، بدون بازگرداندن آیتم‌های حذف‌شده */
+function applyMergedRemote(remoteData){
+    applyingRemote = true;
+    try{ applyBackupData(remoteData, { merge:true }); }
+    finally{ applyingRemote = false; }
+}
+
+/* گرفتن نسخه‌ی ابری، ادغام با محلی (با احترام به Tombstoneها)، و ذخیره‌ی هر دو طرف */
+async function pullAndMergeFromCloud(){
+    const client = getSupabaseClient();
+    if(!client) return;
+    const { data:{ session } } = await client.auth.getSession();
+    if(!session?.user) return;
+    try{
+        const { data: remote, error } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
+        if(error) throw error;
+        if(remote && remote.data){
+            applyMergedRemote(remote.data);
+            setCloudStatus('☁️ اطلاعات با موفقیت ادغام و همگام شد.', true);
+        } else {
+            setCloudStatus('☁️ اولین ورود؛ اطلاعات محلی به ابر منتقل می‌شود.', true);
+        }
+        await pushToCloud(); // نسخه‌ی نهایی (ادغام‌شده) را به ابر پس بفرست تا دو طرف یکسان باشند
+    }catch(e){
+        setCloudStatus('❌ دریافت اطلاعات ابری ناموفق بود: ' + (e.message || 'خطای نامشخص'));
+    }
+}
+async function pushToCloud(){
+    const client = getSupabaseClient();
+    if(!client) return;
+    const { data:{ session } } = await client.auth.getSession();
+    if(!session?.user) return;
+    const payload = collectCloudData();
+    const { error } = await client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: new Date().toISOString() }, { onConflict:'user_id' });
+    if(error) throw error;
+}
+async function cloudSyncNow(){
+    if(cloudBusy || applyingRemote) return;
+    const client = getSupabaseClient();
+    if(!client) return;
+    const { data:{ session } } = await client.auth.getSession();
+    if(!session?.user) return;
+    cloudBusy = true;
+    setCloudStatus('☁️ در حال همگام‌سازی...');
+    try{
+        // همیشه اول با ابر ادغام کن (نه فقط overwrite) تا هیچ حذفی گم/برنگردانده نشود
+        const { data: remote, error: rerr } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
+        if(rerr) throw rerr;
+        if(remote && remote.data) applyMergedRemote(remote.data);
+        await pushToCloud();
+        setCloudStatus('☁️ همگام‌سازی موفق؛ همه‌چیز به‌روز است.', true);
+    }catch(e){
+        setCloudStatus('❌ همگام‌سازی انجام نشد: ' + (e.message || 'خطای نامشخص'));
+    }finally{
+        cloudBusy = false;
+    }
+}
+/* دکمه‌ی «همگام‌سازی» دستی: برای وقتی که کاربر مدتی خارج از حساب کار کرده و
+   می‌خواهد مطمئن شود همه‌ی اطلاعات محلی‌اش با ابر ادغام شده است. */
+async function manualCloudSync(){
+    const client = getSupabaseClient();
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    const { data:{ session } } = await client.auth.getSession();
+    if(!session?.user){ setCloudStatus('اول باید وارد حساب شوی.'); return; }
+    setCloudStatus('☁️ در حال دریافت و ادغام کامل اطلاعات...');
+    await pullAndMergeFromCloud();
+}
+function scheduleCloudSync(){
+    if(applyingRemote) return; // از حلقه‌ی برگشتی جلوگیری کن
+    const client = getSupabaseClient();
+    if(!client) return;
+    clearTimeout(cloudDebounce);
+    cloudDebounce = setTimeout(() => { cloudSyncNow(); }, 900);
+}
+function startAutoSync(){
+    stopAutoSync();
+    autoSyncTimer = setInterval(() => { if(!applyingRemote) cloudSyncNow(); }, 20000);
+}
+function stopAutoSync(){ if(autoSyncTimer) clearInterval(autoSyncTimer); autoSyncTimer = null; }
+
+/* گوش‌دادن به تغییرات لحظه‌ای ابر (مثلاً وقتی از یک دستگاه دیگر sync می‌کنی) */
+function subscribeRealtime(userId){
+    const client = getSupabaseClient();
+    if(!client || !userId) return;
+    if(sbChannel){ try{ client.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
+    sbChannel = client.channel('study_cloud_changes_' + userId)
+        .on('postgres_changes', { event:'UPDATE', schema:'public', table:'study_cloud', filter:`user_id=eq.${userId}` }, (payload) => {
+            if(applyingRemote || cloudBusy) return; // این تغییر می‌تواند اکوی push خودمان باشد؛ ادغام idempotent است پس بی‌خطر است
+            if(payload?.new?.data) applyMergedRemote(payload.new.data);
+        })
+        .subscribe();
+}
+
+function toggleCloudAccountModal(force){
+    const overlay = document.getElementById('cloud-account-modal-overlay');
+    if(!overlay) return;
+    const open = typeof force === 'boolean' ? force : !overlay.classList.contains('open');
+    overlay.classList.toggle('open', open);
+    /* رفع باگ: پنجره‌ی حساب کاربری از صفحه اول خالی باز می‌شد چون هیچ محتوایی
+       داخل #cloud-account-modal-slot قرار نمی‌گرفت. اینجا خودِ پنل واقعی حساب
+       کاربری (#neo-cloud-panel) را موقتاً از تب «اهداف و پشتیبان» به داخل
+       مودال منتقل می‌کنیم؛ با بستن مودال، دوباره به جای اصلی‌اش برمی‌گردد.
+       این‌طوری همیشه یک نسخه‌ی واحد و کاملاً سالم از فرم ورود/ثبت‌نام وجود دارد. */
+    const slot = document.getElementById('cloud-account-modal-slot');
+    const panel = document.getElementById('neo-cloud-panel');
+    const anchor = document.getElementById('neo-cloud-panel-anchor');
+    if(slot && panel && anchor){
+        if(open && panel.parentElement !== slot){
+            slot.appendChild(panel);
+        } else if(!open && panel.parentElement === slot){
+            anchor.parentElement.insertBefore(panel, anchor);
+        }
+    }
+}
+function initCloud(){
+    getSupabaseClient();
+    authRefreshUI();
+    if(sb) sb.auth.onAuthStateChange(() => setTimeout(authRefreshUI, 0));
+}
+
+/* هر تغییر ورودی (تایپ/انتخاب) هم — با تأخیر کوتاه — sync را برنامه‌ریزی می‌کند */
+document.addEventListener('input', () => { if(!applyingRemote) scheduleCloudSync(); });
+document.addEventListener('change', () => { if(!applyingRemote) scheduleCloudSync(); });
+
+/* ---------------------------------------------------------------------- */
+/* 18) راه‌اندازی برنامه                                                     */
+/* ---------------------------------------------------------------------- */
+window.onload = function(){
+    const safeRun = (fn, label) => { try{ fn(); }catch(e){ console.error('خطا در اجرای ' + label + ':', e); } };
+
+    timerDisplay = document.getElementById('timer');
+    minutesInput = document.getElementById('minutes');
+    secondsInput = document.getElementById('seconds');
+    startPauseBtn = document.getElementById('startPauseBtn');
+    minutesInput?.addEventListener('input', syncDisplayFromInputs);
+    secondsInput?.addEventListener('input', syncDisplayFromInputs);
+
+    safeRun(applyStoredTheme, 'applyStoredTheme');
+    safeRun(resetTimer, 'resetTimer');
+    safeRun(resumeTimerIfActive, 'resumeTimerIfActive');
+    safeRun(updateTimerSubjects, 'updateTimerSubjects');
+    safeRun(updateUI, 'updateUI');
+    safeRun(initChart, 'initChart');
+    safeRun(initRadarChart, 'initRadarChart');
+    safeRun(loadGoals, 'loadGoals');
+    safeRun(loadErrors, 'loadErrors');
+    safeRun(initWeeklyPlanner, 'initWeeklyPlanner');
+    safeRun(initCountdown, 'initCountdown');
+    safeRun(renderSmartDate, 'renderSmartDate');
+    safeRun(updateDailyVitals, 'updateDailyVitals');
+    safeRun(updateReminderStatus, 'updateReminderStatus');
+    safeRun(() => checkSmartReminder(false), 'checkSmartReminder');
+    safeRun(initCloud, 'initCloud');
+
+    setInterval(() => { safeRun(renderSmartDate, 'renderSmartDate'); safeRun(updateDailyVitals, 'updateDailyVitals'); }, 60000);
+
+    if('serviceWorker' in navigator){
+        window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(() => {}); });
+    }
+};
+</script>
+    <!-- ==================== سیستم نکته‌ها ==================== -->
+<!-- ==================== سیستم جدید نکات ==================== -->
+
+<section id="smartNotesSection" class="smart-notes-section tab-content active">
+    <div class="smart-notes-header">
+
+        <div>
+            <h2>📝 نکات دروس تخصصی</h2>
+            <p>نکات را مرتب ذخیره کن و هر زمان خواستی پیدا کن.</p>
+        </div>
+
+        <button
+            class="smart-note-add-btn"
+            onclick="openSmartNoteEditor()">
+            ➕ افزودن نکته
+        </button>
+
+    </div>
+
+
+    <!-- جستجو -->
+
+    <div class="smart-notes-search">
+
+        <span>🔎</span>
+
+        <input
+            id="smartNotesSearch"
+            type="text"
+            placeholder="جستجوی عنوان یا توضیحات..."
+            oninput="searchSmartNotes()">
+
+    </div>
+
+
+    <!-- درس‌ها -->
+
+    <div class="smart-notes-subjects">
+
+        <button
+            class="smart-subject-btn active"
+            data-subject="هندسه"
+            onclick="selectSmartNoteSubject('هندسه',this)">
+            📐 هندسه
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="آمار"
+            onclick="selectSmartNoteSubject('آمار',this)">
+            📊 آمار
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="گسسته"
+            onclick="selectSmartNoteSubject('گسسته',this)">
+            🔢 گسسته
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="حسابان"
+            onclick="selectSmartNoteSubject('حسابان',this)">
+            📈 حسابان
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="ریاضی"
+            onclick="selectSmartNoteSubject('ریاضی',this)">
+            ➗ ریاضی
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="زیست"
+            onclick="selectSmartNoteSubject('زیست',this)">
+            🧬 زیست
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="زمین شناسی"
+            onclick="selectSmartNoteSubject('زمین شناسی',this)">
+            🌍 زمین‌شناسی
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="فیزیک"
+            onclick="selectSmartNoteSubject('فیزیک',this)">
+            ⚡ فیزیک
+        </button>
+
+        <button
+            class="smart-subject-btn"
+            data-subject="شیمی"
+            onclick="selectSmartNoteSubject('شیمی',this)">
+            🧪 شیمی
+        </button>
+
+    </div>
+
+
+    <!-- عنوان درس و تعداد -->
+
+    <div class="smart-notes-current-title">
+
+        <span id="smartNotesCurrentSubject">
+            📐 هندسه
+        </span>
+
+        <span id="smartNotesCount">
+            ۰ نکته
+        </span>
+
+    </div>
+
+
+    <!-- لیست خلاصه نکات -->
+
+    <div id="smartNotesList" class="smart-notes-list"></div>
+
+</section>
+
+
+<!-- ==================== افزودن / ویرایش ==================== -->
+
+<div id="smartNoteModal" class="smart-note-modal">
+
+    <div class="smart-note-modal-box">
+
+        <button
+            class="smart-note-close"
+            onclick="closeSmartNoteEditor()">
+            ×
+        </button>
+
+
+        <h2 id="smartNoteModalTitle">
+            📝 نکته جدید
+        </h2>
+
+
+        <label class="smart-note-label">
+            📚 درس
+        </label>
+
+        <select id="smartNoteSubjectInput">
+
+            <option value="هندسه">📐 هندسه</option>
+            <option value="آمار">📊 آمار</option>
+            <option value="گسسته">🔢 گسسته</option>
+            <option value="حسابان">📈 حسابان</option>
+            <option value="ریاضی">➗ ریاضی</option>
+            <option value="زیست">🧬 زیست</option>
+            <option value="زمین شناسی">🌍 زمین‌شناسی</option>
+            <option value="فیزیک">⚡ فیزیک</option>
+            <option value="شیمی">🧪 شیمی</option>
+
+        </select>
+
+
+        <label class="smart-note-label">
+            🏷️ عنوان نکته
+        </label>
+
+        <input
+            id="smartNoteTitleInput"
+            class="smart-note-title-input"
+            type="text"
+            placeholder="مثلاً: قانون کولن">
+
+
+        <label class="smart-note-label">
+            📝 توضیحات
+        </label>
+
+        <textarea
+            id="smartNoteTextInput"
+            class="smart-note-text-input"
+            placeholder="توضیحات نکته را بنویسید..."></textarea>
+
+
+        <label class="smart-note-label">
+            📷 تصویر
+        </label>
+
+        <label class="smart-note-upload">
+
+            📷 انتخاب تصویر
+
+           <input id="smartNoteImageInput" type="file" accept="image/*" multiple hidden onchange="previewSmartNoteImage(event)">
+        </label>
+
+        <div id="smartNoteImagePreview"></div>
+
+
+        <div class="smart-note-modal-actions">
+
+            <button
+                class="smart-note-cancel-btn"
+                onclick="closeSmartNoteEditor()">
+                انصراف
+            </button>
+
+            <button
+                class="smart-note-save-btn"
+                onclick="saveSmartNote()">
+                💾 ذخیره
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================== نمایش کامل نکته ==================== -->
+
+<div id="smartNoteViewModal" class="smart-note-modal">
+
+    <div class="smart-note-modal-box">
+
+        <button
+            class="smart-note-close"
+            onclick="closeSmartNoteView()">
+            ×
+        </button>
+
+        <div id="smartNoteViewContent"></div>
+
+    </div>
+</div>
+</div>
     <script>
-        // دیتابیس اصلی برنامه‌ریزی و حافظه محلی
-        let appData = {
-            exams: [],
-            errors: [],
-            plannerParts: [
-                { id: 1, title: 'پارت ۱: ریاضی', time: '08:00 تا 10:00', status: false },
-                { id: 2, title: 'پارت ۲: فیزیک', time: '10:30 تا 12:30', status: false }
-            ],
-            notes: [],
-            trash: [],
-            studySeconds: 0
+
+/* =========================================================
+   سیستم نکته‌های درس
+   ========================================================= */
+
+/* =========================================================
+   سیستم جدید نکات دروس تخصصی
+   ========================================================= */
+
+const SMART_NOTES_KEY = "smart_study_notes_v4";
+function openImageLightbox(src){
+    let ov = document.getElementById('smart-image-lightbox');
+    if(!ov){
+        ov = document.createElement('div');
+        ov.id = 'smart-image-lightbox';
+        ov.innerHTML = '<button id="smart-image-lightbox-close" aria-label="بستن">✕</button><img id="smart-image-lightbox-img" src="">';
+        document.body.appendChild(ov);
+        ov.addEventListener('click', (e) => { if(e.target === ov) closeImageLightbox(); });
+        document.getElementById('smart-image-lightbox-close').addEventListener('click', closeImageLightbox);
+        document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeImageLightbox(); });
+    }
+    document.getElementById('smart-image-lightbox-img').src = src;
+    ov.classList.add('show');
+}
+function closeImageLightbox(){
+    document.getElementById('smart-image-lightbox')?.classList.remove('show');
+}
+let smartNotes = {};
+let currentSmartSubject = "هندسه";
+let editingSmartNoteId = null;
+let smartNoteImages = [];
+
+/* =========================
+   بارگذاری نکات
+========================= */
+
+function loadSmartNotes(){
+
+    try{
+
+        const saved =
+            localStorage.getItem(SMART_NOTES_KEY);
+
+        smartNotes =
+            saved ? JSON.parse(saved) : {};
+
+    }catch(error){
+
+        console.error(
+            "خطا در بارگذاری نکات:",
+            error
+        );
+
+        smartNotes = {};
+
+    }
+
+}
+
+
+/* =========================
+   ذخیره نکات
+========================= */
+
+function saveSmartNotes(){
+
+    try{
+
+        localStorage.setItem(
+            SMART_NOTES_KEY,
+            JSON.stringify(smartNotes)
+        );
+
+        return true;
+
+    }catch(error){
+
+        console.error(
+            "خطا در ذخیره نکات:",
+            error
+        );
+
+        alert(
+            "ذخیره انجام نشد. ممکن است حافظه مرورگر پر شده باشد."
+        );
+
+        return false;
+
+    }
+
+}
+
+
+/* =========================
+   انتخاب درس
+========================= */
+
+function selectSmartNoteSubject(subject, button){
+
+    currentSmartSubject = subject;
+
+    document
+        .querySelectorAll(".smart-subject-btn")
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+    if(button){
+
+        button.classList.add("active");
+
+    }
+
+    const search =
+        document.getElementById("smartNotesSearch");
+
+    if(search){
+
+        search.value = "";
+
+    }
+
+    renderSmartNotes();
+
+}
+
+
+/* =========================
+   افزودن نکته
+========================= */
+
+function openSmartNoteEditor(){
+
+    editingSmartNoteId = null;
+
+    smartNoteImages = [];
+
+    document.getElementById(
+        "smartNoteModalTitle"
+    ).textContent = "📝 نکته جدید";
+
+
+    document.getElementById(
+        "smartNoteSubjectInput"
+    ).value = currentSmartSubject;
+
+
+    document.getElementById(
+        "smartNoteTitleInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "smartNoteTextInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "smartNoteImageInput"
+    ).value = "";
+
+
+    renderSmartNoteImagePreview();
+
+
+    document
+        .getElementById("smartNoteModal")
+        .classList.add("show");
+
+}
+
+
+/* =========================
+   بستن پنجره
+========================= */
+
+function closeSmartNoteEditor(){
+
+    document
+        .getElementById("smartNoteModal")
+        .classList.remove("show");
+
+}
+
+
+function closeSmartNoteView(){
+
+    document
+        .getElementById("smartNoteViewModal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================
+   پیش‌نمایش تصویر
+========================= */
+
+function handleSmartNoteImageFiles(fileList){
+    const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+    if(!files.length) return;
+    let remaining = files.length;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            smartNoteImages.push(e.target.result);
+            remaining--;
+            if(remaining === 0) renderSmartNoteImagePreview();
         };
+        reader.readAsDataURL(file);
+    });
+}
+function renderSmartNoteImagePreview(){
+    const box = document.getElementById('smartNoteImagePreview');
+    if(!box) return;
+    box.innerHTML = smartNoteImages.map((src, i) => `
+        <div class="smart-note-img-item">
+            <img src="${src}" alt="تصویر نکته" onclick="openImageLightbox('${src}')">
+            <button type="button" class="smart-note-img-remove" onclick="removeSmartNoteImage(${i})" title="حذف عکس">✕</button>
+        </div>
+    `).join('');
+}
+function removeSmartNoteImage(index){
+    smartNoteImages.splice(index, 1);
+    renderSmartNoteImagePreview();
+}
+function previewSmartNoteImage(event){
+    handleSmartNoteImageFiles(event.target.files);
+    event.target.value = '';
+}
 
-        // بارگذاری اطلاعات از LocalStorage
-        function loadAppData() {
-            const saved = localStorage.getItem('comprehensive_test_system_data_v2026');
-            if (saved) {
-                try {
-                    appData = JSON.parse(saved);
-                } catch(e) { console.error(e); }
-            }
-            renderAll();
-        }
 
-        function saveAppData() {
-            localStorage.setItem('comprehensive_test_system_data_v2026', JSON.stringify(appData));
-            renderAll();
-        }
+/* =========================
+   ذخیره نکته
+========================= */
 
-        // مدیریت تب‌ها
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
+function saveSmartNote(){
 
-        // رندر کردن کلیه بخش‌ها
-        function renderAll() {
-            renderExamHistory();
-            renderErrorList();
-            renderPlannerParts();
-            renderSmartNotesList();
-            renderTrashList();
-            updateDashboardStats();
-        }
+    const subject =
+        document.getElementById(
+            "smartNoteSubjectInput"
+        ).value;
 
-        // محاسبه درصد فوری در بخش آزمون
-        function calculateInstantPercent() {
-            const correct = parseFloat(document.getElementById('exam-correct').value) || 0;
-            const wrong = parseFloat(document.getElementById('exam-wrong').value) || 0;
-            const totalQ = correct + wrong + (parseFloat(document.getElementById('exam-blank').value) || 0);
-            
-            if (totalQ > 0) {
-                const percent = ((correct * 3 - wrong) / (totalQ * 3)) * 100;
-                document.getElementById('exam-calc-percent').value = percent.toFixed(2) + '٪';
-            } else {
-                document.getElementById('exam-calc-percent').value = '۰٪';
-            }
-        }
 
-        // ثبت آزمون
-        function saveExamRecord() {
-            const subject = document.getElementById('exam-subject').value.trim();
-            const name = document.getElementById('exam-name').value.trim();
-            const correct = document.getElementById('exam-correct').value;
-            const wrong = document.getElementById('exam-wrong').value;
-            const blank = document.getElementById('exam-blank').value;
-            const percent = document.getElementById('exam-calc-percent').value;
-            const notes = document.getElementById('exam-notes').value.trim();
+    const title =
+        document.getElementById(
+            "smartNoteTitleInput"
+        ).value.trim();
 
-            if (!subject || !name) {
-                alert('لطفاً نام درس و نام آزمون را وارد کنید.');
-                return;
-            }
 
-            const record = {
-                id: Date.now(),
-                subject, name, correct, wrong, blank, percent, notes,
-                date: new Date().toLocaleDateString('fa-IR')
-            };
+    const text =
+        document.getElementById(
+            "smartNoteTextInput"
+        ).value.trim();
 
-            appData.exams.push(record);
-            saveAppData();
 
-            // پاکسازی فرم
-            document.getElementById('exam-subject').value = '';
-            document.getElementById('exam-name').value = '';
-            document.getElementById('exam-correct').value = '';
-            document.getElementById('exam-wrong').value = '';
-            document.getElementById('exam-blank').value = '';
-            document.getElementById('exam-calc-percent').value = '';
-            document.getElementById('exam-notes').value = '';
-            alert('آزمون با موفقیت ثبت شد!');
-        }
+    if(!title){
 
-        function renderExamHistory() {
-            const container = document.getElementById('exam-history-list');
-            if (appData.exams.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:20px;">هنوز آزمونی ثبت نشده است.</div>';
-                return;
-            }
-            container.innerHTML = appData.exams.map(item => `
-                <div class="history-item">
-                    <div class="item-info">
-                        <span class="item-subject">${item.subject} - ${item.name}</span>
-                        <span class="item-date">${item.date} | صحیح: ${item.correct} | غلط: ${item.wrong}</span>
-                        ${item.notes ? `<small style="color:var(--text-secondary)">${item.notes}</small>` : ''}
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <span class="score-percent">${item.percent}</span>
-                        <button class="delete-btn" onclick="moveToTrash('exam', ${item.id})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+        alert(
+            "لطفاً عنوان نکته را وارد کنید."
+        );
 
-        // غلط‌نامه هوشمند
-        function saveErrorRecord() {
-            const subject = document.getElementById('error-subject-select').value;
-            const difficulty = document.getElementById('error-difficulty').value;
-            const timeStatus = document.getElementById('error-time-status').value;
-            const reason = document.getElementById('error-reason-select').value;
-            const reviewCount = document.getElementById('error-review-count').value;
-            const description = document.getElementById('error-description').value.trim();
+        return;
 
-            if (!description) {
-                alert('لطفاً شرح سوال یا نکته اصلاحی را وارد کنید.');
-                return;
-            }
+    }
 
-            const errItem = {
-                id: Date.now(),
-                subject, difficulty, timeStatus, reason, reviewCount, description,
-                solved: false,
-                date: new Date().toLocaleDateString('fa-IR')
-            };
 
-            appData.errors.push(errItem);
-            saveAppData();
-            document.getElementById('error-description').value = '';
-            alert('مورد به غلط‌نامه اضافه شد.');
-        }
+   if(!text && !smartNoteImages.length){
 
-        function renderErrorList() {
-            const filter = document.getElementById('error-filter-subject').value;
-            const container = document.getElementById('error-list-container');
-            let list = appData.errors;
-            if (filter !== 'all') {
-                list = list.filter(item => item.subject === filter);
-            }
+        alert(
+            "حداقل توضیحات یا تصویر را اضافه کنید."
+        );
 
-            if (list.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:20px;">هیچ موردی در غلط‌نامه یافت نشد.</div>';
-                return;
-            }
+        return;
 
-            container.innerHTML = list.map(item => `
-                <div class="error-item" style="background:${item.solved ? 'rgba(74,222,128,0.05)' : 'rgba(255,255,255,0.03)'}">
-                    <div class="item-info">
-                        <span class="item-subject">[${item.subject}] سطح: ${item.difficulty}</span>
-                        <span class="item-date">علت: ${item.reason} | زمان: ${item.timeStatus} | مرور: ${item.reviewCount} بار</span>
-                        <p style="font-size:0.85rem; margin-top:4px;">${item.description}</p>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button class="btn ${item.solved ? 'btn-success' : 'btn-primary'}" style="padding:6px 10px; font-size:0.75rem;" onclick="toggleErrorSolved(${item.id})">
-                            ${item.solved ? '✓ حل شد' : 'بررسی'}
-                        </button>
-                        <button class="delete-btn" onclick="moveToTrash('error', ${item.id})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+    }
 
-        function toggleErrorSolved(id) {
-            const item = appData.errors.find(e => e.id === id);
-            if (item) {
-                item.solved = !item.solved;
-                saveAppData();
-            }
-        }
 
-        // برنامه هفتگی پارت‌بندی پویا
-        function addNewPlannerPart() {
-            const newId = Date.now();
-            appData.plannerParts.push({ id: newId, title: 'پارت جدید', time: '00:00 تا 00:00', status: false });
-            renderPlannerParts();
-        }
+    if(!smartNotes[subject]){
 
-        function renderPlannerParts() {
-            const container = document.getElementById('planner-parts-container');
-            container.innerHTML = appData.plannerParts.map((part, index) => `
-                <div style="display:grid; grid-template-columns: 1fr 140px 80px 40px; gap:8px; align-items:center; margin-bottom:8px;">
-                    <input type="text" value="${part.title}" id="part-title-${part.id}" placeholder="عنوان پارت یا درس" style="margin:0;">
-                    <input type="text" value="${part.time}" id="part-time-${part.id}" placeholder="مثلاً: 16:00 تا 18:00" style="margin:0;">
-                    <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.8rem;">
-                        <input type="checkbox" ${part.status ? 'checked' : ''} id="part-check-${part.id}" style="width:auto; margin:0;"> انجام شد
-                    </label>
-                    <button class="delete-btn" onclick="removePlannerPart(${part.id})">✕</button>
-                </div>
-            `).join('');
-        }
+        smartNotes[subject] = [];
 
-        function removePlannerPart(id) {
-            appData.plannerParts = appData.plannerParts.filter(p => p.id !== id);
-            renderPlannerParts();
-        }
+    }
 
-        function saveWeeklyPlannerData() {
-            appData.plannerParts.forEach(part => {
-                const titleInput = document.getElementById(`part-title-${part.id}`);
-                const timeInput = document.getElementById(`part-time-${part.id}`);
-                const checkInput = document.getElementById(`part-check-${part.id}`);
-                if (titleInput) part.title = titleInput.value;
-                if (timeInput) part.time = timeInput.value;
-                if (checkInput) part.status = checkInput.checked;
+
+    /* ---------- ویرایش ---------- */
+
+    if(editingSmartNoteId){
+
+        let foundNote = null;
+        let oldSubject = null;
+
+
+        Object.keys(smartNotes)
+            .some(subjectName => {
+
+                const found =
+                    smartNotes[subjectName]
+                    .find(
+                        note =>
+                            note.id ===
+                            editingSmartNoteId
+                    );
+
+
+                if(found){
+
+                    foundNote = found;
+                    oldSubject = subjectName;
+
+                    return true;
+
+                }
+
+                return false;
+
             });
-            saveAppData();
-            alert('برنامه هفتگی ذخیره شد.');
-        }
 
-        // سیستم تایمر
-        let timerInterval = null;
-        let timerSeconds = 0;
-        let isTimerRunning = false;
 
-        function startTimer() {
-            if (isTimerRunning) return;
-            isTimerRunning = true;
-            document.getElementById('timer-ring-box').classList.add('timer-running');
-            document.getElementById('timer-sub-text').innerText = 'در حال مطالعه...';
-            timerInterval = setInterval(() => {
-                timerSeconds++;
-                appData.studySeconds++;
-                updateTimerDisplay();
-            }, 1000);
-        }
+        if(foundNote){
 
-        function pauseTimer() {
-            isTimerRunning = false;
-            clearInterval(timerInterval);
-            document.getElementById('timer-ring-box').classList.remove('timer-running');
-            document.getElementById('timer-sub-text').innerText = 'متوقف شد';
-        }
+            foundNote.subject = subject;
+            foundNote.title = title;
+            foundNote.text = text;
 
-        function resetTimer() {
-            pauseTimer();
-            timerSeconds = 0;
-            updateTimerDisplay();
-            document.getElementById('timer-sub-text').innerText = 'آماده شروع';
-        }
+foundNote.images = smartNoteImages.slice();
+delete foundNote.image;
 
-        function updateTimerDisplay() {
-            const h = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
-            const m = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
-            const s = String(timerSeconds % 60).padStart(2, '0');
-            document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
-        }
+            foundNote.updatedAt =
+                new Date().toISOString();
 
-        function saveStudySessionToLog() {
-            if (timerSeconds === 0) {
-                alert('زمانی با تایمر ثبت نشده است.');
-                return;
+
+            if(oldSubject !== subject){
+
+                smartNotes[oldSubject] =
+                    smartNotes[oldSubject]
+                    .filter(
+                        note =>
+                            note.id !==
+                            editingSmartNoteId
+                    );
+
+
+                smartNotes[subject].push(
+                    foundNote
+                );
+
             }
-            saveAppData();
-            alert(`ثبت ساعت مطالعه انجام شد! مجموع کل: ${Math.floor(appData.studySeconds / 3600)} ساعت`);
-            resetTimer();
+
         }
 
-        // سیستم نکات و چک‌لیست
-        let currentSmartSubjectFilter = 'all';
-        let tempNoteImages = [];
+    }
 
-        function openAddNoteModal(noteId = null) {
-            document.getElementById('edit-note-id').value = noteId || '';
-            document.getElementById('smart-note-title-input').value = '';
-            document.getElementById('smart-note-text-input').value = '';
-            tempNoteImages = [];
-            renderSmartNoteImagePreview();
+    /* ---------- نکته جدید ---------- */
 
-            if (noteId) {
-                const note = appData.notes.find(n => n.id === noteId);
-                if (note) {
-                    document.getElementById('smart-note-title-input').value = note.title;
-                    document.getElementById('smart-note-subject-select').value = note.subject;
-                    document.getElementById('smart-note-text-input').value = note.text;
-                    tempNoteImages = note.images ? [...note.images] : [];
-                    renderSmartNoteImagePreview();
-                    document.getElementById('smart-note-modal-main-title').innerText = 'ویرایش نکته';
+    else{
+
+        smartNotes[subject].push({
+
+            id:
+                "smart_note_" +
+                Date.now() +
+                "_" +
+                Math.random()
+                    .toString(36)
+                    .substring(2,8),
+
+            subject: subject,
+
+            title: title,
+
+            text: text,
+
+            images: smartNoteImages.slice(),
+            createdAt:
+                new Date().toISOString(),
+
+            updatedAt:
+                new Date().toISOString()
+
+        });
+
+    }
+
+
+    if(!saveSmartNotes()){
+
+        return;
+
+    }
+
+
+    currentSmartSubject =
+        subject;
+
+
+    updateSmartSubjectButtons();
+
+    renderSmartNotes();
+
+    closeSmartNoteEditor();
+
+}
+
+
+/* =========================
+   نمایش نکات
+========================= */
+
+function renderSmartNotes(){
+
+    const list =
+        document.getElementById(
+            "smartNotesList"
+        );
+
+
+    if(!list) return;
+
+
+    const search =
+        document.getElementById(
+            "smartNotesSearch"
+        );
+
+
+    const query =
+        search
+        ?
+        search.value
+            .trim()
+            .toLowerCase()
+        :
+        "";
+
+
+    let notes =
+        smartNotes[currentSmartSubject] || [];
+
+
+    if(query){
+
+        notes =
+            notes.filter(note => {
+
+                const title =
+                    String(note.title || "")
+                        .toLowerCase();
+
+                const text =
+                    String(note.text || "")
+                        .toLowerCase();
+
+                return (
+                    title.includes(query) ||
+                    text.includes(query)
+                );
+
+            });
+
+    }
+
+
+    const total =
+        (smartNotes[currentSmartSubject] || [])
+            .length;
+
+
+    const subjectTitle =
+        document.getElementById(
+            "smartNotesCurrentSubject"
+        );
+
+
+    const count =
+        document.getElementById(
+            "smartNotesCount"
+        );
+
+
+    if(subjectTitle){
+
+        subjectTitle.textContent =
+            getSmartSubjectIcon(
+                currentSmartSubject
+            ) +
+            " " +
+            currentSmartSubject;
+
+    }
+
+
+    if(count){
+
+        count.textContent =
+            toPersianNumber(total) +
+            " نکته";
+
+    }
+
+
+    if(!notes.length){
+
+        list.innerHTML = `
+
+            <div class="smart-notes-empty">
+
+                📝
+
+                <br><br>
+
+                ${
+                    query
+                    ?
+                    "نتیجه‌ای برای جستجو پیدا نشد."
+                    :
+                    "هنوز نکته‌ای برای این درس ثبت نشده است."
                 }
-            } else {
-                document.getElementById('smart-note-modal-main-title').innerText = 'افزودن نکته جدید';
-            }
-            document.getElementById('smartNoteModal').classList.add('show');
-        }
 
-        function closeSmartNoteModal() {
-            document.getElementById('smartNoteModal').classList.remove('show');
-        }
+            </div>
 
-        function handleSmartNoteImages(input) {
-            if (input.files) {
-                Array.from(input.files).forEach(file => {
-                    if (file.size > 2 * 1024 * 1024) {
-                        alert('حجم فایل انتخابی زیاد است (باید کمتر از ۲ مگابایت باشد).');
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        tempNoteImages.push(e.target.result);
-                        renderSmartNoteImagePreview();
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-        }
+        `;
 
-        function renderSmartNoteImagePreview() {
-            const container = document.getElementById('smart-note-image-preview-container');
-            container.innerHTML = tempNoteImages.map((img, idx) => `
-                <div class="smart-note-img-item">
-                    <img src="${img}" onclick="openSmartLightbox(${JSON.stringify(img)})">
-                    <button class="smart-note-img-remove" onclick="removeTempImage(${idx})">✕</button>
-                </div>
-            `).join('');
-        }
+        return;
 
-        function removeTempImage(idx) {
-            tempNoteImages.splice(idx, 1);
-            renderSmartNoteImagePreview();
-        }
+    }
 
-        function saveSmartNoteData() {
-            const editId = document.getElementById('edit-note-id').value;
-            const title = document.getElementById('smart-note-title-input').value.trim();
-            const subject = document.getElementById('smart-note-subject-select').value;
-            const text = document.getElementById('smart-note-text-input').value.trim();
 
-            if (!title || !text) {
-                alert('لطفاً عنوان و متن نکته را وارد کنید.');
-                return;
-            }
+    list.innerHTML =
+        notes.map((note,index) => {
 
-            if (editId) {
-                const note = appData.notes.find(n => n.id == editId);
-                if (note) {
-                    note.title = title;
-                    note.subject = subject;
-                    note.text = text;
-                    note.images = [...tempNoteImages];
-                }
-            } else {
-                const newNote = {
-                    id: Date.now(),
-                    title, subject, text,
-                    images: [...tempNoteImages],
-                    date: new Date().toLocaleDateString('fa-IR')
-                };
-                appData.notes.push(newNote);
-            }
+            const preview =
+                note.text
+                ?
+                note.text
+                    .replace(/\s+/g," ")
+                    .substring(0,100)
+                :
+                "📷 این نکته دارای تصویر است";
 
-            saveAppData();
-            closeSmartNoteModal();
-        }
 
-        function renderSmartNotesList() {
-            const search = document.getElementById('smart-note-search-input').value.toLowerCase();
-            const subjects = ['all', 'ریاضی', 'فیزیک', 'شیمی', 'زیست‌شناسی', 'عمومی'];
-            
-            // رندر دکمه‌های فیلتر درس
-            const filtersContainer = document.getElementById('smart-notes-subject-filters');
-            filtersContainer.innerHTML = subjects.map(sub => `
-                <button class="smart-subject-btn ${currentSmartSubjectFilter === sub ? 'active' : ''}" onclick="setSmartSubjectFilter('${sub}')">
-                    ${sub === 'all' ? 'همه درس‌ها' : sub}
-                </button>
-            `).join('');
+            return `
 
-            let list = appData.notes;
-            if (currentSmartSubjectFilter !== 'all') {
-                list = list.filter(n => n.subject === currentSmartSubjectFilter);
-            }
-            if (search) {
-                list = list.filter(n => n.title.toLowerCase().includes(search) || n.text.toLowerCase().includes(search));
-            }
+                <div
+                    class="smart-note-item"
+                    onclick="openSmartNoteView('${note.id}')">
 
-            document.getElementById('smart-notes-current-label').innerText = currentSmartSubjectFilter === 'all' ? 'همه نکات' : `درس: ${currentSmartSubjectFilter}`;
-            document.getElementById('smart-notes-count-label').innerText = `${list.length} نکته`;
+                    <div class="smart-note-item-number">
 
-            const container = document.getElementById('smart-notes-list-container');
-            if (list.length === 0) {
-                container.innerHTML = '<div class="smart-notes-empty">هیچ نکته‌ای ثبت نشده است.</div>';
-                return;
-            }
+                        ${toPersianNumber(index + 1)}
 
-            container.innerHTML = list.map((note, index) => `
-                <div class="smart-note-item" onclick="openSmartNoteViewModal(${note.id})">
-                    <div class="smart-note-item-number">${index + 1}</div>
+                    </div>
+
+
                     <div class="smart-note-item-main">
-                        <div class="smart-note-item-title">${note.title}</div>
-                        <div class="smart-note-item-preview">[${note.subject}] ${note.text}</div>
-                        <div style="font-size:0.65rem; color:var(--text-secondary); margin-top:2px; text-align:left;">سازنده: امیررضا رضائیان</div>
+
+                        <div class="smart-note-item-title">
+
+                            ${escapeSmartHTML(note.title)}
+
+                        </div>
+
+
+                        <div class="smart-note-item-preview">
+
+                            ${escapeSmartHTML(preview)}
+
+                        </div>
+
                     </div>
-                    <div class="smart-note-item-arrow">➔</div>
+
+
+                    <div class="smart-note-item-arrow">
+
+                        ←
+
+                    </div>
+
                 </div>
-            `).join('');
-        }
 
-        function setSmartSubjectFilter(sub) {
-            currentSmartSubjectFilter = sub;
-            renderSmartNotesList();
-        }
+            `;
 
-        function openSmartNoteViewModal(id) {
-            const note = appData.notes.find(n => n.id === id);
-            if (!note) return;
+        }).join("");
 
-            document.getElementById('view-note-title').innerText = note.title;
-            document.getElementById('view-note-subject').innerText = `درس: ${note.subject} | تاریخ: ${note.date}`;
-            document.getElementById('view-note-text').innerText = note.text;
+}
 
-            const gallery = document.getElementById('view-note-gallery');
-            gallery.innerHTML = (note.images || []).map(img => `
-                <img src="${img}" class="smart-note-view-image" onclick="openSmartLightbox(${JSON.stringify(img)})">
-            `).join('');
 
-            document.getElementById('view-note-delete-btn').onclick = function() {
-                moveToTrash('note', note.id);
-                closeSmartNoteViewModal();
-            };
+/* =========================
+   جستجو
+========================= */
 
-            document.getElementById('smartNoteViewModal').classList.add('show');
-        }
+function searchSmartNotes(){
 
-        function closeSmartNoteViewModal() {
-            document.getElementById('smartNoteViewModal').classList.remove('show');
-        }
+    renderSmartNotes();
 
-        function openSmartLightbox(imgSrc) {
-            document.getElementById('smart-lightbox-img').src = imgSrc;
-            document.getElementById('smart-image-lightbox').classList.add('show');
-        }
+}
 
-        function closeSmartLightbox() {
-            document.getElementById('smart-image-lightbox').classList.remove('show');
-        }
 
-        // مدیریت سطل زباله
-        function moveToTrash(type, id) {
-            let itemObj = null;
-            if (type === 'exam') {
-                itemObj = appData.exams.find(e => e.id === id);
-                appData.exams = appData.exams.filter(e => e.id !== id);
-            } else if (type === 'error') {
-                itemObj = appData.errors.find(e => e.id === id);
-                appData.errors = appData.errors.filter(e => e.id !== id);
-            } else if (type === 'note') {
-                itemObj = appData.notes.find(n => n.id === id);
-                appData.notes = appData.notes.filter(n => n.id !== id);
+/* =========================
+   نمایش کامل نکته
+========================= */
+
+function openSmartNoteView(noteId){
+
+    let note = null;
+
+
+    Object.keys(smartNotes)
+        .some(subject => {
+
+            const found =
+                smartNotes[subject]
+                .find(
+                    n =>
+                        n.id === noteId
+                );
+
+
+            if(found){
+
+                note = found;
+
+                return true;
+
             }
 
-            if (itemObj) {
-                appData.trash.push({ type, data: itemObj, deletedAt: new Date().toLocaleDateString('fa-IR') });
-                saveAppData();
-            }
+            return false;
+
+        });
+
+
+    if(!note) return;
+
+
+    const imgs = note.images?.length ? note.images : (note.image ? [note.image] : []);
+const imageHTML = imgs.length
+    ? `<div class="smart-note-view-gallery">${imgs.map(src => `<img src="${src}" alt="تصویر نکته" onclick="openImageLightbox('${src}')">`).join('')}</div>`
+    : "";
+
+
+    document.getElementById(
+        "smartNoteViewContent"
+    ).innerHTML = `
+
+        <div class="smart-note-view-title">
+
+            ${escapeSmartHTML(note.title)}
+
+        </div>
+
+
+        <div class="smart-note-view-subject">
+
+            ${getSmartSubjectIcon(note.subject)}
+
+            ${escapeSmartHTML(note.subject)}
+
+        </div>
+
+
+        ${
+            note.text
+            ?
+            `
+            <div class="smart-note-view-text">
+
+                ${escapeSmartHTML(note.text)}
+
+            </div>
+            `
+            :
+            ""
         }
 
-        function renderTrashList() {
-            const container = document.getElementById('trash-list-container');
-            if (appData.trash.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:var(--text-secondary); padding:20px;">سطل زباله خالی است.</div>';
+
+        ${imageHTML}
+
+
+        <div class="smart-note-modal-actions">
+
+            <button
+                class="smart-note-cancel-btn"
+                onclick="editSmartNote('${note.id}')">
+
+                ✏️ ویرایش
+
+            </button>
+
+
+            <button
+                class="smart-note-delete-btn"
+                onclick="deleteSmartNote('${note.id}')">
+
+                🗑️ حذف
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById("smartNoteViewModal")
+        .classList.add("show");
+
+}
+
+
+/* =========================
+   ویرایش
+========================= */
+
+function editSmartNote(noteId){
+
+    let note = null;
+
+
+    Object.keys(smartNotes)
+        .some(subject => {
+
+            const found =
+                smartNotes[subject]
+                .find(
+                    n =>
+                        n.id === noteId
+                );
+
+
+            if(found){
+
+                note = found;
+
+                return true;
+
+            }
+
+            return false;
+
+        });
+
+
+    if(!note) return;
+
+
+    editingSmartNoteId =
+        note.id;
+
+
+smartNoteImages = (note.images?.length ? note.images : (note.image ? [note.image] : [])).slice();
+
+    document.getElementById(
+        "smartNoteModalTitle"
+    ).textContent =
+        "✏️ ویرایش نکته";
+
+
+    document.getElementById(
+        "smartNoteSubjectInput"
+    ).value =
+        note.subject;
+
+
+    document.getElementById(
+        "smartNoteTitleInput"
+    ).value =
+        note.title;
+
+
+    document.getElementById(
+        "smartNoteTextInput"
+    ).value =
+        note.text || "";
+
+
+    document.getElementById(
+        "smartNoteImageInput"
+    ).value = "";
+
+renderSmartNoteImagePreview();
+
+
+    closeSmartNoteView();
+
+
+    document
+        .getElementById("smartNoteModal")
+        .classList.add("show");
+
+}
+
+
+/* =========================
+   حذف واقعی
+========================= */
+
+function deleteSmartNote(noteId){
+
+    if(
+        !confirm(
+            "آیا از حذف این نکته مطمئن هستید؟"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    Object.keys(smartNotes)
+        .forEach(subject => {
+
+            if(!Array.isArray(smartNotes[subject])){
+
                 return;
+
             }
 
-            container.innerHTML = appData.trash.map((item, idx) => `
-                <div class="history-item">
-                    <div class="item-info">
-                        <span class="item-subject">[نوع: ${item.type}] ${item.data.title || item.data.subject || 'مورد حذف شده'}</span>
-                        <span class="item-date">تاریخ حذف: ${item.deletedAt}</span>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn btn-success" style="padding:6px 10px; font-size:0.75rem;" onclick="restoreTrashItem(${idx})">بازگردانی</button>
-                        <button class="btn btn-danger" style="padding:6px 10px; font-size:0.75rem;" onclick="deleteTrashItemPermanently(${idx})">حذف دائمی</button>
-                    </div>
-                </div>
-            `).join('');
+
+            smartNotes[subject] =
+                smartNotes[subject]
+                .filter(
+                    note =>
+                        note.id !== noteId
+                );
+
+        });
+
+
+    saveSmartNotes();
+
+
+    closeSmartNoteView();
+
+    renderSmartNotes();
+
+}
+
+
+/* =========================
+   آیکون درس
+========================= */
+
+function getSmartSubjectIcon(subject){
+
+    const icons = {
+
+        "هندسه":"📐",
+        "آمار":"📊",
+        "گسسته":"🔢",
+        "حسابان":"📈",
+        "ریاضی":"➗",
+        "زیست":"🧬",
+        "زمین شناسی":"🌍",
+        "فیزیک":"⚡",
+        "شیمی":"🧪"
+
+    };
+
+
+    return icons[subject] || "📚";
+
+}
+
+
+/* =========================
+   فعال کردن درس
+========================= */
+
+function updateSmartSubjectButtons(){
+
+    document
+        .querySelectorAll(".smart-subject-btn")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.subject ===
+                currentSmartSubject
+            );
+
+        });
+
+}
+
+
+/* =========================
+   اعداد فارسی
+========================= */
+
+function toPersianNumber(value){
+
+    return String(value)
+        .replace(
+            /\d/g,
+            d => "۰۱۲۳۴۵۶۷۸۹"[d]
+        );
+
+}
+
+
+/* =========================
+   جلوگیری از HTML
+========================= */
+
+function escapeSmartHTML(text){
+
+    return String(text || "")
+
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   بستن با کلیک بیرون
+========================= */
+
+document.addEventListener(
+    "click",
+    function(event){
+
+        const editor =
+            document.getElementById(
+                "smartNoteModal"
+            );
+
+
+        const viewer =
+            document.getElementById(
+                "smartNoteViewModal"
+            );
+
+
+        if(
+            editor &&
+            event.target === editor
+        ){
+
+            closeSmartNoteEditor();
+
         }
 
-        function restoreTrashItem(idx) {
-            const item = appData.trash.splice(idx, 1)[0];
-            if (item) {
-                if (item.type === 'exam') appData.exams.push(item.data);
-                else if (item.type === 'error') appData.errors.push(item.data);
-                else if (item.type === 'note') appData.notes.push(item.data);
-                saveAppData();
-            }
+
+        if(
+            viewer &&
+            event.target === viewer
+        ){
+
+            closeSmartNoteView();
+
         }
 
-        function deleteTrashItemPermanently(idx) {
-            appData.trash.splice(idx, 1);
-            saveAppData();
+    }
+);
+
+
+/* =========================
+   Escape
+========================= */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        if(event.key === "Escape"){
+
+            closeSmartNoteEditor();
+
+            closeSmartNoteView();
+
         }
 
-        // بروزرسانی آمار داشبورد
-        function updateDashboardStats() {
-            document.getElementById('stat-total-exams').innerText = appData.exams.length;
-            document.getElementById('stat-total-errors').innerText = appData.errors.filter(e => e.solved).length;
-            document.getElementById('stat-total-study').innerText = Math.floor(appData.studySeconds / 3600) + ' ساعت';
+    }
+);
 
-            if (appData.exams.length > 0) {
-                let sum = 0;
-                appData.exams.forEach(ex => {
-                    sum += parseFloat(ex.percent) || 0;
-                });
-                document.getElementById('stat-avg-percent').innerText = (sum / appData.exams.length).toFixed(1) + '٪';
-            } else {
-                document.getElementById('stat-avg-percent').innerText = '۰٪';
-            }
-        }
 
-        // راه‌اندازی اولیه هنگام بارگذاری صفحه
-        window.onload = function() {
-            loadAppData();
-        };
-    </script>
+/* =========================
+   شروع سیستم
+========================= */
+
+loadSmartNotes();
+
+
+        (function(){
+    const uploadLabel = document.querySelector('.smart-note-upload');
+    if(uploadLabel){
+        ['dragover','dragenter'].forEach(evt => uploadLabel.addEventListener(evt, e => { e.preventDefault(); uploadLabel.classList.add('dragover'); }));
+        ['dragleave','drop'].forEach(evt => uploadLabel.addEventListener(evt, e => { e.preventDefault(); uploadLabel.classList.remove('dragover'); }));
+        uploadLabel.addEventListener('drop', e => { if(e.dataTransfer?.files?.length) handleSmartNoteImageFiles(e.dataTransfer.files); });
+    }
+    document.addEventListener('paste', e => {
+        const modal = document.getElementById('smartNoteModal');
+        if(!modal || !modal.classList.contains('show')) return;
+        const items = e.clipboardData?.items; if(!items) return;
+        const files = Array.from(items).filter(it => it.type.startsWith('image/')).map(it => it.getAsFile());
+        if(files.length) handleSmartNoteImageFiles(files);
+    });
+    document.addEventListener('keydown', e => {
+        const modal = document.getElementById('smartNoteModal');
+        if(modal?.classList.contains('show') && (e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); saveSmartNote(); }
+    });
+})();
+</script>
 </body>
 </html>
