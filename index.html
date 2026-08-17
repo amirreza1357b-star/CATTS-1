@@ -3989,6 +3989,8 @@ function applyBackupData(data, { merge } = { merge:false }){
     if(data.history !== undefined && !isValidHistoryArray(data.history)) throw new Error('history نامعتبر است.');
     if(data.errors !== undefined && !isValidErrorsArray(data.errors)) throw new Error('errors نامعتبر است.');
 
+    const beforeSnapshot = merge ? JSON.stringify([getHistory(), getErrors(), getSubjectGoals(), getWeeklyStore(), getDailyGoalLog()]) : null;
+
     if(merge){
         const h = mergeArrayWithTombstones(getHistory(), data.history||[], getTombstones('deleted_history_ids'), data.deletedHistoryIds||[]);
         setHistory(h.merged); safeSet('deleted_history_ids', h.tomb);
@@ -4041,6 +4043,10 @@ function applyBackupData(data, { merge } = { merge:false }){
         if(data.manualJDateAnchor) localStorage.setItem('manual_jdate_anchor', data.manualJDateAnchor);
         if(data.countdownTarget) localStorage.setItem('countdown_target_date', data.countdownTarget);
         if(data.countdownTargetTs) localStorage.setItem('countdown_target_date_ts', data.countdownTargetTs);
+    }
+    if(merge && beforeSnapshot !== null){
+        const afterSnapshot = JSON.stringify([getHistory(), getErrors(), getSubjectGoals(), getWeeklyStore(), getDailyGoalLog()]);
+        if(afterSnapshot === beforeSnapshot) return; // چیزی تغییر نکرده؛ از رندر مجدد بی‌فایده و پرش/محو لحظه‌ای آیتم‌ها جلوگیری کن
     }
     refreshEverything();
 }
@@ -4166,10 +4172,27 @@ window.authSignIn = async function(){
     await authRefreshUI();
 };
 window.authSignOut = async function(){
-    const client = getSupabaseClient(); if(!client) return;
+    /* رفع باگ «نمی‌شه خروج کرد»: قبلاً اگر client.auth.signOut() به هر
+       دلیلی (قطعی شبکه، تاخیر) خطا می‌داد، تابع همان‌جا متوقف می‌شد و
+       هیچ‌وقت به خط‌های به‌روزرسانی رابط کاربری نمی‌رسید — یعنی دکمه‌ی
+       خروج ظاهراً هیچ کاری نمی‌کرد. حالا همه‌چیز داخل try/catch است و
+       صرف‌نظر از موفق یا ناموفق بودن درخواست شبکه، رابط کاربری فوراً به
+       حالت «خارج از حساب» برمی‌گردد. */
     stopAutoSync();
-    if(sbChannel){ try{ await client.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
-    await client.auth.signOut();
+    const btn = [...document.querySelectorAll('#neo-user-box .btn-danger')][0];
+    if(btn){ btn.disabled = true; btn.textContent = '...'; }
+    try{
+        if(sbChannel){ const client = getSupabaseClient(); try{ await client?.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
+        const client = getSupabaseClient();
+        if(client) await client.auth.signOut();
+    }catch(e){
+        console.error('خطا در خروج از حساب (نادیده گرفته شد تا رابط کاربری همچنان به‌روزرسانی شود):', e);
+    }
+    const ub = document.getElementById('neo-user-box'), ab = document.getElementById('neo-auth-box'), dot = document.getElementById('cloud-account-dot');
+    if(ub) ub.style.display = 'none';
+    if(ab) ab.style.display = 'grid';
+    if(dot) dot.classList.remove('on');
+    if(btn){ btn.disabled = false; btn.textContent = 'خروج'; }
     setCloudStatus('از حساب خارج شدی؛ اطلاعات محلی روی همین دستگاه باقی است.');
     authRefreshUI();
 };
@@ -4210,6 +4233,14 @@ async function pushToCloud(){
     const { error } = await client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: new Date().toISOString() }, { onConflict:'user_id' });
     if(error) throw error;
 }
+/* هنگامی که یکی از پنجره‌های ویرایش (برنامه هفتگی، نکته و...) باز است،
+   یعنی کاربر وسط تایپ/ویرایش است. در این حالت هنوز اجازه می‌دهیم اطلاعاتِ
+   از قبل ذخیره‌شده به ابر push شود (چیزی از دست نمی‌رود)، اما مرحله‌ی
+   دریافت+ادغام از ابر را که باعث رندر مجدد کل صفحه و پرش/محو لحظه‌ای
+   چیزهای تازه اضافه‌شده می‌شد، موقتاً رد می‌کنیم. */
+function anyModalOpen(){
+    return !!document.querySelector('.planner-modal.show, #smartNoteModal.show, #smartNoteViewModal.show, #cloud-account-modal-overlay.open');
+}
 async function cloudSyncNow(){
     if(cloudBusy || applyingRemote) return;
     const client = getSupabaseClient();
@@ -4219,10 +4250,12 @@ async function cloudSyncNow(){
     cloudBusy = true;
     setCloudStatus('☁️ در حال همگام‌سازی...');
     try{
-        // همیشه اول با ابر ادغام کن (نه فقط overwrite) تا هیچ حذفی گم/برنگردانده نشود
-        const { data: remote, error: rerr } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
-        if(rerr) throw rerr;
-        if(remote && remote.data) applyMergedRemote(remote.data);
+        if(!anyModalOpen()){
+            // همیشه اول با ابر ادغام کن (نه فقط overwrite) تا هیچ حذفی گم/برنگردانده نشود
+            const { data: remote, error: rerr } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
+            if(rerr) throw rerr;
+            if(remote && remote.data) applyMergedRemote(remote.data);
+        }
         await pushToCloud();
         setCloudStatus('☁️ همگام‌سازی موفق؛ همه‌چیز به‌روز است.', true);
     }catch(e){
@@ -4261,7 +4294,7 @@ function subscribeRealtime(userId){
     if(sbChannel){ try{ client.removeChannel(sbChannel); }catch(e){} sbChannel = null; }
     sbChannel = client.channel('study_cloud_changes_' + userId)
         .on('postgres_changes', { event:'UPDATE', schema:'public', table:'study_cloud', filter:`user_id=eq.${userId}` }, (payload) => {
-            if(applyingRemote || cloudBusy) return; // این تغییر می‌تواند اکوی push خودمان باشد؛ ادغام idempotent است پس بی‌خطر است
+            if(applyingRemote || cloudBusy || anyModalOpen()) return; // این تغییر می‌تواند اکوی push خودمان باشد؛ ادغام idempotent است پس بی‌خطر است
             if(payload?.new?.data) applyMergedRemote(payload.new.data);
         })
         .subscribe();
@@ -4285,9 +4318,15 @@ function initCloud(){
     if(sb) sb.auth.onAuthStateChange(() => setTimeout(authRefreshUI, 0));
 }
 
-/* هر تغییر ورودی (تایپ/انتخاب) هم — با تأخیر کوتاه — sync را برنامه‌ریزی می‌کند */
-document.addEventListener('input', () => { if(!applyingRemote) scheduleCloudSync(); });
-document.addEventListener('change', () => { if(!applyingRemote) scheduleCloudSync(); });
+/* رفع باگ «هرچی رو میزنی ظاهر میشه و سریع پاک میشه»: قبلاً هر تایپ یا
+   تغییر در هر اینپوتِ کل صفحه (حتی وسط پرکردن یک فرم، قبل از ذخیره) یک
+   sync کامل با ابر راه می‌انداخت. این sync، چون در پایانش refreshEverything
+   کل صفحه (لیست تاریخچه، غلط‌نامه، برنامه هفتگی و...) را از نو رندر
+   می‌کرد، هر چند صدم‌ثانیه یک‌بار تصویر را عوض می‌کرد و همین باعث می‌شد
+   چیزی که تازه اضافه کرده بودی برای یک لحظه بپرد/محو شود. توابع ذخیره و
+   حذف (saveResult، saveErrorItem، savePlannerDay، deleteItem و...) خودشان
+   به‌طور مستقیم و در زمان درست scheduleCloudSync را صدا می‌زنند؛ نیازی به
+   این گوش‌دادن سراسری روی هر ورودی نیست. */
 
 /* ---------------------------------------------------------------------- */
 /* 18) راه‌اندازی برنامه                                                     */
