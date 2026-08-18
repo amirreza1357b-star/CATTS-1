@@ -2078,63 +2078,140 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         #panda-mascot {
             position: relative;
             flex-shrink: 0;
-            width: 132px; height: 132px;
+            width: 170px; height: 142px;
             cursor: pointer;
             filter: drop-shadow(0 12px 22px rgba(0,0,0,0.45));
             touch-action: manipulation;
             align-self: flex-end;
+            --panda-white: #fefefe;
+            --panda-black: #242429;
+            --panda-blush: #f9a8c9;
+            --panda-paw: #f4c8da;
         }
-        @media (max-width: 700px) { #panda-mascot { width: 90px; height: 90px; } }
-        @media (max-width: 480px) { #panda-mascot { display: none; } }
-        #panda-mascot svg { width: 100%; height: 100%; overflow: visible; }
-        .panda-body-group { transition: transform .25s ease; animation: pandaIdle 3.6s ease-in-out infinite; transform-origin: 70px 150px; }
-        @keyframes pandaIdle {
-            0%,100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-3px) rotate(-1deg); }
+        @media (max-width: 700px) { #panda-mascot { width: 118px; height: 99px; } }
+        @media (max-width: 480px) { #panda-mascot { width: 92px; height: 77px; } }
+
+        #panda-mascot::before {
+            content: "";
+            position: absolute;
+            inset: 6%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139,92,246,0.32) 0%, rgba(236,72,153,0.16) 45%, transparent 72%);
+            filter: blur(10px);
+            z-index: 0;
+            animation: pandaAuraPulse 3.6s ease-in-out infinite;
+            pointer-events: none;
         }
-        #panda-mascot.wave .panda-arm-right { animation: pandaWave 0.6s ease-in-out 3; transform-origin: 116px 90px; }
-        @keyframes pandaWave {
-            0%,100% { transform: rotate(0deg); }
-            50% { transform: rotate(-38deg); }
+        @keyframes pandaAuraPulse {
+            0%,100% { opacity: .5; transform: scale(1); }
+            50% { opacity: .85; transform: scale(1.08); }
         }
-        #panda-mascot.tickle .panda-body-group { animation: pandaTickle 0.5s ease-in-out; }
-        @keyframes pandaTickle {
-            0%,100% { transform: translate(0,0) rotate(0deg); }
-            20% { transform: translate(-4px,-3px) rotate(-5deg); }
-            40% { transform: translate(4px,2px) rotate(6deg); }
-            60% { transform: translate(-3px,3px) rotate(-4deg); }
-            80% { transform: translate(3px,-1px) rotate(4deg); }
+
+        #panda-mascot .panda-svg {
+            width: 100%; height: 100%; display: block; position: relative; z-index: 1;
+            animation: pandaBreathe 3.6s ease-in-out infinite;
+            transform-origin: 50% 85%;
         }
-        #panda-mascot .panda-blink { animation: pandaBlink 4.5s ease-in-out infinite; transform-origin: center; }
-        @keyframes pandaBlink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-        #panda-mascot:hover .panda-body-group { transform: translateY(-5px); }
+        @keyframes pandaBreathe {
+            0%,100% { transform: translateY(0) scale(1,1); }
+            50% { transform: translateY(-2%) scale(1.015,0.985); }
+        }
+
+        #panda-mascot .ear-l { transform-origin: 150px 95px; animation: earTwitchL 5.4s ease-in-out infinite; }
+        #panda-mascot .ear-r { transform-origin: 330px 95px; animation: earTwitchR 5.4s ease-in-out infinite .15s; }
+        @keyframes earTwitchL { 0%,88%,100% { transform: rotate(0deg); } 90% { transform: rotate(-9deg); } 93% { transform: rotate(4deg); } 96% { transform: rotate(0deg); } }
+        @keyframes earTwitchR { 0%,88%,100% { transform: rotate(0deg); } 90% { transform: rotate(9deg); } 93% { transform: rotate(-4deg); } 96% { transform: rotate(0deg); } }
+
+        #panda-mascot .eyes-open { animation: pandaBlinkEyes 4.8s ease-in-out infinite; transform-origin: center; }
+        @keyframes pandaBlinkEyes { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } 97% { transform: scaleY(1); } }
+        #panda-mascot .eyes-closed { opacity: 0; }
+        #panda-mascot .pupil { transition: transform .25s ease; }
+
+        #panda-mascot .tail { transform-origin: 240px 330px; animation: pandaTailWag 2.8s ease-in-out infinite; }
+        @keyframes pandaTailWag { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
+        #panda-mascot .arm-l { transform-origin: 150px 240px; }
+        #panda-mascot .arm-r { transform-origin: 330px 240px; }
+        #panda-mascot .leg-l { transform-origin: 175px 320px; }
+        #panda-mascot .leg-r { transform-origin: 305px 320px; }
+
+        #panda-mascot .blush { opacity: 0; transition: opacity .3s ease; }
+        #panda-mascot .mouth-normal { transition: opacity .2s ease; }
+        #panda-mascot .mouth-laugh { opacity: 0; transform-origin: 240px 230px; transition: opacity .2s ease; }
+
+        #panda-mascot:hover .panda-svg { transform: translateY(-3%); }
+
+        /* ---- حالت خوش‌آمد / تکون دادن دست (استفاده‌شده در اسکریپت پاندا) ---- */
+        #panda-mascot.wave .arm-r { animation: pandaWave 0.6s ease-in-out 3; transform-origin: 330px 240px; }
+        @keyframes pandaWave { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-28deg); } }
+
+        /* ---- حالت قلقلک ---- */
+        #panda-mascot.tickle .panda-svg { animation: pandaWiggle .55s ease-in-out 4; }
+        @keyframes pandaWiggle {
+            0%,100% { transform: rotate(0deg) translateY(0); }
+            20% { transform: rotate(-6deg) translateY(-3%); }
+            40% { transform: rotate(5deg) translateY(0); }
+            60% { transform: rotate(-4deg) translateY(-2%); }
+            80% { transform: rotate(3deg) translateY(0); }
+        }
+        #panda-mascot.tickle .eyes-open { animation: none; opacity: 0; }
+        #panda-mascot.tickle .eyes-closed { opacity: 1; }
+        #panda-mascot.tickle .blush { opacity: 1; }
+        #panda-mascot.tickle .mouth-normal { opacity: 0; }
+        #panda-mascot.tickle .mouth-laugh { opacity: 1; animation: pandaLaughPulse .35s ease-in-out infinite; }
+        @keyframes pandaLaughPulse { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.3); } }
+        #panda-mascot.tickle .arm-l { animation: pandaArmFlapL .4s ease-in-out infinite; }
+        #panda-mascot.tickle .arm-r { animation: pandaArmFlapR .4s ease-in-out infinite .1s; }
+        @keyframes pandaArmFlapL { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(18deg); } }
+        @keyframes pandaArmFlapR { 0%,100% { transform: rotate(6deg); } 50% { transform: rotate(-18deg); } }
+        #panda-mascot.tickle .leg-l, #panda-mascot.tickle .leg-r { animation: pandaKick .4s ease-in-out infinite; }
+        #panda-mascot.tickle .leg-r { animation-delay: .15s; }
+        @keyframes pandaKick { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+        #panda-mascot.tickle .tail { animation: pandaTailWag .3s ease-in-out infinite; }
+
+        /* ---- ذرات برق/قلب هنگام قلقلک ---- */
+        #panda-fx { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
+        #panda-fx .panda-particle {
+            position: absolute;
+            font-size: 15px;
+            opacity: 0;
+            will-change: transform, opacity;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+        }
+
+        /* ===================== حباب گفتگو — کنار پاندا، نه بالای آن ===================== */
         #panda-speech {
             position: absolute;
-            bottom: 100%; right: 6px;
-            margin-bottom: 8px;
-            max-width: 180px;
-            min-width: 120px;
+            top: 50%;
+            left: 100%;
+            margin-left: 10px;
+            max-width: 168px;
+            min-width: 110px;
             background: linear-gradient(150deg, #fff, #f3f0fb);
             color: #241933;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 700;
             padding: 9px 13px;
-            border-radius: 16px 16px 4px 16px;
+            border-radius: 16px 16px 16px 4px;
             box-shadow: 0 8px 22px rgba(0,0,0,0.35);
             opacity: 0;
-            transform: translateY(6px) scale(0.9);
+            transform: translateY(-50%) translateX(-6px) scale(0.9);
             transition: opacity .35s ease, transform .35s ease;
             pointer-events: none;
             white-space: normal;
             line-height: 1.5;
             z-index: 20;
         }
-        #panda-speech.show { opacity: 1; transform: translateY(0) scale(1); }
+        #panda-speech.show { opacity: 1; transform: translateY(-50%) translateX(0) scale(1); }
         #panda-speech::after {
             content: "";
-            position: absolute; top: 100%; right: 18px;
+            position: absolute; top: 50%; right: 100%;
+            transform: translateY(-50%);
             border: 7px solid transparent;
-            border-top-color: #f3f0fb;
+            border-right-color: #f3f0fb;
+        }
+        @media (max-width: 700px) {
+            #panda-speech { max-width: 130px; font-size: 0.7rem; padding: 7px 10px; }
         }
     </style>
 
@@ -2191,31 +2268,81 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             </div>
             <div id="panda-mascot" onclick="pandaTickleReact()" title="پاندای همراه">
                 <div id="panda-speech"></div>
-                <svg viewBox="0 0 140 150">
-                    <g class="panda-body-group">
-                        <ellipse cx="52" cy="146" rx="16" ry="8" fill="#242429"></ellipse>
-                        <ellipse cx="88" cy="146" rx="16" ry="8" fill="#242429"></ellipse>
-                        <ellipse cx="70" cy="114" rx="47" ry="38" fill="#fefefe" stroke="#242429" stroke-width="4.5"></ellipse>
-                        <ellipse class="panda-arm-left" cx="24" cy="110" rx="14" ry="21" fill="#fefefe" stroke="#242429" stroke-width="4.5"></ellipse>
-                        <ellipse class="panda-arm-right" cx="116" cy="106" rx="14" ry="21" fill="#fefefe" stroke="#242429" stroke-width="4.5"></ellipse>
-                        <circle cx="38" cy="24" r="16" fill="#242429"></circle>
-                        <circle cx="102" cy="24" r="16" fill="#242429"></circle>
-                        <ellipse cx="70" cy="58" rx="50" ry="45" fill="#fefefe" stroke="#242429" stroke-width="4.5"></ellipse>
-                        <ellipse cx="47" cy="60" rx="16" ry="20" fill="#242429" transform="rotate(-10 47 60)"></ellipse>
-                        <ellipse cx="93" cy="60" rx="16" ry="20" fill="#242429" transform="rotate(10 93 60)"></ellipse>
-                        <g class="panda-blink">
-                            <circle cx="48" cy="62" r="5.5" fill="#fff"></circle>
-                            <circle cx="92" cy="62" r="5.5" fill="#fff"></circle>
-                            <circle cx="49.5" cy="63.5" r="2.8" fill="#0d0d10"></circle>
-                            <circle cx="93.5" cy="63.5" r="2.8" fill="#0d0d10"></circle>
-                            <circle cx="47.3" cy="61" r="1" fill="#fff"></circle>
-                            <circle cx="91.3" cy="61" r="1" fill="#fff"></circle>
-                        </g>
-                        <ellipse cx="32" cy="74" rx="7" ry="4.5" fill="#f9a8c9" opacity="0.6"></ellipse>
-                        <ellipse cx="108" cy="74" rx="7" ry="4.5" fill="#f9a8c9" opacity="0.6"></ellipse>
-                        <ellipse cx="70" cy="76" rx="6" ry="4.2" fill="#242429"></ellipse>
-                        <path d="M70 80 q-1 8 -9 9 M70 80 q1 8 9 9" stroke="#242429" stroke-width="2.6" fill="none" stroke-linecap="round"></path>
+                <div id="panda-fx"></div>
+                <svg class="panda-svg" viewBox="0 0 480 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- tail -->
+                    <ellipse class="tail" cx="240" cy="335" rx="16" ry="14" fill="var(--panda-black)"/>
+
+                    <!-- back legs -->
+                    <g class="leg-l">
+                        <ellipse cx="178" cy="330" rx="38" ry="46" fill="var(--panda-black)"/>
+                        <ellipse cx="172" cy="358" rx="26" ry="16" fill="var(--panda-black)"/>
+                        <circle cx="160" cy="356" r="4.5" fill="var(--panda-paw)"/>
+                        <circle cx="172" cy="360" r="4.5" fill="var(--panda-paw)"/>
+                        <circle cx="184" cy="356" r="4.5" fill="var(--panda-paw)"/>
                     </g>
+                    <g class="leg-r">
+                        <ellipse cx="302" cy="330" rx="38" ry="46" fill="var(--panda-black)"/>
+                        <ellipse cx="308" cy="358" rx="26" ry="16" fill="var(--panda-black)"/>
+                        <circle cx="296" cy="356" r="4.5" fill="var(--panda-paw)"/>
+                        <circle cx="308" cy="360" r="4.5" fill="var(--panda-paw)"/>
+                        <circle cx="320" cy="356" r="4.5" fill="var(--panda-paw)"/>
+                    </g>
+
+                    <!-- body -->
+                    <ellipse cx="240" cy="270" rx="118" ry="100" fill="var(--panda-white)"/>
+                    <ellipse cx="240" cy="300" rx="80" ry="62" fill="var(--panda-white)"/>
+
+                    <!-- arms -->
+                    <g class="arm-l">
+                        <ellipse cx="140" cy="255" rx="34" ry="52" fill="var(--panda-black)"/>
+                        <ellipse cx="118" cy="292" rx="24" ry="20" fill="var(--panda-black)"/>
+                        <circle cx="108" cy="288" r="4" fill="var(--panda-paw)"/>
+                        <circle cx="118" cy="298" r="4" fill="var(--panda-paw)"/>
+                        <circle cx="130" cy="290" r="4" fill="var(--panda-paw)"/>
+                    </g>
+                    <g class="arm-r">
+                        <ellipse cx="340" cy="255" rx="34" ry="52" fill="var(--panda-black)"/>
+                        <ellipse cx="362" cy="292" rx="24" ry="20" fill="var(--panda-black)"/>
+                        <circle cx="372" cy="288" r="4" fill="var(--panda-paw)"/>
+                        <circle cx="362" cy="298" r="4" fill="var(--panda-paw)"/>
+                        <circle cx="350" cy="290" r="4" fill="var(--panda-paw)"/>
+                    </g>
+
+                    <!-- head -->
+                    <circle class="ear-l" cx="150" cy="95" r="38" fill="var(--panda-black)"/>
+                    <circle class="ear-r" cx="330" cy="95" r="38" fill="var(--panda-black)"/>
+                    <circle cx="240" cy="160" r="128" fill="var(--panda-white)"/>
+
+                    <!-- blush -->
+                    <ellipse class="blush" cx="172" cy="195" rx="20" ry="12" fill="var(--panda-blush)"/>
+                    <ellipse class="blush" cx="308" cy="195" rx="20" ry="12" fill="var(--panda-blush)"/>
+
+                    <!-- eye patches -->
+                    <ellipse cx="185" cy="155" rx="34" ry="42" fill="var(--panda-black)" transform="rotate(-12 185 155)"/>
+                    <ellipse cx="295" cy="155" rx="34" ry="42" fill="var(--panda-black)" transform="rotate(12 295 155)"/>
+
+                    <!-- open eyes -->
+                    <g class="eyes-open">
+                        <circle cx="188" cy="160" r="15" fill="#fff"/>
+                        <circle cx="292" cy="160" r="15" fill="#fff"/>
+                        <circle class="pupil" cx="191" cy="163" r="8" fill="#1a1a1a"/>
+                        <circle class="pupil" cx="289" cy="163" r="8" fill="#1a1a1a"/>
+                        <circle cx="194" cy="159" r="2.4" fill="#fff"/>
+                        <circle cx="292" cy="159" r="2.4" fill="#fff"/>
+                    </g>
+
+                    <!-- closed happy eyes -->
+                    <g class="eyes-closed">
+                        <path d="M 174 162 Q 188 148 202 162" stroke="#1a1a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+                        <path d="M 278 162 Q 292 148 306 162" stroke="#1a1a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- nose + mouth -->
+                    <ellipse cx="240" cy="196" rx="15" ry="10" fill="var(--panda-black)"/>
+                    <path class="mouth-normal" d="M 240 206 Q 240 218 222 222" stroke="#3a3a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <path class="mouth-normal" d="M 240 206 Q 240 218 258 222" stroke="#3a3a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <ellipse class="mouth-laugh" cx="240" cy="218" rx="16" ry="12" fill="#7a3b3b"/>
                 </svg>
             </div>
         </div>
@@ -6138,6 +6265,53 @@ loadSmartNotes();
         pandaSay('خوش اومدی! 👋', true);
         pandaTimer = setInterval(pandaCycle, 32000);
     }, 900);
+})();
+</script>
+<script>
+(function(){
+    const mascot = document.getElementById('panda-mascot');
+    const fx = document.getElementById('panda-fx');
+    if(!mascot || !fx) return;
+
+    // چشم‌ها موس را دنبال می‌کنند
+    const pupils = mascot.querySelectorAll('.pupil');
+    document.addEventListener('mousemove', function(e){
+        const rect = mascot.getBoundingClientRect();
+        const cx = rect.left + rect.width/2;
+        const cy = rect.top + rect.height*0.4;
+        const dx = Math.max(-1, Math.min(1, (e.clientX - cx) / (rect.width/2)));
+        const dy = Math.max(-1, Math.min(1, (e.clientY - cy) / (rect.height/2)));
+        pupils.forEach(function(p){ p.style.transform = 'translate(' + (dx*3) + 'px, ' + (dy*3) + 'px)'; });
+    });
+
+    // ذرات برق هنگام قلقلک
+    const emojis = ['✨','💫','⭐','😆','💕'];
+    function spawnParticles(){
+        for(let i=0;i<6;i++){
+            const el = document.createElement('div');
+            el.className = 'panda-particle';
+            el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+            el.style.left = (30 + Math.random()*40) + '%';
+            el.style.top = '35%';
+            fx.appendChild(el);
+
+            const dx = (Math.random()-0.5) * 90;
+            const dy = -60 - Math.random()*50;
+            const rot = (Math.random()-0.5) * 90;
+
+            if(el.animate){
+                el.animate([
+                    { transform:'translate(0,0) rotate(0deg) scale(0.4)', opacity:0 },
+                    { transform:'translate(' + (dx*0.4) + 'px, ' + (dy*0.5) + 'px) rotate(' + (rot*0.5) + 'deg) scale(1)', opacity:1, offset:0.35 },
+                    { transform:'translate(' + dx + 'px, ' + dy + 'px) rotate(' + rot + 'deg) scale(0.8)', opacity:0 }
+                ], { duration: 850 + Math.random()*350, easing:'ease-out' });
+            }
+            setTimeout(function(){ el.remove(); }, 1300);
+        }
+    }
+
+    mascot.addEventListener('click', spawnParticles);
+    mascot.addEventListener('touchstart', spawnParticles, {passive:true});
 })();
 </script>
 </body>
