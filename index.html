@@ -1317,6 +1317,62 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 .neo-cloud-actions{display:flex;gap:8px;flex-wrap:wrap}
 .neo-cloud-status{margin-top:10px;font-size:.72rem;color:var(--text-secondary)}
 .neo-auth-box{display:grid;gap:8px}
+/* ---- انیمیشن راه‌رفتن شخصیت به سمت کارت ورود (سبک‌شده مطابق پالت اپ) ---- */
+.login-anim-stage{
+    position:relative; height:86px; margin-bottom:12px; overflow:hidden;
+    border-radius:16px;
+    background: linear-gradient(135deg, rgba(139,92,246,.16), rgba(236,72,153,.10) 55%, rgba(6,182,212,.10));
+    border:1px solid rgba(255,255,255,.08);
+}
+.login-anim-stage::before{
+    content:"";
+    position:absolute; inset:-30% -10%;
+    background: radial-gradient(circle at 20% 30%, rgba(139,92,246,.35), transparent 55%),
+                radial-gradient(circle at 85% 70%, rgba(236,72,153,.28), transparent 55%);
+    filter: blur(6px);
+    pointer-events:none;
+}
+.login-anim-card{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    width:52px; height:60px; border-radius:12px;
+    background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow: 0 8px 20px rgba(0,0,0,.35), inset 0 0 12px rgba(139,92,246,.18);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    animation: lacCardGlow 2.4s ease-in-out infinite;
+}
+.login-anim-card .lac-line{ width:32px; height:5px; border-radius:3px; background: linear-gradient(90deg, var(--accent), var(--gold)); opacity:.85; }
+.login-anim-card .lac-line.short{ width:20px; }
+.login-anim-card .lac-lock{ font-size:.85rem; margin-top:2px; filter:drop-shadow(0 0 5px rgba(139,92,246,.7)); }
+@keyframes lacCardGlow{
+    0%,100%{ box-shadow: 0 8px 20px rgba(0,0,0,.35), inset 0 0 12px rgba(139,92,246,.18); }
+    50%{ box-shadow: 0 8px 26px rgba(0,0,0,.4), inset 0 0 18px rgba(236,72,153,.28); }
+}
+.login-anim-door{ position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:1.6rem;
+    filter:drop-shadow(0 0 8px rgba(139,92,246,.65)); animation: lacDoorPulse 1.6s ease-in-out infinite; }
+@keyframes lacDoorPulse{ 0%,100%{ transform:translateY(-50%) scale(1); } 50%{ transform:translateY(-50%) scale(1.15); } }
+.login-anim-character{ position:absolute; bottom:10px; width:22px; height:40px; animation: lacWalk 3.6s linear infinite; z-index:2; }
+@keyframes lacWalk{
+    0%{ left:70px; opacity:1; }
+    70%{ left:calc(100% - 62px); opacity:1; }
+    82%{ left:calc(100% - 46px); opacity:0; }
+    83%{ left:70px; opacity:0; }
+    92%{ opacity:0; }
+    100%{ left:70px; opacity:1; }
+}
+.lac-head{ width:11px; height:11px; border-radius:50%; background:var(--gold); margin:0 auto; box-shadow:0 0 6px rgba(236,72,153,.6); }
+.lac-body{ width:9px; height:14px; background:var(--accent,#8b5cf6); margin:2px auto 0; border-radius:4px; }
+.lac-arm{ position:absolute; top:12px; width:3px; height:12px; background:var(--accent,#8b5cf6); border-radius:2px; transform-origin:top center; }
+.lac-arm-l{ left:4px; animation: lacArmSwingL .5s ease-in-out infinite; }
+.lac-arm-r{ right:4px; animation: lacArmSwingR .5s ease-in-out infinite; }
+@keyframes lacArmSwingL{ 0%,100%{ transform:rotate(24deg); } 50%{ transform:rotate(-24deg); } }
+@keyframes lacArmSwingR{ 0%,100%{ transform:rotate(-24deg); } 50%{ transform:rotate(24deg); } }
+.lac-leg{ position:absolute; top:24px; width:4px; height:14px; background:var(--purple,#242429); border-radius:2px; transform-origin:top center; }
+.lac-leg-l{ left:5px; animation: lacLegSwingL .5s ease-in-out infinite; }
+.lac-leg-r{ right:5px; animation: lacLegSwingR .5s ease-in-out infinite; }
+@keyframes lacLegSwingL{ 0%,100%{ transform:rotate(-22deg); } 50%{ transform:rotate(22deg); } }
+@keyframes lacLegSwingR{ 0%,100%{ transform:rotate(22deg); } 50%{ transform:rotate(-22deg); } }
+@media(prefers-reduced-motion: reduce){ .login-anim-character,.login-anim-door,.lac-arm,.lac-leg,.login-anim-card{ animation:none !important; } }
 .neo-user-box{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:linear-gradient(90deg,rgba(34,211,238,.08),rgba(167,139,250,.08));border:1px solid rgba(255,255,255,.08);margin-bottom:10px}
 .neo-archive-card{margin-top:0}
 .neo-archive-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
@@ -2089,6 +2145,63 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         .app-bar-icons button:hover { transform: translateY(-2px); }
         #theme-toggle { color: #fbbf24; box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 0 14px rgba(251,191,36,0.35); }
         body.light-mode #theme-toggle { color: #7c3aed; box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 0 14px rgba(124,58,237,0.25); }
+        /* ---- سوییچ فیوچریستیک روز/شب (رنگ از پالت خودِ اپ) ---- */
+        #theme-toggle.theme-switch{
+            width: 76px !important; height: 34px !important;
+            border-radius: 999px !important;
+            background: linear-gradient(90deg,#1e1b3a 0%,#2a2550 55%, rgba(6,182,212,.25) 100%) !important;
+            border: 1px solid rgba(139,92,246,.4) !important;
+            padding: 0 !important;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,.55), 0 0 16px rgba(139,92,246,.35) !important;
+            transition: background .45s ease, box-shadow .45s ease, border-color .45s ease;
+        }
+        #theme-toggle.theme-switch::before{
+            content:"";
+            position:absolute; inset:-2px;
+            border-radius:999px;
+            border:1px solid transparent;
+            background: linear-gradient(90deg, var(--accent), var(--purple), var(--gold)) border-box;
+            -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: .55;
+            pointer-events: none;
+        }
+        body.light-mode #theme-toggle.theme-switch{
+            background: linear-gradient(90deg, rgba(124,58,237,.18) 0%, #fef3c7 55%, #fde68a 100%) !important;
+            border-color: rgba(219,39,119,.4) !important;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,.14), 0 0 16px rgba(251,191,36,.4) !important;
+        }
+        .theme-switch-icon{ position:absolute; top:50%; transform:translateY(-50%); font-size:.72rem; opacity:.55; transition:opacity .3s ease, transform .3s ease; pointer-events:none; z-index:2; }
+        .theme-switch-icon.moon{ left:9px; }
+        .theme-switch-icon.sun{ right:9px; }
+        #theme-toggle:not(.light-mode) .theme-switch-icon.moon,
+        body:not(.light-mode) #theme-toggle .theme-switch-icon.moon{ opacity: 1; transform: translateY(-50%) scale(1.1); }
+        body.light-mode #theme-toggle .theme-switch-icon.sun{ opacity: 1; transform: translateY(-50%) scale(1.1); }
+        body.light-mode #theme-toggle .theme-switch-icon.moon{ opacity: .35; }
+        body:not(.light-mode) #theme-toggle .theme-switch-icon.sun{ opacity: .35; }
+        .theme-switch-thumb{
+            position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #c4b5fd, var(--accent) 75%);
+            box-shadow: 0 2px 8px rgba(0,0,0,.45), 0 0 14px rgba(139,92,246,.8);
+            transition: transform .45s cubic-bezier(.34,1.56,.64,1), background .45s ease, box-shadow .45s ease;
+            z-index: 3;
+        }
+        .theme-switch-thumb::after{
+            content:"";
+            position:absolute; inset:5px;
+            border-radius:50%;
+            border: 2px solid rgba(255,255,255,.55);
+            border-top-color: transparent;
+            border-left-color: transparent;
+        }
+        body.light-mode .theme-switch-thumb{
+            transform: translateX(42px);
+            background: radial-gradient(circle at 35% 30%, #fff7d6, var(--gold) 75%);
+            box-shadow: 0 2px 8px rgba(0,0,0,.3), 0 0 14px rgba(219,39,119,.85);
+        }
         #countdown-badge { background: linear-gradient(150deg, var(--gold), var(--purple)) !important; color:#fff; border:none !important; box-shadow: 0 4px 14px rgba(236,72,153,0.4) !important; }
         #announcement-badge { background: linear-gradient(150deg, #34d399, #06b6d4) !important; color:#fff; border:none !important; box-shadow: 0 4px 14px rgba(52,211,153,0.4) !important; }
         .app-bar-icons #cloud-account-btn {
@@ -2168,6 +2281,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             filter: drop-shadow(0 12px 22px rgba(0,0,0,0.45));
             touch-action: manipulation;
             align-self: flex-end;
+            will-change: transform;
             --panda-white: #fefefe;
             --panda-black: #242429;
             --panda-blush: #f9a8c9;
@@ -2372,6 +2486,32 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         /* ---- حالت خجالتی (بعد از قلقلک زیاد) ---- */
         #panda-mascot.shy .arm-l { animation: none !important; transform: rotate(98deg); }
         #panda-mascot.shy .arm-r { animation: none !important; transform: rotate(-98deg); }
+
+        /* ---- حالت سرگیجه (بعد از کشیدن و ول کردن) ---- */
+        #panda-mascot.dizzy .panda-svg { animation: pandaDizzyWobble .9s ease-in-out 1; }
+        @keyframes pandaDizzyWobble {
+            0%,100% { transform: rotate(0deg); }
+            20% { transform: rotate(-9deg); }
+            40% { transform: rotate(7deg); }
+            60% { transform: rotate(-5deg); }
+            80% { transform: rotate(3deg); }
+        }
+        #panda-mascot.dizzy .eyes-open { animation: none; opacity: 0; }
+        #panda-mascot.dizzy .eyes-closed { opacity: 1; }
+        #panda-mascot.dizzy .mouth-normal { opacity: .5; }
+        #panda-fx .panda-dizzy-star {
+            position: absolute; top: 8%; left: 50%;
+            font-size: 15px; margin-left: -8px;
+            transform-origin: 8px 38px;
+            animation: pandaDizzyOrbit 1.1s linear;
+            opacity: 0;
+        }
+        @keyframes pandaDizzyOrbit {
+            0%   { opacity: 0; transform: rotate(0deg); }
+            12%  { opacity: 1; }
+            88%  { opacity: 1; }
+            100% { opacity: 0; transform: rotate(360deg); }
+        }
         #panda-mascot.shy .eyes-open, #panda-mascot.shy .eyes-closed { opacity: 0; }
         #panda-mascot.shy .blush { opacity: 1; }
         #panda-mascot.shy .mouth-normal { opacity: .4; }
@@ -2444,7 +2584,20 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             #panda-mascot .tail, #panda-mascot .eyes-open, #panda-mascot::before { animation: none !important; }
         }
     /* ===================== سیستم گفتگو (چت) بین کاربران ===================== */
-    #chat-badge{ background:linear-gradient(150deg,#6366f1,#ec4899) !important; color:#fff; border:none !important; box-shadow:0 4px 14px rgba(99,102,241,.4) !important; }
+    /* ===================== دکمه‌ی شناور گفتگو (پایین صفحه، سمت راست) ===================== */
+    .chat-fab{
+        position: fixed; bottom: 20px; right: 20px; z-index: 900;
+        width: 56px; height: 56px; border-radius: 50%;
+        background: linear-gradient(150deg,#6366f1,#ec4899);
+        color: #fff; border: none; font-size: 1.4rem;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 22px rgba(99,102,241,.5);
+        cursor: pointer; transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .chat-fab:hover{ transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 26px rgba(99,102,241,.6); }
+    .chat-fab:active{ transform: scale(.94); }
+    .chat-fab .announcement-unread-dot{ top: -2px; left: -2px; }
+    @media(max-width:480px){ .chat-fab{ width:50px; height:50px; font-size:1.25rem; bottom:16px; right:16px; } }
     .app-user-greeting{ font-size:.78rem; color:var(--text-secondary); padding:0 4px; display:none; align-items:center; white-space:nowrap; }
     .chat-overlay{ position:fixed; inset:0; z-index:2000; background:var(--bg-solid); display:none; }
     .chat-overlay.open{ display:flex; animation:fadeInUp .2s ease; }
@@ -2458,7 +2611,17 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-empty-state{ text-align:center; color:var(--text-secondary); padding:50px 20px; font-size:.86rem; line-height:1.9; }
     .chat-conv-item,.chat-contact-item{ display:flex; align-items:center; gap:12px; padding:11px; border-radius:16px; cursor:pointer; transition:background .15s ease; }
     .chat-conv-item:hover,.chat-contact-item:hover{ background:var(--card-bg-hover); }
-    .chat-avatar{ width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; flex-shrink:0; }
+    .chat-avatar{ width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; flex-shrink:0; overflow:hidden; position:relative; }
+    .chat-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .chat-avatar-wrap{ position:relative; flex-shrink:0; }
+    .chat-online-dot{ position:absolute; bottom:0; left:0; width:11px; height:11px; border-radius:50%; background:#3b3b4a; border:2px solid var(--card-bg,#1a1530); }
+    .chat-online-dot.online{ background:#22c55e; box-shadow:0 0 6px rgba(34,197,94,.7); }
+    .chat-status-line{ font-size:.68rem; color:var(--text-secondary); display:flex; align-items:center; gap:4px; }
+    .chat-status-line.online{ color:#22c55e; }
+    .chat-status-line .chat-status-tiny-dot{ width:7px; height:7px; border-radius:50%; background:#3b3b4a; flex-shrink:0; }
+    .chat-status-line.online .chat-status-tiny-dot{ background:#22c55e; box-shadow:0 0 5px rgba(34,197,94,.8); }
+    .chat-own-header{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+    .chat-own-header .chat-avatar{ width:34px; height:34px; font-size:.72rem; }
     .chat-conv-info{ flex:1; min-width:0; }
     .chat-conv-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
     .chat-conv-name,.chat-contact-name{ font-weight:700; font-size:.9rem; }
@@ -2468,7 +2631,20 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-unread-badge{ background:var(--gold); color:#fff; font-size:.66rem; font-weight:800; border-radius:999px; min-width:18px; height:18px; padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
     .chat-contact-email{ font-size:.7rem; color:var(--text-secondary); }
     .chat-search-input{ margin:10px 12px 0; padding:10px 14px; border-radius:14px; }
-    .chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px;
+        background-image: radial-gradient(circle at 15% 20%, rgba(139,92,246,.10) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(236,72,153,.09) 0%, transparent 42%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.02) 1px, transparent 1px);
+        background-size: auto, auto, 22px 22px;
+    }
+    .chat-msg-bubble{ position:relative; }
+    .chat-msg-actions{ position:absolute; top:-34px; display:none; gap:4px; background:var(--card-bg); border:var(--border); border-radius:12px; padding:4px; box-shadow:0 6px 18px rgba(0,0,0,.35); z-index:5; }
+    .chat-msg.out .chat-msg-actions{ left:0; }
+    .chat-msg.in .chat-msg-actions{ right:0; }
+    .chat-msg-bubble.menu-open .chat-msg-actions{ display:flex; }
+    .chat-msg-actions button{ background:rgba(255,255,255,.06); border:none; color:var(--text-primary); border-radius:8px; padding:5px 9px; font-size:.75rem; cursor:pointer; white-space:nowrap; }
+    .chat-msg-actions button.danger{ color:#f87171; }
+    .chat-msg-ticks{ font-size:.62rem; margin-right:2px; }
+    .chat-msg-ticks.read{ color:#38bdf8; }
+    .chat-msg-deleted{ font-style:italic; opacity:.6; font-size:.8rem; }
     .chat-msg{ display:flex; }
     .chat-msg.out{ justify-content:flex-end; }
     .chat-msg.in{ justify-content:flex-start; }
@@ -2486,7 +2662,11 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-text-input{ flex:1; padding:10px 14px; border-radius:20px; margin:0; }
     .chat-send-btn{ width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--purple)); border:none; color:#fff; font-size:1.05rem; cursor:pointer; flex-shrink:0; }
     .chat-setup-box{ padding:20px; display:grid; gap:10px; max-width:340px; margin:30px auto; width:100%; }
-    .chat-setup-box input{ width:100%; }
+    .chat-setup-box input,.chat-setup-box textarea{ width:100%; font-family:inherit; }
+    .chat-setup-box textarea{ resize:vertical; min-height:64px; padding:10px 14px; border-radius:14px; }
+    .chat-avatar-picker{ width:84px; height:84px; margin:0 auto; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:1.7rem; color:#fff; overflow:hidden; cursor:pointer; position:relative; font-weight:800; }
+    .chat-avatar-picker img{ width:100%; height:100%; object-fit:cover; }
+    .chat-avatar-picker::after{ content:"📷"; position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.45); font-size:.85rem; text-align:center; padding:3px 0; }
     @media(max-width:480px){ .chat-msg-bubble{ max-width:86%; } }
     </style>
 
@@ -2511,6 +2691,22 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <div class="section-title">🗝️ حساب کاربری</div>
         <p class="neo-muted">با یک حساب، اطلاعات برنامه روی همه‌ی دستگاه‌هات همگام می‌شود. حذف‌ها هم بین دستگاه‌ها به‌درستی همگام می‌شوند.</p>
         <div id="neo-auth-box" class="neo-auth-box">
+          <div class="login-anim-stage" aria-hidden="true">
+            <div class="login-anim-card">
+              <span class="lac-line"></span>
+              <span class="lac-line short"></span>
+              <span class="lac-lock">🔒</span>
+            </div>
+            <div class="login-anim-character">
+              <div class="lac-head"></div>
+              <div class="lac-body"></div>
+              <div class="lac-arm lac-arm-l"></div>
+              <div class="lac-arm lac-arm-r"></div>
+              <div class="lac-leg lac-leg-l"></div>
+              <div class="lac-leg lac-leg-r"></div>
+            </div>
+            <div class="login-anim-door">🔐</div>
+          </div>
           <div style="display:flex;gap:8px;margin-bottom:8px;">
             <input id="neo-auth-firstname" type="text" placeholder="نام" style="width:100%;margin-bottom:0;">
             <input id="neo-auth-lastname" type="text" placeholder="نام خانوادگی" style="width:100%;margin-bottom:0;">
@@ -2526,6 +2722,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     </div>
   </div>
 </div>
+
+<button id="chat-badge" class="chat-fab" onclick="openChatPanel()" title="گفتگو">💬<span id="chat-unread-dot" style="display:none;" class="announcement-unread-dot"></span></button>
 
 <div id="chat-overlay" class="chat-overlay">
   <div class="chat-overlay-inner">
@@ -2548,11 +2746,33 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <div id="chat-view-list" class="chat-view" style="display:flex;">
       <div class="chat-top-bar">
         <button class="chat-icon-btn" onclick="closeChatPanel()">✕</button>
-        <div class="chat-top-title">💬 گفتگوها</div>
+        <div class="chat-own-header" onclick="showChatMyProfileView()">
+          <div class="chat-avatar" id="chat-own-avatar">👤</div>
+          <div class="chat-top-title" style="font-size:.92rem;">💬 گفتگوها</div>
+        </div>
         <button class="chat-icon-btn" onclick="openContactPicker()" title="گفتگوی جدید">➕</button>
       </div>
       <div id="chat-conversations-list" class="chat-conversations-list">
         <div class="chat-empty-state">در حال بارگذاری...</div>
+      </div>
+    </div>
+
+    <!-- ویرایش پروفایل خودم -->
+    <div id="chat-view-my-profile" class="chat-view">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="showChatListView()">→</button>
+        <div class="chat-top-title">پروفایل من</div>
+        <span style="width:38px;"></span>
+      </div>
+      <div class="chat-setup-box">
+        <label class="chat-avatar-picker" id="chat-myprofile-avatar-picker">
+          <span id="chat-myprofile-avatar-inner">👤</span>
+          <input id="chat-myprofile-avatar-input" type="file" accept="image/*" style="display:none;" onchange="handleChatAvatarSelect(event)">
+        </label>
+        <input id="chat-myprofile-firstname" type="text" placeholder="نام">
+        <input id="chat-myprofile-lastname" type="text" placeholder="نام خانوادگی">
+        <textarea id="chat-myprofile-bio" placeholder="بیوگرافی کوتاه (اختیاری)" maxlength="160"></textarea>
+        <button class="btn btn-purple" style="width:100%;margin-top:4px;" onclick="saveChatMyProfile()">ذخیره</button>
       </div>
     </div>
 
@@ -2571,7 +2791,13 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <div id="chat-view-window" class="chat-view">
       <div class="chat-top-bar">
         <button class="chat-icon-btn" onclick="showChatListView()">→</button>
-        <div class="chat-top-title" id="chat-window-title">گفتگو</div>
+        <div style="display:flex;align-items:center;gap:10px;overflow:hidden;">
+          <div class="chat-avatar" id="chat-window-avatar" style="width:36px;height:36px;font-size:.78rem;">👤</div>
+          <div style="overflow:hidden;">
+            <div class="chat-top-title" id="chat-window-title" style="font-size:.92rem;">گفتگو</div>
+            <div class="chat-status-line" id="chat-window-status"><span class="chat-status-tiny-dot"></span><span id="chat-window-status-text">آفلاین</span></div>
+          </div>
+        </div>
         <span style="width:38px;"></span>
       </div>
       <div id="chat-messages" class="chat-messages"></div>
@@ -2593,11 +2819,12 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <div class="app-bar-top">
             <div class="app-bar-icons">
                 <span id="app-user-greeting" class="app-user-greeting"></span>
-                <span>
-                    <button id="chat-badge" onclick="openChatPanel()" title="گفتگو">💬<span id="chat-unread-dot" style="display:none;" class="announcement-unread-dot"></span></button>
-                </span>
                 <button id="cloud-account-btn" onclick="toggleCloudAccountModal()"><span class="dot" id="cloud-account-dot"></span><span class="label">حساب کاربری</span></button>
-                <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب">🌙</button>
+                <button id="theme-toggle" class="theme-switch" onclick="toggleTheme()" title="تغییر حالت روز/شب">
+                    <span class="theme-switch-icon moon">🌙</span>
+                    <span class="theme-switch-icon sun">☀️</span>
+                    <span class="theme-switch-thumb"></span>
+                </button>
                 <span>
                     <button id="countdown-badge" onclick="toggleCountdownPopup()" title="روزهای باقی‌مانده">🚀</button>
                     <div id="countdown-popup">
@@ -4151,12 +4378,10 @@ function resumeTimerIfActive(){
 function applyStoredTheme(){
     if(localStorage.getItem('theme_mode') === 'light'){
         document.body.classList.add('light-mode');
-        const btn = document.getElementById('theme-toggle'); if(btn) btn.innerText = '☀️';
     }
 }
 function toggleTheme(){
     const isLight = document.body.classList.toggle('light-mode');
-    document.getElementById('theme-toggle').innerText = isLight ? '☀️' : '🌙';
     localStorage.setItem('theme_mode', isLight ? 'light' : 'dark');
     applyChartTheme();
 }
@@ -6623,6 +6848,7 @@ loadSmartNotes();
     const hugMsgs = ['بغلم کن! 🤗','دوستت دارم رفیق 🐼💕'];
     const sleepyMsgs = ['خوابم میاد... 😴','یه استراحت کوتاه بدم؟ 💤'];
     const wakeMsgs = ['بیدار شدم! 😳', 'هوم؟ چیزی شد؟ 👀'];
+    const dizzyMsgs = ['وای سرم گیج رفت 😵‍💫','یهو چرخیدم‌ها! 🌀','کجا بودم؟! 😵'];
 
     let pandaIdx = 0;
     let pandaTimer = null;
@@ -6650,7 +6876,7 @@ loadSmartNotes();
     /* ---------------------------------------------------------------- */
     /* ماشین حالت (mood state machine)                                   */
     /* ---------------------------------------------------------------- */
-    const MOOD_CLASSES = ['tickle','sleepy','shy','celebrate','hug'];
+    const MOOD_CLASSES = ['tickle','sleepy','shy','celebrate','hug','dizzy'];
     let mood = 'idle';
     let moodTimer = null;
 
@@ -6660,7 +6886,10 @@ loadSmartNotes();
         mood = name;
         if(name !== 'idle'){ mascot.classList.add(name); }
         if(duration){
-            moodTimer = setTimeout(()=>{ mood = 'idle'; }, duration);
+            moodTimer = setTimeout(()=>{
+                mood = 'idle';
+                MOOD_CLASSES.forEach(c => mascot.classList.remove(c));
+            }, duration);
         }
     }
 
@@ -6696,6 +6925,7 @@ loadSmartNotes();
     function playHugSound(){ tone(400, 300, 0.35); }
     function playCelebrateSound(){ tone(523,523,.12,0); tone(659,659,.12,.12); tone(784,784,.22,.24); }
     function playShySound(){ tone(300,220,.25); }
+    function playDizzySound(){ tone(520,220,.16,0); tone(300,560,.16,.12); }
 
     /* ---------------------------------------------------------------- */
     /* ذرات: برق/قلب، کنفتی، Zzz                                          */
@@ -6766,6 +6996,17 @@ loadSmartNotes();
         setTimeout(()=> el.remove(), 2200);
     }
 
+    function spawnDizzyStars(){
+        for(let i=0;i<3;i++){
+            const el = document.createElement('div');
+            el.className = 'panda-dizzy-star';
+            el.textContent = (i % 2 === 0) ? '💫' : '⭐';
+            el.style.animationDelay = (i * 0.13) + 's';
+            fx.appendChild(el);
+            setTimeout(()=> el.remove(), 1350);
+        }
+    }
+
     /* ---------------------------------------------------------------- */
     /* چشم‌ها موس را دنبال می‌کنند (با throttle روی requestAnimationFrame تا لگ نده) */
     /* ---------------------------------------------------------------- */
@@ -6831,6 +7072,15 @@ loadSmartNotes();
         setMood('hug', 1600);
         playHugSound();
         pandaSay(hugMsgs[Math.floor(Math.random()*hugMsgs.length)], false);
+        restartCycle();
+    }
+
+    function dizzyReaction(){
+        if(mood === 'celebrate' || mood === 'hug') return;
+        setMood('dizzy', 1300);
+        playDizzySound();
+        spawnDizzyStars();
+        pandaSay(dizzyMsgs[Math.floor(Math.random()*dizzyMsgs.length)], false);
         restartCycle();
     }
 
@@ -6910,11 +7160,23 @@ loadSmartNotes();
 
     /* ---------------------------------------------------------------- */
     /* کشیدن (درگ) با بازگشت فنری + تشخیص کلیک ساده در برابر درگ            */
+    /* رفع باگ: اگر رویداد پایان درگ به هر دلیلی (لغو لمس، خروج از پنجره)   */
+    /* از دست می‌رفت، پاندا برای همیشه جابه‌جا می‌ماند و برنمی‌گشت.           */
     /* ---------------------------------------------------------------- */
     let dragging = false, moved = false, startX = 0, startY = 0, curX = 0, curY = 0, lastTapTime = 0;
+    let dragRAF = null;
+
+    function scheduleDragTransform(){
+        if(dragRAF) return;
+        dragRAF = requestAnimationFrame(function(){
+            dragRAF = null;
+            if(dragging) mascot.style.transform = 'translate(' + curX + 'px,' + curY + 'px)';
+        });
+    }
 
     function onPointerDown(e){
         if(e.target.closest('#panda-controls')) return;
+        if(typeof e.button === 'number' && e.button !== 0) return;
         dragging = true; moved = false;
         const p = e.touches ? e.touches[0] : e;
         startX = p.clientX; startY = p.clientY;
@@ -6928,19 +7190,28 @@ loadSmartNotes();
         if(Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
         if(moved){
             curX = dx; curY = dy;
-            mascot.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+            scheduleDragTransform();
             if(e.cancelable) e.preventDefault();
         }
     }
-    function onPointerUp(e){
-        if(!dragging) return;
+    function finishDrag(){
+        if(dragRAF){ cancelAnimationFrame(dragRAF); dragRAF = null; }
         dragging = false;
         mascot.classList.remove('dragging');
         if(moved){
+            const dist = Math.hypot(curX, curY);
             mascot.classList.add('spring-back');
             mascot.style.transform = 'translate(0,0)';
             setTimeout(()=> mascot.classList.remove('spring-back'), 650);
-        } else {
+            if(dist > 28) dizzyReaction();
+        }
+        moved = false;
+    }
+    function onPointerUp(e){
+        if(!dragging) return;
+        const wasMoved = moved;
+        finishDrag();
+        if(!wasMoved){
             const now = Date.now();
             if(now - lastTapTime < 320){
                 hugReaction();
@@ -6950,7 +7221,10 @@ loadSmartNotes();
                 lastTapTime = now;
             }
         }
-        moved = false;
+    }
+    function onPointerCancel(){
+        /* لغو ناگهانی لمس (مثلا سوایپ صفحه) هم باید پاندا را برگرداند */
+        if(dragging) finishDrag();
     }
 
     mascot.addEventListener('mousedown', onPointerDown);
@@ -6959,6 +7233,8 @@ loadSmartNotes();
     mascot.addEventListener('touchstart', onPointerDown, {passive:true});
     document.addEventListener('touchmove', onPointerMove, {passive:false});
     document.addEventListener('touchend', onPointerUp);
+    document.addEventListener('touchcancel', onPointerCancel);
+    window.addEventListener('blur', onPointerCancel);
 
     /* ---------------------------------------------------------------- */
     /* شروع                                                              */
@@ -7127,8 +7403,11 @@ loadSmartNotes();
     const chatProfilesCache = {};
     let chatActivePeerId = null;
     let chatMessagesChannel = null;
+    let chatPresenceChannel = null;
     let chatPendingFile = null;
+    let chatPendingAvatarFile = null;
     let chatAllContacts = [];
+    let chatOnlineIds = {};
 
     function esc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? ''); }
     function fa(n){ return (typeof faNum === 'function') ? faNum(n) : String(n); }
@@ -7143,6 +7422,11 @@ loadSmartNotes();
         if(!p) return 'کاربر';
         return ((p.first_name || '') + ' ' + (p.last_name || '')).trim() || 'کاربر';
     }
+    function chatAvatarInnerHtml(p){
+        if(p && p.avatar_url) return `<img src="${p.avatar_url}" alt="">`;
+        return esc(chatInitials(p));
+    }
+    function chatIsOnline(userId){ return !!chatOnlineIds[userId]; }
 
     function showChatView(id){
         document.querySelectorAll('#chat-overlay .chat-view').forEach(v => v.style.display = 'none');
@@ -7153,6 +7437,18 @@ loadSmartNotes();
     window.showChatSetupView = function(){ showChatView('chat-view-setup'); };
     function showChatWindowView(){ showChatView('chat-view-window'); }
     function showChatContactsView(){ showChatView('chat-view-contacts'); }
+    window.showChatMyProfileView = function(){
+        const fnEl = document.getElementById('chat-myprofile-firstname');
+        const lnEl = document.getElementById('chat-myprofile-lastname');
+        const bioEl = document.getElementById('chat-myprofile-bio');
+        const avEl = document.getElementById('chat-myprofile-avatar-inner');
+        if(fnEl) fnEl.value = chatMyProfile?.first_name || '';
+        if(lnEl) lnEl.value = chatMyProfile?.last_name || '';
+        if(bioEl) bioEl.value = chatMyProfile?.bio || '';
+        if(avEl) avEl.innerHTML = chatAvatarInnerHtml(chatMyProfile);
+        chatPendingAvatarFile = null;
+        showChatView('chat-view-my-profile');
+    };
 
     async function fetchProfilesByIds(ids){
         const missing = ids.filter(id => !chatProfilesCache[id]);
@@ -7204,16 +7500,61 @@ loadSmartNotes();
         if(error){ toast('خطا', error.message); return; }
         chatMyProfile = data; chatProfilesCache[data.id] = data;
         updateAppUserGreeting();
+        subscribeChatPresence(chatCurrentUserId);
+        showChatListView();
+    };
+
+    window.handleChatAvatarSelect = function(e){
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if(!file) return;
+        if(file.size > 5 * 1024 * 1024){ toast('عکس خیلی بزرگ است', 'حداکثر حجم مجاز ۵ مگابایت است.'); return; }
+        chatPendingAvatarFile = file;
+        const avEl = document.getElementById('chat-myprofile-avatar-inner');
+        if(avEl){
+            const url = URL.createObjectURL(file);
+            avEl.innerHTML = `<img src="${url}" alt="">`;
+        }
+    };
+
+    window.saveChatMyProfile = async function(){
+        const fn = document.getElementById('chat-myprofile-firstname')?.value.trim();
+        const ln = document.getElementById('chat-myprofile-lastname')?.value.trim();
+        const bio = (document.getElementById('chat-myprofile-bio')?.value || '').trim();
+        if(!fn || !ln){ toast('اطلاعات ناقص', 'نام و نام‌خانوادگی را کامل وارد کن.'); return; }
+        const client = getSupabaseClient();
+        if(!client) return;
+        let avatarUrl = chatMyProfile?.avatar_url || null;
+        if(chatPendingAvatarFile){
+            toast('در حال آپلود عکس...', '');
+            const safeName = chatPendingAvatarFile.name.replace(/[^a-zA-Z0-9آ-ی._-]/g, '_');
+            const path = 'avatars/' + chatCurrentUserId + '/' + Date.now() + '_' + safeName;
+            const { error: upErr } = await client.storage.from('chat-files').upload(path, chatPendingAvatarFile, { cacheControl:'3600', upsert:false });
+            if(upErr){ toast('آپلود عکس ناموفق بود', upErr.message); return; }
+            const { data: pub } = client.storage.from('chat-files').getPublicUrl(path);
+            avatarUrl = pub.publicUrl;
+        }
+        const { data:{ session } } = await client.auth.getSession();
+        const { data, error } = await client.from('profiles')
+            .upsert({ id: chatCurrentUserId, first_name: fn, last_name: ln, bio: bio || null, avatar_url: avatarUrl, email: session?.user?.email || '' })
+            .select().maybeSingle();
+        if(error){ toast('خطا', error.message); return; }
+        chatMyProfile = data; chatProfilesCache[data.id] = data;
+        chatPendingAvatarFile = null;
+        updateAppUserGreeting();
+        toast('ذخیره شد ✅', '');
         showChatListView();
     };
 
     function updateAppUserGreeting(){
         const greetEl = document.getElementById('app-user-greeting');
         const nameEl = document.getElementById('neo-auth-user-name');
+        const ownAvatarEl = document.getElementById('chat-own-avatar');
         if(chatMyProfile){
             const name = chatFullName(chatMyProfile);
             if(greetEl){ greetEl.textContent = '👋 ' + name; greetEl.style.display = 'flex'; }
             if(nameEl) nameEl.textContent = name;
+            if(ownAvatarEl) ownAvatarEl.innerHTML = chatAvatarInnerHtml(chatMyProfile);
         } else {
             if(greetEl){ greetEl.style.display = 'none'; greetEl.textContent = ''; }
         }
@@ -7233,11 +7574,17 @@ loadSmartNotes();
         const profile = await ensureOwnProfile();
         if(!profile){ showChatSetupView(); return; }
         updateAppUserGreeting();
+        subscribeChatPresence(chatCurrentUserId);
         showChatListView();
     };
     window.closeChatPanel = function(){
         document.getElementById('chat-overlay').classList.remove('open');
     };
+
+    function chatStatusHtml(peerId){
+        const online = chatIsOnline(peerId);
+        return `<span class="chat-status-tiny-dot${online ? ' online' : ''}"></span>${online ? 'آنلاین' : 'آفلاین'}`;
+    }
 
     async function loadConversations(){
         const listEl = document.getElementById('chat-conversations-list');
@@ -7263,11 +7610,14 @@ loadSmartNotes();
         listEl.innerHTML = peerIds.map(pid => {
             const p = chatProfilesCache[pid];
             const last = byPeer[pid].last;
-            const preview = last.content ? esc(last.content) : (last.file_url ? '📎 فایل ضمیمه' : '');
+            const preview = last.deleted_at ? '🚫 پیام حذف شد' : (last.content ? esc(last.content) : (last.file_url ? '📎 فایل ضمیمه' : ''));
             const time = new Date(last.created_at).toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit' });
             const unread = byPeer[pid].unread;
-            return `<div class="chat-conv-item" onclick="openConversation('${pid}')">
-                <div class="chat-avatar">${esc(chatInitials(p))}</div>
+            return `<div class="chat-conv-item" onclick="openConversation('${pid}')" data-peer="${pid}">
+                <div class="chat-avatar-wrap">
+                    <div class="chat-avatar">${chatAvatarInnerHtml(p)}</div>
+                    <span class="chat-online-dot${chatIsOnline(pid) ? ' online' : ''}"></span>
+                </div>
                 <div class="chat-conv-info">
                     <div class="chat-conv-top"><span class="chat-conv-name">${esc(chatFullName(p))}</span><span class="chat-conv-time">${fa(time)}</span></div>
                     <div class="chat-conv-bottom"><span class="chat-conv-preview">${preview}</span>${unread ? `<span class="chat-unread-badge">${fa(unread)}</span>` : ''}</div>
@@ -7296,21 +7646,36 @@ loadSmartNotes();
         if(!filtered.length){ el.innerHTML = '<div class="chat-empty-state">کسی پیدا نشد.</div>'; return; }
         el.innerHTML = filtered.map(p => `
             <div class="chat-contact-item" onclick="openConversation('${p.id}')">
-                <div class="chat-avatar">${esc(chatInitials(p))}</div>
+                <div class="chat-avatar-wrap">
+                    <div class="chat-avatar">${chatAvatarInnerHtml(p)}</div>
+                    <span class="chat-online-dot${chatIsOnline(p.id) ? ' online' : ''}"></span>
+                </div>
                 <div>
                     <div class="chat-contact-name">${esc(chatFullName(p))}</div>
-                    <div class="chat-contact-email">${esc(p.email || '')}</div>
+                    <div class="chat-contact-email">${esc(p.bio || p.email || '')}</div>
                 </div>
             </div>`).join('');
     };
+
+    function updateChatWindowStatus(peerId){
+        const statusEl = document.getElementById('chat-window-status');
+        const statusText = document.getElementById('chat-window-status-text');
+        if(!statusEl || !statusText) return;
+        const online = chatIsOnline(peerId);
+        statusEl.classList.toggle('online', online);
+        statusText.textContent = online ? 'آنلاین' : 'آفلاین';
+    }
 
     window.openConversation = async function(peerId){
         chatActivePeerId = peerId;
         showChatWindowView();
         cancelChatUpload();
         const titleEl = document.getElementById('chat-window-title');
+        const avatarEl = document.getElementById('chat-window-avatar');
         const profile = await getProfileById(peerId);
         if(titleEl) titleEl.textContent = chatFullName(profile);
+        if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(profile);
+        updateChatWindowStatus(peerId);
         const msgsEl = document.getElementById('chat-messages');
         if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
         const client = getSupabaseClient();
@@ -7327,9 +7692,21 @@ loadSmartNotes();
         refreshChatUnreadBadge();
     };
 
+    function chatTicksHtml(m){
+        if(m.sender_id !== chatCurrentUserId) return '';
+        return m.read_at
+            ? `<span class="chat-msg-ticks read">✓✓</span>`
+            : `<span class="chat-msg-ticks">✓</span>`;
+    }
+
     function chatBubbleHtml(m){
         const mine = m.sender_id === chatCurrentUserId;
         const time = new Date(m.created_at).toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit' });
+        if(m.deleted_at){
+            return `<div class="chat-msg ${mine ? 'in' : 'out'}" data-id="${m.id}">
+                <div class="chat-msg-bubble"><span class="chat-msg-deleted">🚫 این پیام حذف شد</span><span class="chat-msg-time">${fa(time)}</span></div>
+            </div>`;
+        }
         let media = '';
         if(m.file_url){
             if((m.file_type || '').startsWith('image/')){
@@ -7339,8 +7716,13 @@ loadSmartNotes();
             }
         }
         const text = m.content ? `<div class="chat-msg-text">${esc(m.content)}</div>` : '';
+        const deleteBtn = mine ? `<button class="danger" onclick="deleteChatMessage('${m.id}', event)">🗑 حذف</button>` : '';
+        const copyBtn = m.content ? `<button onclick="copyChatMessage('${m.id}', event)">📋 کپی</button>` : '';
         return `<div class="chat-msg ${mine ? 'in' : 'out'}" data-id="${m.id}">
-            <div class="chat-msg-bubble">${media}${text}<span class="chat-msg-time">${fa(time)}</span></div>
+            <div class="chat-msg-bubble" onclick="toggleChatMsgMenu(this, event)">
+                <div class="chat-msg-actions">${copyBtn}${deleteBtn}</div>
+                ${media}${text}<span class="chat-msg-time">${fa(time)} ${chatTicksHtml(m)}</span>
+            </div>
         </div>`;
     }
     function renderChatMessages(msgs){
@@ -7357,6 +7739,52 @@ loadSmartNotes();
         el.insertAdjacentHTML('beforeend', chatBubbleHtml(m));
         el.scrollTop = el.scrollHeight;
     }
+
+    window.toggleChatMsgMenu = function(bubbleEl, e){
+        if(e && (e.target.closest('a') || e.target.closest('button'))) return;
+        const wasOpen = bubbleEl.classList.contains('menu-open');
+        document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+        if(!wasOpen) bubbleEl.classList.add('menu-open');
+    };
+    document.addEventListener('click', function(e){
+        if(!e.target.closest('.chat-msg-bubble')){
+            document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+        }
+    });
+
+    window.copyChatMessage = async function(msgId, e){
+        if(e) e.stopPropagation();
+        const el = document.querySelector(`.chat-msg[data-id="${msgId}"] .chat-msg-text`);
+        const text = el ? el.textContent : '';
+        try{
+            await navigator.clipboard.writeText(text);
+            toast('کپی شد 📋', '');
+        }catch(err){ toast('کپی نشد', 'مرورگرت اجازه نداد.'); }
+        document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+    };
+
+    window.deleteChatMessage = async function(msgId, e){
+        if(e) e.stopPropagation();
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { error } = await client.from('messages')
+            .update({ content: null, file_url: null, file_name: null, file_type: null, deleted_at: new Date().toISOString() })
+            .eq('id', msgId).eq('sender_id', chatCurrentUserId);
+        if(error){
+            /* اگر ستون deleted_at وجود نداشت (اسکریپت دوم اجرا نشده)، پیام را کامل حذف کن */
+            const { error: delErr } = await client.from('messages').delete().eq('id', msgId).eq('sender_id', chatCurrentUserId);
+            if(delErr){ toast('حذف ناموفق بود', delErr.message); return; }
+            const rowEl = document.querySelector(`.chat-msg[data-id="${msgId}"]`);
+            if(rowEl) rowEl.remove();
+        } else {
+            const rowEl = document.querySelector(`.chat-msg[data-id="${msgId}"] .chat-msg-bubble`);
+            if(rowEl){
+                rowEl.classList.remove('menu-open');
+                rowEl.innerHTML = `<span class="chat-msg-deleted">🚫 این پیام حذف شد</span>`;
+            }
+        }
+        loadConversations();
+    };
 
     window.sendChatMessage = async function(){
         const client = getSupabaseClient();
@@ -7409,6 +7837,36 @@ loadSmartNotes();
         dot.style.display = (count && count > 0) ? 'block' : 'none';
     }
 
+    /* ---------------------------------------------------------------- */
+    /* آنلاین/آفلاین با Presence لحظه‌ای Supabase (مثل تلگرام)             */
+    /* ---------------------------------------------------------------- */
+    function refreshOnlineUIEverywhere(){
+        document.querySelectorAll('#chat-conversations-list [data-peer]').forEach(function(row){
+            const pid = row.getAttribute('data-peer');
+            const dot = row.querySelector('.chat-online-dot');
+            if(dot) dot.classList.toggle('online', chatIsOnline(pid));
+        });
+        if(chatActivePeerId) updateChatWindowStatus(chatActivePeerId);
+        if(document.getElementById('chat-view-contacts')?.style.display !== 'none') renderContactsList();
+    }
+    function subscribeChatPresence(myId){
+        const client = getSupabaseClient();
+        if(!client || !myId) return;
+        if(chatPresenceChannel){ try{ client.removeChannel(chatPresenceChannel); }catch(e){} chatPresenceChannel = null; }
+        chatPresenceChannel = client.channel('chat_presence_online', { config: { presence: { key: myId } } });
+        chatPresenceChannel.on('presence', { event: 'sync' }, function(){
+            const state = chatPresenceChannel.presenceState();
+            chatOnlineIds = {};
+            Object.keys(state).forEach(function(uid){ chatOnlineIds[uid] = true; });
+            refreshOnlineUIEverywhere();
+        });
+        chatPresenceChannel.subscribe(async function(status){
+            if(status === 'SUBSCRIBED'){
+                try{ await chatPresenceChannel.track({ online_at: Date.now() }); }catch(e){}
+            }
+        });
+    }
+
     function subscribeChatRealtime(myId){
         const client = getSupabaseClient();
         if(!client || !myId) return;
@@ -7429,6 +7887,19 @@ loadSmartNotes();
                     && document.getElementById('chat-view-list').style.display !== 'none';
                 if(listOpen) loadConversations();
             })
+            .on('postgres_changes', { event:'UPDATE', schema:'public', table:'messages', filter:`sender_id=eq.${myId}` }, (payload) => {
+                /* گیرنده پیامِ من را خوانده یا حذف کرده - تیک‌ها/حباب را به‌روزرسانی کن */
+                const msg = payload.new;
+                const bubble = document.querySelector(`.chat-msg[data-id="${msg.id}"] .chat-msg-bubble`);
+                if(bubble && chatActivePeerId === msg.receiver_id){
+                    if(msg.deleted_at){
+                        bubble.innerHTML = `<span class="chat-msg-deleted">🚫 این پیام حذف شد</span>`;
+                    } else {
+                        const ticksEl = bubble.querySelector('.chat-msg-ticks');
+                        if(ticksEl && msg.read_at){ ticksEl.classList.add('read'); ticksEl.textContent = '✓✓'; }
+                    }
+                }
+            })
             .subscribe();
     }
 
@@ -7442,10 +7913,13 @@ loadSmartNotes();
             await ensureOwnProfile();
             updateAppUserGreeting();
             subscribeChatRealtime(chatCurrentUserId);
+            subscribeChatPresence(chatCurrentUserId);
             refreshChatUnreadBadge();
         } else {
-            chatCurrentUserId = null; chatMyProfile = null;
-            if(chatMessagesChannel){ const c = getSupabaseClient(); try{ c?.removeChannel(chatMessagesChannel); }catch(e){} chatMessagesChannel = null; }
+            chatCurrentUserId = null; chatMyProfile = null; chatOnlineIds = {};
+            const c = getSupabaseClient();
+            if(chatMessagesChannel){ try{ c?.removeChannel(chatMessagesChannel); }catch(e){} chatMessagesChannel = null; }
+            if(chatPresenceChannel){ try{ c?.removeChannel(chatPresenceChannel); }catch(e){} chatPresenceChannel = null; }
             const greetEl = document.getElementById('app-user-greeting');
             if(greetEl){ greetEl.style.display = 'none'; }
             const dot = document.getElementById('chat-unread-dot');
