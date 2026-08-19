@@ -91,6 +91,91 @@ if (typeof window.faNum === 'undefined') {
             margin: 0 auto;
         }
 
+        /* ===================== پس‌زمینه‌ی متحرک ملایم ===================== */
+        #ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #ambient-bg .ambient-blob {
+            position: absolute;
+            width: 46vw;
+            height: 46vw;
+            max-width: 620px;
+            max-height: 620px;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: 0.16;
+            will-change: transform;
+        }
+        body.light-mode #ambient-bg .ambient-blob { opacity: 0.12; }
+        #ambient-bg .ambient-blob.b1 {
+            top: -12%; right: -8%;
+            background: radial-gradient(circle, var(--accent), transparent 70%);
+            animation: ambientFloat1 26s ease-in-out infinite;
+        }
+        #ambient-bg .ambient-blob.b2 {
+            bottom: -14%; left: -10%;
+            background: radial-gradient(circle, var(--gold), transparent 70%);
+            animation: ambientFloat2 32s ease-in-out infinite;
+        }
+        #ambient-bg .ambient-blob.b3 {
+            top: 38%; left: 42%;
+            background: radial-gradient(circle, var(--purple, var(--accent)), transparent 70%);
+            animation: ambientFloat3 40s ease-in-out infinite;
+        }
+        @keyframes ambientFloat1 {
+            0%,100% { transform: translate(0,0) scale(1); }
+            50% { transform: translate(-6%, 8%) scale(1.12); }
+        }
+        @keyframes ambientFloat2 {
+            0%,100% { transform: translate(0,0) scale(1); }
+            50% { transform: translate(7%, -6%) scale(1.08); }
+        }
+        @keyframes ambientFloat3 {
+            0%,100% { transform: translate(-50%,-50%) scale(1); }
+            50% { transform: translate(-46%,-54%) scale(1.15); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #ambient-bg .ambient-blob { animation: none !important; }
+        }
+
+        /* ===================== انیمیشن ورود کارت‌ها هنگام اسکرول ===================== */
+        .glass-card.reveal-ready { opacity: 0; transform: translateY(18px); }
+        .glass-card.reveal-in {
+            animation: cardRevealIn 0.55s cubic-bezier(.22,.68,.36,1) forwards;
+        }
+        @keyframes cardRevealIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .glass-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 44px 0 rgba(0,0,0,0.42);
+        }
+        body.light-mode .glass-card:hover {
+            box-shadow: 0 16px 36px 0 rgba(90,60,140,0.16);
+        }
+
+        /* ===================== افکت ریپل دکمه‌ها ===================== */
+        .ui-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.55);
+            pointer-events: none;
+            transform: translate(-50%,-50%) scale(0);
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+        @keyframes uiRippleAnim {
+            to { transform: translate(-50%,-50%) scale(1); opacity: 0; }
+        }
+
+        /* ===================== شمارش عدد (count-up) ===================== */
+        .count-up-active { transition: none; }
+
         header {
             text-align: center;
             margin-bottom: 30px;
@@ -2111,6 +2196,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             width: 100%; height: 100%; display: block; position: relative; z-index: 1;
             animation: pandaBreathe 3.6s ease-in-out infinite;
             transform-origin: 50% 85%;
+            will-change: transform;
         }
         @keyframes pandaBreathe {
             0%,100% { transform: translateY(0) scale(1,1); }
@@ -2122,7 +2208,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         @keyframes earTwitchL { 0%,88%,100% { transform: rotate(0deg); } 90% { transform: rotate(-9deg); } 93% { transform: rotate(4deg); } 96% { transform: rotate(0deg); } }
         @keyframes earTwitchR { 0%,88%,100% { transform: rotate(0deg); } 90% { transform: rotate(9deg); } 93% { transform: rotate(-4deg); } 96% { transform: rotate(0deg); } }
 
-        #panda-mascot .eyes-open { animation: pandaBlinkEyes 4.8s ease-in-out infinite; transform-origin: center; }
+        #panda-mascot .eyes-open { animation: pandaBlinkEyes 4.8s ease-in-out infinite; transform-origin: 240px 160px; will-change: transform; }
         @keyframes pandaBlinkEyes { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } 97% { transform: scaleY(1); } }
         #panda-mascot .eyes-closed { opacity: 0; }
         #panda-mascot .pupil { transition: transform .25s ease; }
@@ -2213,6 +2299,150 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         @media (max-width: 700px) {
             #panda-speech { max-width: 130px; font-size: 0.7rem; padding: 7px 10px; }
         }
+
+        /* ===================== قابلیت‌های تکمیلی پاندا ===================== */
+
+        /* سایه‌ی نرم زیر پا، هم‌زمان با نفس‌کشیدن */
+        #panda-mascot .panda-ground-shadow {
+            position: absolute;
+            bottom: -4%;
+            left: 50%;
+            width: 58%;
+            height: 12%;
+            background: radial-gradient(ellipse, rgba(0,0,0,0.4), rgba(0,0,0,0) 72%);
+            transform: translateX(-50%);
+            filter: blur(3px);
+            z-index: 0;
+            animation: pandaShadowBreathe 3.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pandaShadowBreathe {
+            0%,100% { transform: translateX(-50%) scaleX(1); opacity: .8; }
+            50% { transform: translateX(-50%) scaleX(0.88); opacity: .55; }
+        }
+        #panda-mascot.sleepy .panda-ground-shadow,
+        #panda-mascot.celebrate .panda-ground-shadow { animation-duration: 0.5s; }
+
+        /* درخشش چشم موقع هاور */
+        #panda-mascot .eye-shine { transition: transform .3s ease; will-change: transform; }
+        #panda-mascot .eye-shine.left  { transform-origin: 194px 159px; }
+        #panda-mascot .eye-shine.right { transform-origin: 292px 159px; }
+        #panda-mascot:hover .eye-shine { transform: scale(1.7); }
+
+        /* ---- حالت خواب‌آلود (بعد از عدم فعالیت) ---- */
+        #panda-mascot.sleepy .panda-svg { animation: pandaBreatheSlow 5.2s ease-in-out infinite !important; }
+        @keyframes pandaBreatheSlow {
+            0%,100% { transform: translateY(0) scale(1,1); }
+            50% { transform: translateY(-1%) scale(1.008,0.994); }
+        }
+        #panda-mascot.sleepy .eyes-open { opacity: 0; animation: none; }
+        #panda-mascot.sleepy .eyes-closed { opacity: 1; }
+        #panda-mascot.sleepy .ear-l, #panda-mascot.sleepy .ear-r { animation: none; }
+        #panda-fx .panda-zzz {
+            position: absolute;
+            font-weight: 800;
+            font-family: Tahoma, sans-serif;
+            color: #cdd6f7;
+            text-shadow: 0 2px 5px rgba(0,0,0,.35);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ---- حالت شب: کلاه‌خواب + ستاره‌های اطراف ---- */
+        #panda-mascot .sleep-cap { opacity: 0; visibility: hidden; transition: opacity .3s ease; }
+        #panda-mascot.night .sleep-cap { opacity: 1; visibility: visible; }
+        #panda-mascot.night::before {
+            background: radial-gradient(circle, rgba(49,46,140,0.5) 0%, rgba(88,28,135,0.28) 45%, transparent 72%);
+        }
+        #panda-mascot .panda-night-star {
+            position: absolute;
+            font-size: 10px;
+            color: #e9d8ff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        #panda-mascot.night .panda-night-star { animation: pandaStarTwinkle 2.4s ease-in-out infinite; }
+        #panda-mascot .panda-night-star.n1 { top: 4%;  left: 6%;  animation-delay: 0s; }
+        #panda-mascot .panda-night-star.n2 { top: 14%; left: 88%; animation-delay: .5s; }
+        #panda-mascot .panda-night-star.n3 { top: 62%; left: 2%;  animation-delay: 1s; }
+        #panda-mascot .panda-night-star.n4 { top: 70%; left: 92%; animation-delay: 1.5s; }
+        @keyframes pandaStarTwinkle { 0%,100% { opacity: 0; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.1); } }
+
+        /* ---- حالت خجالتی (بعد از قلقلک زیاد) ---- */
+        #panda-mascot.shy .arm-l { animation: none !important; transform: rotate(98deg); }
+        #panda-mascot.shy .arm-r { animation: none !important; transform: rotate(-98deg); }
+        #panda-mascot.shy .eyes-open, #panda-mascot.shy .eyes-closed { opacity: 0; }
+        #panda-mascot.shy .blush { opacity: 1; }
+        #panda-mascot.shy .mouth-normal { opacity: .4; }
+
+        /* ---- حالت جشن/کنفتی (نمره بالا) ---- */
+        #panda-mascot.celebrate .panda-svg { animation: pandaCelebrateBounce .5s ease-in-out infinite !important; }
+        @keyframes pandaCelebrateBounce {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-7%) rotate(4deg); }
+        }
+        #panda-mascot.celebrate .arm-l { animation: pandaArmFlapL .32s ease-in-out infinite; }
+        #panda-mascot.celebrate .arm-r { animation: pandaArmFlapR .32s ease-in-out infinite .1s; }
+        #panda-mascot.celebrate .eyes-open { opacity: 0; }
+        #panda-mascot.celebrate .eyes-closed { opacity: 1; }
+        #panda-mascot.celebrate .mouth-normal { opacity: 0; }
+        #panda-mascot.celebrate .mouth-laugh { opacity: 1; animation: pandaLaughPulse .3s ease-in-out infinite; }
+        #panda-fx .panda-confetti {
+            position: absolute;
+            width: 7px; height: 10px;
+            opacity: 0;
+            pointer-events: none;
+            border-radius: 2px;
+        }
+
+        /* ---- حالت بغل (دابل‌کلیک) ---- */
+        #panda-mascot.hug .arm-l { animation: none !important; transform: rotate(55deg); }
+        #panda-mascot.hug .arm-r { animation: none !important; transform: rotate(-55deg); }
+        #panda-mascot.hug .eyes-open { opacity: 0; }
+        #panda-mascot.hug .eyes-closed { opacity: 1; }
+        #panda-mascot.hug .blush { opacity: 1; }
+
+        /* ---- کشیدن (درگ) با بازگشت فنری ---- */
+        #panda-mascot.dragging { cursor: grabbing; z-index: 60; }
+        #panda-mascot.dragging .panda-svg { animation-play-state: paused; }
+        #panda-mascot.spring-back { transition: transform .6s cubic-bezier(.34,1.56,.64,1); }
+
+        /* ---- دکمه‌های ریز کنترل (صدا / کاهش حرکت) ---- */
+        #panda-controls {
+            position: absolute;
+            top: -6px; right: -6px;
+            display: flex;
+            gap: 4px;
+            z-index: 30;
+            opacity: .5;
+            transition: opacity .25s ease;
+        }
+        #panda-mascot:hover #panda-controls,
+        #panda-controls:focus-within { opacity: 1; }
+        #panda-controls button {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(20,14,34,0.65);
+            color: #f3f0fb;
+            font-size: 11px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,.35);
+        }
+        #panda-controls button:hover { background: rgba(139,92,246,0.85); }
+        #panda-mascot.calm-mode .panda-svg,
+        #panda-mascot.calm-mode .ear-l,
+        #panda-mascot.calm-mode .ear-r,
+        #panda-mascot.calm-mode .tail,
+        #panda-mascot.calm-mode .eyes-open,
+        #panda-mascot.calm-mode::before { animation: none !important; }
+        @media (prefers-reduced-motion: reduce) {
+            #panda-mascot .panda-svg, #panda-mascot .ear-l, #panda-mascot .ear-r,
+            #panda-mascot .tail, #panda-mascot .eyes-open, #panda-mascot::before { animation: none !important; }
+        }
     </style>
 
     <meta name="theme-color" content="#100c24">
@@ -2223,6 +2453,11 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 <link rel="manifest" href="./manifest.json">
 </head>
 <body>
+<div id="ambient-bg" aria-hidden="true">
+    <span class="ambient-blob b1"></span>
+    <span class="ambient-blob b2"></span>
+    <span class="ambient-blob b3"></span>
+</div>
 <div id="cloud-account-modal-overlay" onclick="if(event.target===this)toggleCloudAccountModal(false)">
   <div id="cloud-account-modal" style="position:relative;">
     <button id="cloud-account-modal-close" onclick="toggleCloudAccountModal(false)">✕</button>
@@ -2266,9 +2501,18 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
                 <h1><span class="title-pro-badge">PRO</span>سامانه جامع تحلیل و تست‌زنی</h1>
                 <p>ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی</p>
             </div>
-            <div id="panda-mascot" onclick="pandaTickleReact()" title="پاندای همراه">
+            <div id="panda-mascot" title="پاندای همراه">
+                <div id="panda-controls">
+                    <button type="button" id="panda-mute-btn" title="قطع/وصل صدا" aria-label="قطع/وصل صدا">🔊</button>
+                    <button type="button" id="panda-calm-btn" title="کاهش حرکت پاندا" aria-label="کاهش حرکت پاندا">⏸</button>
+                </div>
                 <div id="panda-speech"></div>
                 <div id="panda-fx"></div>
+                <div class="panda-ground-shadow"></div>
+                <span class="panda-night-star n1">✦</span>
+                <span class="panda-night-star n2">✧</span>
+                <span class="panda-night-star n3">✦</span>
+                <span class="panda-night-star n4">✧</span>
                 <svg class="panda-svg" viewBox="0 0 480 400" xmlns="http://www.w3.org/2000/svg">
                     <!-- tail -->
                     <ellipse class="tail" cx="240" cy="335" rx="16" ry="14" fill="var(--panda-black)"/>
@@ -2314,6 +2558,13 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
                     <circle class="ear-r" cx="330" cy="95" r="38" fill="var(--panda-black)"/>
                     <circle cx="240" cy="160" r="128" fill="var(--panda-white)"/>
 
+                    <!-- کلاه خواب (فقط حالت شب) -->
+                    <g class="sleep-cap">
+                        <path d="M 315 55 Q 300 -10 375 15 Q 350 35 345 60 Z" fill="#6d5bd0"/>
+                        <circle cx="374" cy="14" r="9" fill="#fbe3ff"/>
+                        <ellipse cx="322" cy="58" rx="30" ry="8" fill="#8a7ae0"/>
+                    </g>
+
                     <!-- blush -->
                     <ellipse class="blush" cx="172" cy="195" rx="20" ry="12" fill="var(--panda-blush)"/>
                     <ellipse class="blush" cx="308" cy="195" rx="20" ry="12" fill="var(--panda-blush)"/>
@@ -2328,8 +2579,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
                         <circle cx="292" cy="160" r="15" fill="#fff"/>
                         <circle class="pupil" cx="191" cy="163" r="8" fill="#1a1a1a"/>
                         <circle class="pupil" cx="289" cy="163" r="8" fill="#1a1a1a"/>
-                        <circle cx="194" cy="159" r="2.4" fill="#fff"/>
-                        <circle cx="292" cy="159" r="2.4" fill="#fff"/>
+                        <circle class="eye-shine left" cx="194" cy="159" r="2.4" fill="#fff"/>
+                        <circle class="eye-shine right" cx="292" cy="159" r="2.4" fill="#fff"/>
                     </g>
 
                     <!-- closed happy eyes -->
@@ -3079,6 +3330,7 @@ function saveResult(){
     const max = total * 3;
     let percent = max > 0 ? Number(((raw / max) * 100).toFixed(1)) : 0;
     if(percent < 0) percent = 0;
+    if(typeof window.pandaCelebrate === 'function'){ window.pandaCelebrate(percent); }
 
     const history = getHistory();
     const ts = nowTs();
@@ -6224,6 +6476,14 @@ loadSmartNotes();
 </script>
 <script>
 (function(){
+    const mascot = document.getElementById('panda-mascot');
+    const bubble = document.getElementById('panda-speech');
+    const fx = document.getElementById('panda-fx');
+    if(!mascot || !bubble || !fx) return;
+
+    /* ---------------------------------------------------------------- */
+    /* پیام‌ها                                                            */
+    /* ---------------------------------------------------------------- */
     const pandaMessages = [
         'درس بخون تا آینده‌تو بسازی 💪',
         'ادامه بده... تو می‌تونی! ✨',
@@ -6232,11 +6492,15 @@ loadSmartNotes();
         'یه تست دیگه بزن، الان وقتشه 📝',
         'خسته نباش، افتخار می‌کنم بهت 🌟'
     ];
+    const giggles = ['هاها قلقلکم اومد 😄','جونم؟ چیزی شد؟ 😊','بزن بریم درس بخونیم! 📚','هی رفیق، حواسم بهت هست 🐼'];
+    const celebrateMsgs = ['وای چه نمره‌ای! آفرین 🎉','بهت افتخار می‌کنم! 🏆','دمت گرم، عالی بود! 🌟'];
+    const shyMsgs = ['بسه دیگه خجالت می‌کشم 🙈','اینقدر قلقلکم نده! 😳'];
+    const hugMsgs = ['بغلم کن! 🤗','دوستت دارم رفیق 🐼💕'];
+    const sleepyMsgs = ['خوابم میاد... 😴','یه استراحت کوتاه بدم؟ 💤'];
+    const wakeMsgs = ['بیدار شدم! 😳', 'هوم؟ چیزی شد؟ 👀'];
+
     let pandaIdx = 0;
     let pandaTimer = null;
-    const mascot = document.getElementById('panda-mascot');
-    const bubble = document.getElementById('panda-speech');
-    if(!mascot || !bubble) return;
 
     function pandaSay(text, withWave){
         bubble.textContent = text;
@@ -6249,56 +6513,81 @@ loadSmartNotes();
     }
 
     function pandaCycle(){
+        if(mood !== 'idle' || calmMode) return;
         pandaSay(pandaMessages[pandaIdx % pandaMessages.length], true);
         pandaIdx++;
     }
-
-    window.pandaTickleReact = function(){
-        mascot.classList.remove('tickle'); void mascot.offsetWidth; mascot.classList.add('tickle');
-        const giggles = ['هاها قلقلکم اومد 😄','جونم؟ چیزی شد؟ 😊','بزن بریم درس بخونیم! 📚','هی رفیق، حواسم بهت هست 🐼'];
-        pandaSay(giggles[Math.floor(Math.random()*giggles.length)], false);
+    function restartCycle(){
         clearInterval(pandaTimer);
         pandaTimer = setInterval(pandaCycle, 32000);
-    };
+    }
 
-    setTimeout(function(){
-        pandaSay('خوش اومدی! 👋', true);
-        pandaTimer = setInterval(pandaCycle, 32000);
-    }, 900);
-})();
-</script>
-<script>
-(function(){
-    const mascot = document.getElementById('panda-mascot');
-    const fx = document.getElementById('panda-fx');
-    if(!mascot || !fx) return;
+    /* ---------------------------------------------------------------- */
+    /* ماشین حالت (mood state machine)                                   */
+    /* ---------------------------------------------------------------- */
+    const MOOD_CLASSES = ['tickle','sleepy','shy','celebrate','hug'];
+    let mood = 'idle';
+    let moodTimer = null;
 
-    // چشم‌ها موس را دنبال می‌کنند
-    const pupils = mascot.querySelectorAll('.pupil');
-    document.addEventListener('mousemove', function(e){
-        const rect = mascot.getBoundingClientRect();
-        const cx = rect.left + rect.width/2;
-        const cy = rect.top + rect.height*0.4;
-        const dx = Math.max(-1, Math.min(1, (e.clientX - cx) / (rect.width/2)));
-        const dy = Math.max(-1, Math.min(1, (e.clientY - cy) / (rect.height/2)));
-        pupils.forEach(function(p){ p.style.transform = 'translate(' + (dx*3) + 'px, ' + (dy*3) + 'px)'; });
-    });
+    function setMood(name, duration){
+        clearTimeout(moodTimer);
+        MOOD_CLASSES.forEach(c => mascot.classList.remove(c));
+        mood = name;
+        if(name !== 'idle'){ mascot.classList.add(name); }
+        if(duration){
+            moodTimer = setTimeout(()=>{ mood = 'idle'; }, duration);
+        }
+    }
 
-    // ذرات برق هنگام قلقلک
-    const emojis = ['✨','💫','⭐','😆','💕'];
+    /* ---------------------------------------------------------------- */
+    /* صدا (Web Audio، بدون فایل خارجی)                                   */
+    /* ---------------------------------------------------------------- */
+    let audioCtx = null;
+    let muted = localStorage.getItem('panda_muted') === '1';
+    function ensureAudio(){
+        if(!audioCtx){
+            try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+        }
+        return audioCtx;
+    }
+    function tone(freqStart, freqEnd, duration, delay){
+        if(muted) return;
+        const ctx = ensureAudio();
+        if(!ctx) return;
+        const t0 = ctx.currentTime + (delay || 0);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqStart, t0);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(40,freqEnd), t0 + duration);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.1, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + duration + 0.02);
+    }
+    function playTickleSound(){ tone(520, 880, 0.16); }
+    function playHugSound(){ tone(400, 300, 0.35); }
+    function playCelebrateSound(){ tone(523,523,.12,0); tone(659,659,.12,.12); tone(784,784,.22,.24); }
+    function playShySound(){ tone(300,220,.25); }
+
+    /* ---------------------------------------------------------------- */
+    /* ذرات: برق/قلب، کنفتی، Zzz                                          */
+    /* ---------------------------------------------------------------- */
+    const sparkEmojis = ['✨','💫','⭐','😆','💕'];
     function spawnParticles(){
+        if(calmMode) return;
         for(let i=0;i<6;i++){
             const el = document.createElement('div');
             el.className = 'panda-particle';
-            el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+            el.textContent = sparkEmojis[Math.floor(Math.random()*sparkEmojis.length)];
             el.style.left = (30 + Math.random()*40) + '%';
             el.style.top = '35%';
             fx.appendChild(el);
-
             const dx = (Math.random()-0.5) * 90;
             const dy = -60 - Math.random()*50;
             const rot = (Math.random()-0.5) * 90;
-
             if(el.animate){
                 el.animate([
                     { transform:'translate(0,0) rotate(0deg) scale(0.4)', opacity:0 },
@@ -6306,13 +6595,400 @@ loadSmartNotes();
                     { transform:'translate(' + dx + 'px, ' + dy + 'px) rotate(' + rot + 'deg) scale(0.8)', opacity:0 }
                 ], { duration: 850 + Math.random()*350, easing:'ease-out' });
             }
-            setTimeout(function(){ el.remove(); }, 1300);
+            setTimeout(()=> el.remove(), 1300);
         }
     }
 
-    mascot.addEventListener('click', spawnParticles);
-    mascot.addEventListener('touchstart', spawnParticles, {passive:true});
+    const confettiColors = ['#8b5cf6','#ec4899','#22d3ee','#facc15','#34d399','#fb7185'];
+    function spawnConfetti(){
+        if(calmMode) return;
+        for(let i=0;i<16;i++){
+            const el = document.createElement('div');
+            el.className = 'panda-confetti';
+            el.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+            el.style.left = (10 + Math.random()*80) + '%';
+            el.style.top = '-4%';
+            fx.appendChild(el);
+            const dx = (Math.random()-0.5) * 160;
+            const rot = 180 + Math.random()*360;
+            if(el.animate){
+                el.animate([
+                    { transform:'translate(0,0) rotate(0deg)', opacity:0 },
+                    { transform:'translate(' + (dx*0.3) + 'px, 60px) rotate(' + (rot*0.4) + 'deg)', opacity:1, offset:.25 },
+                    { transform:'translate(' + dx + 'px, 220px) rotate(' + rot + 'deg)', opacity:0 }
+                ], { duration: 1400 + Math.random()*500, easing:'ease-in' });
+            }
+            setTimeout(()=> el.remove(), 2000);
+        }
+    }
+
+    let zzzTimer = null;
+    function spawnZzz(){
+        const el = document.createElement('div');
+        el.className = 'panda-zzz';
+        el.textContent = 'Zzz';
+        el.style.left = '58%';
+        el.style.top = '18%';
+        el.style.fontSize = (12 + Math.random()*6) + 'px';
+        fx.appendChild(el);
+        if(el.animate){
+            el.animate([
+                { transform:'translate(0,0) scale(.6)', opacity:0 },
+                { transform:'translate(14px,-22px) scale(1)', opacity:1, offset:.4 },
+                { transform:'translate(26px,-46px) scale(1.15)', opacity:0 }
+            ], { duration: 2200, easing:'ease-out' });
+        }
+        setTimeout(()=> el.remove(), 2200);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* چشم‌ها موس را دنبال می‌کنند (با throttle روی requestAnimationFrame تا لگ نده) */
+    /* ---------------------------------------------------------------- */
+    const pupils = mascot.querySelectorAll('.pupil');
+    let lastMouseX = null, lastMouseY = null, mascotRect = null, pupilRafScheduled = false;
+
+    function refreshMascotRect(){ mascotRect = mascot.getBoundingClientRect(); }
+    refreshMascotRect();
+    window.addEventListener('resize', refreshMascotRect, {passive:true});
+    window.addEventListener('scroll', refreshMascotRect, {passive:true});
+
+    function updatePupils(){
+        pupilRafScheduled = false;
+        if(lastMouseX === null || !mascotRect) return;
+        const cx = mascotRect.left + mascotRect.width/2;
+        const cy = mascotRect.top + mascotRect.height*0.4;
+        const dx = Math.max(-1, Math.min(1, (lastMouseX - cx) / (mascotRect.width/2)));
+        const dy = Math.max(-1, Math.min(1, (lastMouseY - cy) / (mascotRect.height/2)));
+        const tx = (dx*3).toFixed(2), ty = (dy*3).toFixed(2);
+        pupils.forEach(function(p){ p.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)'; });
+    }
+    document.addEventListener('mousemove', function(e){
+        lastMouseX = e.clientX; lastMouseY = e.clientY;
+        if(!pupilRafScheduled){
+            pupilRafScheduled = true;
+            requestAnimationFrame(updatePupils);
+        }
+    }, {passive:true});
+
+    /* ---------------------------------------------------------------- */
+    /* واکنش‌های اصلی                                                     */
+    /* ---------------------------------------------------------------- */
+    let tickleHits = [];
+    function tickleReaction(){
+        if(mood === 'sleepy'){
+            setMood('idle');
+            pandaSay(wakeMsgs[Math.floor(Math.random()*wakeMsgs.length)], true);
+            restartCycle();
+            return;
+        }
+        if(mood === 'celebrate' || mood === 'hug') return;
+
+        const now = Date.now();
+        tickleHits = tickleHits.filter(t => now - t < 6000);
+        tickleHits.push(now);
+
+        if(tickleHits.length >= 5){
+            tickleHits = [];
+            setMood('shy', 1700);
+            playShySound();
+            pandaSay(shyMsgs[Math.floor(Math.random()*shyMsgs.length)], false);
+        } else {
+            setMood('tickle', 900);
+            playTickleSound();
+            spawnParticles();
+            pandaSay(giggles[Math.floor(Math.random()*giggles.length)], false);
+        }
+        restartCycle();
+    }
+    window.pandaTickleReact = tickleReaction;
+
+    function hugReaction(){
+        setMood('hug', 1600);
+        playHugSound();
+        pandaSay(hugMsgs[Math.floor(Math.random()*hugMsgs.length)], false);
+        restartCycle();
+    }
+
+    window.pandaCelebrate = function(percent){
+        if(typeof percent === 'number' && percent < 80) return;
+        setMood('celebrate', 2600);
+        playCelebrateSound();
+        spawnConfetti();
+        pandaSay(celebrateMsgs[Math.floor(Math.random()*celebrateMsgs.length)], false);
+        restartCycle();
+    };
+
+    /* ---------------------------------------------------------------- */
+    /* عدم فعالیت طولانی → خواب‌آلودگی                                    */
+    /* ---------------------------------------------------------------- */
+    const SLEEP_AFTER_MS = 90000; // ۹۰ ثانیه بدون فعالیت
+    let lastActivity = Date.now();
+    ['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+        document.addEventListener(evt, ()=> lastActivity = Date.now(), {passive:true});
+    });
+    setInterval(function(){
+        const idleFor = Date.now() - lastActivity;
+        if(idleFor > SLEEP_AFTER_MS && mood === 'idle' && !calmMode){
+            setMood('sleepy');
+            pandaSay(sleepyMsgs[Math.floor(Math.random()*sleepyMsgs.length)], false);
+            clearInterval(pandaTimer);
+            clearInterval(zzzTimer);
+            zzzTimer = setInterval(spawnZzz, 1600);
+            spawnZzz();
+        } else if(idleFor <= SLEEP_AFTER_MS && mood === 'sleepy'){
+            setMood('idle');
+            clearInterval(zzzTimer);
+            restartCycle();
+        }
+    }, 4000);
+
+    /* ---------------------------------------------------------------- */
+    /* حالت شب: کلاه‌خواب + ستاره                                         */
+    /* ---------------------------------------------------------------- */
+    function updateNightMode(){
+        const h = new Date().getHours();
+        const isNight = (h >= 22 || h < 6);
+        mascot.classList.toggle('night', isNight);
+    }
+    updateNightMode();
+    setInterval(updateNightMode, 5 * 60000);
+
+    /* ---------------------------------------------------------------- */
+    /* دکمه‌های صدا / کاهش حرکت                                           */
+    /* ---------------------------------------------------------------- */
+    let calmMode = localStorage.getItem('panda_calm') === '1' ||
+        (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const muteBtn = document.getElementById('panda-mute-btn');
+    const calmBtn = document.getElementById('panda-calm-btn');
+
+    function applyMuteUI(){ if(muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊'; }
+    function applyCalmUI(){
+        mascot.classList.toggle('calm-mode', calmMode);
+        if(calmBtn) calmBtn.textContent = calmMode ? '▶' : '⏸';
+        if(calmMode){ clearInterval(pandaTimer); clearInterval(zzzTimer); }
+        else { restartCycle(); }
+    }
+    applyMuteUI(); applyCalmUI();
+
+    if(muteBtn) muteBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        muted = !muted;
+        localStorage.setItem('panda_muted', muted ? '1' : '0');
+        applyMuteUI();
+    });
+    if(calmBtn) calmBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        calmMode = !calmMode;
+        localStorage.setItem('panda_calm', calmMode ? '1' : '0');
+        applyCalmUI();
+    });
+
+    /* ---------------------------------------------------------------- */
+    /* کشیدن (درگ) با بازگشت فنری + تشخیص کلیک ساده در برابر درگ            */
+    /* ---------------------------------------------------------------- */
+    let dragging = false, moved = false, startX = 0, startY = 0, curX = 0, curY = 0, lastTapTime = 0;
+
+    function onPointerDown(e){
+        if(e.target.closest('#panda-controls')) return;
+        dragging = true; moved = false;
+        const p = e.touches ? e.touches[0] : e;
+        startX = p.clientX; startY = p.clientY;
+        mascot.classList.remove('spring-back');
+        mascot.classList.add('dragging');
+    }
+    function onPointerMove(e){
+        if(!dragging) return;
+        const p = e.touches ? e.touches[0] : e;
+        const dx = p.clientX - startX, dy = p.clientY - startY;
+        if(Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+        if(moved){
+            curX = dx; curY = dy;
+            mascot.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+            if(e.cancelable) e.preventDefault();
+        }
+    }
+    function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        mascot.classList.remove('dragging');
+        if(moved){
+            mascot.classList.add('spring-back');
+            mascot.style.transform = 'translate(0,0)';
+            setTimeout(()=> mascot.classList.remove('spring-back'), 650);
+        } else {
+            const now = Date.now();
+            if(now - lastTapTime < 320){
+                hugReaction();
+                lastTapTime = 0;
+            } else {
+                tickleReaction();
+                lastTapTime = now;
+            }
+        }
+        moved = false;
+    }
+
+    mascot.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
+    mascot.addEventListener('touchstart', onPointerDown, {passive:true});
+    document.addEventListener('touchmove', onPointerMove, {passive:false});
+    document.addEventListener('touchend', onPointerUp);
+
+    /* ---------------------------------------------------------------- */
+    /* شروع                                                              */
+    /* ---------------------------------------------------------------- */
+    setTimeout(function(){
+        pandaSay('خوش اومدی! 👋', true);
+        restartCycle();
+    }, 900);
 })();
 </script>
+<script>
+(function(){
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------------------------------------------------------------- */
+    /* ۱) انیمیشن ورود کارت‌ها هنگام اسکرول                                */
+    /* ---------------------------------------------------------------- */
+    function initCardReveal(){
+        const cards = document.querySelectorAll('.glass-card:not(.reveal-in):not(.reveal-ready)');
+        if(!cards.length) return;
+        if(reduceMotion || !('IntersectionObserver' in window)){
+            cards.forEach(c => { c.classList.remove('reveal-ready'); });
+            return;
+        }
+        const io = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+                if(entry.isIntersecting){
+                    entry.target.classList.add('reveal-in');
+                    entry.target.classList.remove('reveal-ready');
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        cards.forEach(function(c){
+            // فقط کارت‌هایی که فعلاً روی صفحه دیده نمی‌شن رو انیمیت کن، بقیه همون‌طور ثابت بمونن
+            const rect = c.getBoundingClientRect();
+            const alreadyVisible = rect.top < window.innerHeight && rect.bottom > 0;
+            if(alreadyVisible) return;
+            c.classList.add('reveal-ready');
+            io.observe(c);
+        });
+    }
+    // چون خیلی از کارت‌ها داخل تب‌های مخفی (display:none) دیر ساخته/نمایش داده می‌شن،
+    // با یه MutationObserver سبک، کارت‌های تازه‌اضافه‌شده رو هم پوشش می‌دیم.
+    function observeNewCards(){
+        if(!('MutationObserver' in window)) return;
+        const mo = new MutationObserver(function(mutations){
+            let found = false;
+            mutations.forEach(function(m){
+                m.addedNodes && m.addedNodes.forEach(function(n){
+                    if(n.nodeType === 1 && (n.classList?.contains('glass-card') || n.querySelector?.('.glass-card'))) found = true;
+                });
+            });
+            if(found) initCardReveal();
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
+    }
+    document.addEventListener('DOMContentLoaded', function(){ initCardReveal(); observeNewCards(); });
+    if(document.readyState === 'complete' || document.readyState === 'interactive'){
+        initCardReveal(); observeNewCards();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* ۲) افکت ریپل روی دکمه‌ها (بدون تغییر ظاهر خود دکمه‌ها)                */
+    /* ---------------------------------------------------------------- */
+    if(!reduceMotion){
+        document.addEventListener('click', function(e){
+            const target = e.target.closest('button');
+            if(!target || target.disabled) return;
+            const size = Math.max(target.offsetWidth, target.offsetHeight, 30) * 1.6;
+            const ripple = document.createElement('span');
+            ripple.className = 'ui-ripple';
+            ripple.style.width = size + 'px';
+            ripple.style.height = size + 'px';
+            ripple.style.left = e.clientX + 'px';
+            ripple.style.top = e.clientY + 'px';
+            document.body.appendChild(ripple);
+            ripple.style.animation = 'uiRippleAnim .5s ease-out forwards';
+            setTimeout(function(){ ripple.remove(); }, 520);
+        }, true);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* ۳) کنفتی سراسری صفحه (هنگام ثبت نمره‌ی بالا)                          */
+    /* ---------------------------------------------------------------- */
+    let confettiCanvas = null, confettiCtx = null, confettiPieces = [], confettiRAF = null;
+    function ensureConfettiCanvas(){
+        if(confettiCanvas) return;
+        confettiCanvas = document.createElement('canvas');
+        confettiCanvas.id = 'site-confetti-canvas';
+        confettiCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9998;';
+        document.body.appendChild(confettiCanvas);
+        confettiCtx = confettiCanvas.getContext('2d');
+        resizeConfettiCanvas();
+        window.addEventListener('resize', resizeConfettiCanvas, {passive:true});
+    }
+    function resizeConfettiCanvas(){
+        if(!confettiCanvas) return;
+        confettiCanvas.width = window.innerWidth * devicePixelRatio;
+        confettiCanvas.height = window.innerHeight * devicePixelRatio;
+        confettiCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    }
+    const CONFETTI_COLORS = ['#8b5cf6','#ec4899','#22d3ee','#facc15','#34d399','#fb7185','#fbbf24'];
+    window.fireSiteConfetti = function(count){
+        if(reduceMotion) return;
+        ensureConfettiCanvas();
+        const n = count || 120;
+        const w = window.innerWidth;
+        for(let i=0;i<n;i++){
+            confettiPieces.push({
+                x: Math.random()*w,
+                y: -20 - Math.random()*200,
+                vx: (Math.random()-0.5)*3.2,
+                vy: 2.4 + Math.random()*3.4,
+                rot: Math.random()*360,
+                vr: (Math.random()-0.5)*14,
+                size: 5 + Math.random()*5,
+                color: CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)],
+                life: 0,
+                maxLife: 150 + Math.random()*60
+            });
+        }
+        if(!confettiRAF) confettiRAF = requestAnimationFrame(stepConfetti);
+    };
+    function stepConfetti(){
+        confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+        confettiPieces.forEach(function(p){
+            p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.rot += p.vr; p.life++;
+            confettiCtx.save();
+            confettiCtx.translate(p.x, p.y);
+            confettiCtx.rotate(p.rot * Math.PI/180);
+            confettiCtx.globalAlpha = Math.max(0, 1 - p.life/p.maxLife);
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(-p.size/2, -p.size/2*1.4, p.size, p.size*1.4);
+            confettiCtx.restore();
+        });
+        confettiPieces = confettiPieces.filter(function(p){ return p.life < p.maxLife && p.y < window.innerHeight + 40; });
+        if(confettiPieces.length > 0){
+            confettiRAF = requestAnimationFrame(stepConfetti);
+        } else {
+            confettiRAF = null;
+            if(confettiCtx) confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+        }
+    }
+
+    // اتصال کنفتی سراسری به همون رویداد جشنِ پاندا (بدون تغییر منطق ثبت نمره)
+    const originalCelebrate = window.pandaCelebrate;
+    if(typeof originalCelebrate === 'function'){
+        window.pandaCelebrate = function(percent){
+            originalCelebrate(percent);
+            if(typeof percent !== 'number' || percent >= 80){ window.fireSiteConfetti(140); }
+        };
+    }
+})();
+</script>
+
 </body>
 </html>
