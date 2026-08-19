@@ -2443,6 +2443,51 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             #panda-mascot .panda-svg, #panda-mascot .ear-l, #panda-mascot .ear-r,
             #panda-mascot .tail, #panda-mascot .eyes-open, #panda-mascot::before { animation: none !important; }
         }
+    /* ===================== سیستم گفتگو (چت) بین کاربران ===================== */
+    #chat-badge{ background:linear-gradient(150deg,#6366f1,#ec4899) !important; color:#fff; border:none !important; box-shadow:0 4px 14px rgba(99,102,241,.4) !important; }
+    .app-user-greeting{ font-size:.78rem; color:var(--text-secondary); padding:0 4px; display:none; align-items:center; white-space:nowrap; }
+    .chat-overlay{ position:fixed; inset:0; z-index:2000; background:var(--bg-solid); display:none; }
+    .chat-overlay.open{ display:flex; animation:fadeInUp .2s ease; }
+    .chat-overlay-inner{ max-width:640px; width:100%; margin:0 auto; height:100%; height:100dvh; display:flex; flex-direction:column; background:var(--card-bg); backdrop-filter:var(--glass); -webkit-backdrop-filter:var(--glass); }
+    .chat-view{ display:none; flex-direction:column; height:100%; min-height:0; }
+    .chat-top-bar{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:var(--border); flex-shrink:0; }
+    .chat-top-title{ font-weight:800; font-size:1.05rem; }
+    .chat-icon-btn{ width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text-primary); font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .chat-icon-btn:hover{ transform:translateY(-1px); }
+    .chat-conversations-list,.chat-contacts-list{ flex:1; min-height:0; overflow-y:auto; padding:8px; }
+    .chat-empty-state{ text-align:center; color:var(--text-secondary); padding:50px 20px; font-size:.86rem; line-height:1.9; }
+    .chat-conv-item,.chat-contact-item{ display:flex; align-items:center; gap:12px; padding:11px; border-radius:16px; cursor:pointer; transition:background .15s ease; }
+    .chat-conv-item:hover,.chat-contact-item:hover{ background:var(--card-bg-hover); }
+    .chat-avatar{ width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; flex-shrink:0; }
+    .chat-conv-info{ flex:1; min-width:0; }
+    .chat-conv-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .chat-conv-name,.chat-contact-name{ font-weight:700; font-size:.9rem; }
+    .chat-conv-time{ font-size:.66rem; color:var(--text-secondary); flex-shrink:0; }
+    .chat-conv-bottom{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:3px; }
+    .chat-conv-preview{ font-size:.76rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chat-unread-badge{ background:var(--gold); color:#fff; font-size:.66rem; font-weight:800; border-radius:999px; min-width:18px; height:18px; padding:0 5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .chat-contact-email{ font-size:.7rem; color:var(--text-secondary); }
+    .chat-search-input{ margin:10px 12px 0; padding:10px 14px; border-radius:14px; }
+    .chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px; }
+    .chat-msg{ display:flex; }
+    .chat-msg.out{ justify-content:flex-end; }
+    .chat-msg.in{ justify-content:flex-start; }
+    .chat-msg-bubble{ max-width:76%; padding:9px 13px; border-radius:16px; font-size:.85rem; line-height:1.7; }
+    .chat-msg.out .chat-msg-bubble{ background:linear-gradient(135deg,var(--accent),var(--purple)); color:#fff; border-bottom-left-radius:4px; }
+    .chat-msg.in .chat-msg-bubble{ background:var(--card-bg); border:var(--border); border-bottom-right-radius:4px; }
+    .chat-msg-text{ white-space:pre-wrap; word-break:break-word; }
+    .chat-msg-time{ display:block; font-size:.6rem; opacity:.75; margin-top:4px; text-align:left; }
+    .chat-msg-image{ max-width:220px; max-height:260px; object-fit:cover; border-radius:12px; display:block; margin-bottom:4px; }
+    .chat-msg-file{ display:inline-flex; align-items:center; gap:4px; color:inherit; text-decoration:underline; margin-bottom:4px; }
+    .chat-upload-preview{ display:none; align-items:center; justify-content:space-between; padding:8px 14px; background:rgba(255,255,255,.05); border-top:var(--border); font-size:.78rem; flex-shrink:0; }
+    .chat-upload-preview button{ background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; }
+    .chat-input-bar{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-top:var(--border); flex-shrink:0; }
+    .chat-attach-btn{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; margin:0; }
+    .chat-text-input{ flex:1; padding:10px 14px; border-radius:20px; margin:0; }
+    .chat-send-btn{ width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--purple)); border:none; color:#fff; font-size:1.05rem; cursor:pointer; flex-shrink:0; }
+    .chat-setup-box{ padding:20px; display:grid; gap:10px; max-width:340px; margin:30px auto; width:100%; }
+    .chat-setup-box input{ width:100%; }
+    @media(max-width:480px){ .chat-msg-bubble{ max-width:86%; } }
     </style>
 
     <meta name="theme-color" content="#100c24">
@@ -2466,12 +2511,78 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <div class="section-title">🗝️ حساب کاربری</div>
         <p class="neo-muted">با یک حساب، اطلاعات برنامه روی همه‌ی دستگاه‌هات همگام می‌شود. حذف‌ها هم بین دستگاه‌ها به‌درستی همگام می‌شوند.</p>
         <div id="neo-auth-box" class="neo-auth-box">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <input id="neo-auth-firstname" type="text" placeholder="نام" style="width:100%;margin-bottom:0;">
+            <input id="neo-auth-lastname" type="text" placeholder="نام خانوادگی" style="width:100%;margin-bottom:0;">
+          </div>
           <input id="neo-auth-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
           <input id="neo-auth-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
           <div class="neo-cloud-actions" style="margin-top:10px;"><button class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
+          <p class="neo-muted" style="font-size:.66rem;margin-top:6px;margin-bottom:0;">نام و نام‌خانوادگی فقط برای «ساخت حساب» لازم است؛ برای ورود فقط ایمیل و رمز کافی است.</p>
         </div>
-        <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-email"></b></span><button class="btn btn-purple" onclick="manualCloudSync()" style="padding:6px 12px;font-size:.75rem;">🔄 همگام‌سازی</button><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
+        <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-name"></b><br><small id="neo-auth-user-email" style="color:var(--text-secondary);"></small></span><button class="btn btn-purple" onclick="manualCloudSync()" style="padding:6px 12px;font-size:.75rem;">🔄 همگام‌سازی</button><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
         <div id="neo-cloud-status" class="neo-cloud-status">هنوز وارد حساب نشده‌ای</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="chat-overlay" class="chat-overlay">
+  <div class="chat-overlay-inner">
+    <!-- تکمیل پروفایل (اولین بار) -->
+    <div id="chat-view-setup" class="chat-view">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="closeChatPanel()">✕</button>
+        <div class="chat-top-title">تکمیل پروفایل</div>
+        <span style="width:38px;"></span>
+      </div>
+      <div class="chat-setup-box">
+        <p class="neo-muted">برای استفاده از گفتگو، نام و نام‌خانوادگی‌ات را وارد کن تا بقیه بتونن تو رو پیدا کنن.</p>
+        <input id="chat-setup-firstname" type="text" placeholder="نام">
+        <input id="chat-setup-lastname" type="text" placeholder="نام خانوادگی">
+        <button class="btn btn-purple" style="width:100%;margin-top:6px;" onclick="saveChatProfileSetup()">ذخیره و ادامه</button>
+      </div>
+    </div>
+
+    <!-- لیست مکالمات -->
+    <div id="chat-view-list" class="chat-view" style="display:flex;">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="closeChatPanel()">✕</button>
+        <div class="chat-top-title">💬 گفتگوها</div>
+        <button class="chat-icon-btn" onclick="openContactPicker()" title="گفتگوی جدید">➕</button>
+      </div>
+      <div id="chat-conversations-list" class="chat-conversations-list">
+        <div class="chat-empty-state">در حال بارگذاری...</div>
+      </div>
+    </div>
+
+    <!-- انتخاب عضو برای گفتگوی جدید -->
+    <div id="chat-view-contacts" class="chat-view">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="showChatListView()">→</button>
+        <div class="chat-top-title">انتخاب عضو</div>
+        <span style="width:38px;"></span>
+      </div>
+      <input id="chat-contact-search" class="chat-search-input" type="text" placeholder="جستجوی نام..." oninput="renderContactsList()">
+      <div id="chat-contacts-list" class="chat-contacts-list"></div>
+    </div>
+
+    <!-- پنجره‌ی گفتگو -->
+    <div id="chat-view-window" class="chat-view">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="showChatListView()">→</button>
+        <div class="chat-top-title" id="chat-window-title">گفتگو</div>
+        <span style="width:38px;"></span>
+      </div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div id="chat-upload-preview" class="chat-upload-preview"></div>
+      <div class="chat-input-bar">
+        <label class="chat-attach-btn" title="ارسال عکس یا فایل">
+          📎
+          <input id="chat-file-input" type="file" style="display:none;" onchange="handleChatFileSelect(event)">
+        </label>
+        <input id="chat-text-input" class="chat-text-input" type="text" placeholder="پیام بنویس..." onkeydown="if(event.key==='Enter'){sendChatMessage();}">
+        <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
       </div>
     </div>
   </div>
@@ -2481,6 +2592,10 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <header>
         <div class="app-bar-top">
             <div class="app-bar-icons">
+                <span id="app-user-greeting" class="app-user-greeting"></span>
+                <span>
+                    <button id="chat-badge" onclick="openChatPanel()" title="گفتگو">💬<span id="chat-unread-dot" style="display:none;" class="announcement-unread-dot"></span></button>
+                </span>
                 <button id="cloud-account-btn" onclick="toggleCloudAccountModal()"><span class="dot" id="cloud-account-dot"></span><span class="label">حساب کاربری</span></button>
                 <button id="theme-toggle" onclick="toggleTheme()" title="تغییر حالت روز/شب">🌙</button>
                 <span>
@@ -4926,13 +5041,22 @@ async function authRefreshUI(){
 }
 window.authSignUp = async function(){
     const client = getSupabaseClient();
+    const firstName = document.getElementById('neo-auth-firstname')?.value.trim();
+    const lastName = document.getElementById('neo-auth-lastname')?.value.trim();
     const email = document.getElementById('neo-auth-email')?.value.trim();
     const password = document.getElementById('neo-auth-password')?.value;
     if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!firstName || !lastName){ setCloudStatus('نام و نام‌خانوادگی را وارد کن.'); return; }
     if(!email || !password || password.length < 6){ setCloudStatus('ایمیل و رمز عبور معتبر (حداقل ۶ کاراکتر) وارد کن.'); return; }
     setCloudStatus('در حال ساخت حساب...');
     const { data, error } = await client.auth.signUp({ email, password });
     if(error){ setCloudStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
+    /* نام را برای بعد از تأیید ورود ذخیره می‌کنیم تا پروفایل گفتگو ساخته شود
+       (چه همین الان سشن فعال باشد، چه بعد از تأیید ایمیل و اولین ورود). */
+    try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
+    if(data.session && data.user){
+        try{ await client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }); }catch(e){}
+    }
     setCloudStatus(data.session ? '✅ حساب ساخته شد و وارد شدی.' : '📩 حساب ساخته شد؛ ایمیل تأیید را باز کن و سپس وارد شو.', true);
     await authRefreshUI();
 };
@@ -5135,6 +5259,7 @@ window.onload = function(){
     safeRun(() => checkSmartReminder(false), 'checkSmartReminder');
     safeRun(initCloud, 'initCloud');
     safeRun(renderTrashUI, 'renderTrashUI');
+    safeRun(initChat, 'initChat');
 
     setInterval(() => { safeRun(renderSmartDate, 'renderSmartDate'); safeRun(updateDailyVitals, 'updateDailyVitals'); }, 60000);
 
@@ -6987,6 +7112,364 @@ loadSmartNotes();
             if(typeof percent !== 'number' || percent >= 80){ window.fireSiteConfetti(140); }
         };
     }
+})();
+</script>
+
+<script>
+/* ======================================================================== */
+/* سیستم گفتگو (چت) بین کاربران — بر پایه‌ی همان اتصال Supabase موجود        */
+/* نیازمند دو جدول profiles و messages + Realtime + یک باکت استوریج          */
+/* (اسکریپت SQL لازم برای ساخت این‌ها جداگانه در اختیارت گذاشته شده)          */
+/* ======================================================================== */
+(function(){
+    let chatCurrentUserId = null;
+    let chatMyProfile = null;
+    const chatProfilesCache = {};
+    let chatActivePeerId = null;
+    let chatMessagesChannel = null;
+    let chatPendingFile = null;
+    let chatAllContacts = [];
+
+    function esc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? ''); }
+    function fa(n){ return (typeof faNum === 'function') ? faNum(n) : String(n); }
+    function toast(title, msg){ if(typeof showReminderToast === 'function') showReminderToast(title, msg); }
+
+    function chatInitials(p){
+        const a = (p?.first_name || '').trim()[0] || '';
+        const b = (p?.last_name || '').trim()[0] || '';
+        return (a + b) || '👤';
+    }
+    function chatFullName(p){
+        if(!p) return 'کاربر';
+        return ((p.first_name || '') + ' ' + (p.last_name || '')).trim() || 'کاربر';
+    }
+
+    function showChatView(id){
+        document.querySelectorAll('#chat-overlay .chat-view').forEach(v => v.style.display = 'none');
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'flex';
+    }
+    window.showChatListView = function(){ showChatView('chat-view-list'); loadConversations(); };
+    window.showChatSetupView = function(){ showChatView('chat-view-setup'); };
+    function showChatWindowView(){ showChatView('chat-view-window'); }
+    function showChatContactsView(){ showChatView('chat-view-contacts'); }
+
+    async function fetchProfilesByIds(ids){
+        const missing = ids.filter(id => !chatProfilesCache[id]);
+        if(!missing.length) return;
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { data } = await client.from('profiles').select('*').in('id', missing);
+        (data || []).forEach(p => { chatProfilesCache[p.id] = p; });
+    }
+    async function getProfileById(id){
+        if(chatProfilesCache[id]) return chatProfilesCache[id];
+        await fetchProfilesByIds([id]);
+        return chatProfilesCache[id] || null;
+    }
+
+    async function ensureOwnProfile(){
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentUserId) return null;
+        if(chatMyProfile) return chatMyProfile;
+        const { data } = await client.from('profiles').select('*').eq('id', chatCurrentUserId).maybeSingle();
+        if(data){ chatMyProfile = data; chatProfilesCache[data.id] = data; return data; }
+        const { data:{ session } } = await client.auth.getSession();
+        const email = session?.user?.email || '';
+        let pending = null;
+        try{ pending = JSON.parse(localStorage.getItem('chat_pending_profile_' + email) || 'null'); }catch(e){}
+        if(pending && pending.firstName){
+            const { data: created, error } = await client.from('profiles')
+                .upsert({ id: chatCurrentUserId, first_name: pending.firstName, last_name: pending.lastName || '', email })
+                .select().maybeSingle();
+            if(!error && created){
+                chatMyProfile = created; chatProfilesCache[created.id] = created;
+                try{ localStorage.removeItem('chat_pending_profile_' + email); }catch(e){}
+                return created;
+            }
+        }
+        return null;
+    }
+
+    window.saveChatProfileSetup = async function(){
+        const fn = document.getElementById('chat-setup-firstname')?.value.trim();
+        const ln = document.getElementById('chat-setup-lastname')?.value.trim();
+        if(!fn || !ln){ toast('اطلاعات ناقص', 'نام و نام‌خانوادگی را کامل وارد کن.'); return; }
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { data:{ session } } = await client.auth.getSession();
+        const { data, error } = await client.from('profiles')
+            .upsert({ id: chatCurrentUserId, first_name: fn, last_name: ln, email: session?.user?.email || '' })
+            .select().maybeSingle();
+        if(error){ toast('خطا', error.message); return; }
+        chatMyProfile = data; chatProfilesCache[data.id] = data;
+        updateAppUserGreeting();
+        showChatListView();
+    };
+
+    function updateAppUserGreeting(){
+        const greetEl = document.getElementById('app-user-greeting');
+        const nameEl = document.getElementById('neo-auth-user-name');
+        if(chatMyProfile){
+            const name = chatFullName(chatMyProfile);
+            if(greetEl){ greetEl.textContent = '👋 ' + name; greetEl.style.display = 'flex'; }
+            if(nameEl) nameEl.textContent = name;
+        } else {
+            if(greetEl){ greetEl.style.display = 'none'; greetEl.textContent = ''; }
+        }
+    }
+
+    window.openChatPanel = async function(){
+        const client = getSupabaseClient();
+        if(!client){ toast('اتصال ابری در دسترس نیست', 'گفتگو نیاز به اتصال ابری فعال دارد.'); return; }
+        const { data:{ session } } = await client.auth.getSession();
+        if(!session?.user){
+            toast('ابتدا وارد شو', 'برای استفاده از گفتگو باید وارد حساب کاربری شوی.');
+            if(typeof toggleCloudAccountModal === 'function') toggleCloudAccountModal(true);
+            return;
+        }
+        chatCurrentUserId = session.user.id;
+        document.getElementById('chat-overlay').classList.add('open');
+        const profile = await ensureOwnProfile();
+        if(!profile){ showChatSetupView(); return; }
+        updateAppUserGreeting();
+        showChatListView();
+    };
+    window.closeChatPanel = function(){
+        document.getElementById('chat-overlay').classList.remove('open');
+    };
+
+    async function loadConversations(){
+        const listEl = document.getElementById('chat-conversations-list');
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentUserId || !listEl) return;
+        const { data: msgs, error } = await client.from('messages').select('*')
+            .or(`sender_id.eq.${chatCurrentUserId},receiver_id.eq.${chatCurrentUserId}`)
+            .order('created_at', { ascending:false }).limit(500);
+        if(error){ listEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری گفتگوها</div>'; return; }
+        const byPeer = {};
+        (msgs || []).forEach(m => {
+            const peer = m.sender_id === chatCurrentUserId ? m.receiver_id : m.sender_id;
+            if(!byPeer[peer]) byPeer[peer] = { last: m, unread: 0 };
+            if(m.receiver_id === chatCurrentUserId && !m.read_at) byPeer[peer].unread++;
+        });
+        const peerIds = Object.keys(byPeer);
+        if(!peerIds.length){
+            listEl.innerHTML = '<div class="chat-empty-state">هنوز گفتگویی نداری.<br>روی دکمه‌ی ➕ بزن و یک عضو انتخاب کن.</div>';
+            return;
+        }
+        await fetchProfilesByIds(peerIds);
+        peerIds.sort((a,b) => new Date(byPeer[b].last.created_at) - new Date(byPeer[a].last.created_at));
+        listEl.innerHTML = peerIds.map(pid => {
+            const p = chatProfilesCache[pid];
+            const last = byPeer[pid].last;
+            const preview = last.content ? esc(last.content) : (last.file_url ? '📎 فایل ضمیمه' : '');
+            const time = new Date(last.created_at).toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit' });
+            const unread = byPeer[pid].unread;
+            return `<div class="chat-conv-item" onclick="openConversation('${pid}')">
+                <div class="chat-avatar">${esc(chatInitials(p))}</div>
+                <div class="chat-conv-info">
+                    <div class="chat-conv-top"><span class="chat-conv-name">${esc(chatFullName(p))}</span><span class="chat-conv-time">${fa(time)}</span></div>
+                    <div class="chat-conv-bottom"><span class="chat-conv-preview">${preview}</span>${unread ? `<span class="chat-unread-badge">${fa(unread)}</span>` : ''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    window.openContactPicker = async function(){
+        showChatContactsView();
+        const client = getSupabaseClient();
+        if(!client) return;
+        const el = document.getElementById('chat-contacts-list');
+        if(el) el.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
+        const { data, error } = await client.from('profiles').select('*').neq('id', chatCurrentUserId).order('first_name');
+        if(error){ if(el) el.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری اعضا</div>'; return; }
+        chatAllContacts = data || [];
+        chatAllContacts.forEach(p => { chatProfilesCache[p.id] = p; });
+        renderContactsList();
+    };
+    window.renderContactsList = function(){
+        const el = document.getElementById('chat-contacts-list');
+        if(!el) return;
+        const q = (document.getElementById('chat-contact-search')?.value || '').trim().toLowerCase();
+        const filtered = chatAllContacts.filter(p => !q || chatFullName(p).toLowerCase().includes(q) || (p.email || '').toLowerCase().includes(q));
+        if(!filtered.length){ el.innerHTML = '<div class="chat-empty-state">کسی پیدا نشد.</div>'; return; }
+        el.innerHTML = filtered.map(p => `
+            <div class="chat-contact-item" onclick="openConversation('${p.id}')">
+                <div class="chat-avatar">${esc(chatInitials(p))}</div>
+                <div>
+                    <div class="chat-contact-name">${esc(chatFullName(p))}</div>
+                    <div class="chat-contact-email">${esc(p.email || '')}</div>
+                </div>
+            </div>`).join('');
+    };
+
+    window.openConversation = async function(peerId){
+        chatActivePeerId = peerId;
+        showChatWindowView();
+        cancelChatUpload();
+        const titleEl = document.getElementById('chat-window-title');
+        const profile = await getProfileById(peerId);
+        if(titleEl) titleEl.textContent = chatFullName(profile);
+        const msgsEl = document.getElementById('chat-messages');
+        if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { data: msgs, error } = await client.from('messages').select('*')
+            .or(`and(sender_id.eq.${chatCurrentUserId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${chatCurrentUserId})`)
+            .order('created_at', { ascending:true }).limit(300);
+        if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
+        renderChatMessages(msgs || []);
+        try{
+            await client.from('messages').update({ read_at: new Date().toISOString() })
+                .eq('sender_id', peerId).eq('receiver_id', chatCurrentUserId).is('read_at', null);
+        }catch(e){}
+        refreshChatUnreadBadge();
+    };
+
+    function chatBubbleHtml(m){
+        const mine = m.sender_id === chatCurrentUserId;
+        const time = new Date(m.created_at).toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit' });
+        let media = '';
+        if(m.file_url){
+            if((m.file_type || '').startsWith('image/')){
+                media = `<a href="${m.file_url}" target="_blank" rel="noopener"><img src="${m.file_url}" class="chat-msg-image" alt="${esc(m.file_name || '')}"></a>`;
+            } else {
+                media = `<a href="${m.file_url}" target="_blank" rel="noopener" class="chat-msg-file">📎 ${esc(m.file_name || 'دانلود فایل')}</a>`;
+            }
+        }
+        const text = m.content ? `<div class="chat-msg-text">${esc(m.content)}</div>` : '';
+        return `<div class="chat-msg ${mine ? 'in' : 'out'}" data-id="${m.id}">
+            <div class="chat-msg-bubble">${media}${text}<span class="chat-msg-time">${fa(time)}</span></div>
+        </div>`;
+    }
+    function renderChatMessages(msgs){
+        const el = document.getElementById('chat-messages');
+        if(!el) return;
+        if(!msgs.length){ el.innerHTML = '<div class="chat-empty-state">هنوز پیامی نیست.<br>اولین پیام رو بفرست 👋</div>'; return; }
+        el.innerHTML = msgs.map(chatBubbleHtml).join('');
+        el.scrollTop = el.scrollHeight;
+    }
+    function appendChatMessage(m){
+        const el = document.getElementById('chat-messages');
+        if(!el) return;
+        if(el.querySelector('.chat-empty-state')) el.innerHTML = '';
+        el.insertAdjacentHTML('beforeend', chatBubbleHtml(m));
+        el.scrollTop = el.scrollHeight;
+    }
+
+    window.sendChatMessage = async function(){
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentUserId || !chatActivePeerId) return;
+        const input = document.getElementById('chat-text-input');
+        const text = (input?.value || '').trim();
+        if(!text && !chatPendingFile) return;
+        const payload = { sender_id: chatCurrentUserId, receiver_id: chatActivePeerId, content: text || null };
+        if(chatPendingFile){ payload.file_url = chatPendingFile.url; payload.file_name = chatPendingFile.name; payload.file_type = chatPendingFile.type; }
+        if(input) input.value = '';
+        chatPendingFile = null; showChatUploadPreview();
+        const { data, error } = await client.from('messages').insert(payload).select().maybeSingle();
+        if(error){ toast('خطا در ارسال پیام', error.message); return; }
+        appendChatMessage(data);
+        loadConversations();
+    };
+
+    window.handleChatFileSelect = async function(e){
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if(!file) return;
+        if(file.size > 10 * 1024 * 1024){ toast('فایل خیلی بزرگ است', 'حداکثر حجم مجاز ۱۰ مگابایت است.'); return; }
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentUserId) return;
+        toast('در حال آپلود...', file.name);
+        const safeName = file.name.replace(/[^a-zA-Z0-9آ-ی._-]/g, '_');
+        const path = chatCurrentUserId + '/' + Date.now() + '_' + safeName;
+        const { error } = await client.storage.from('chat-files').upload(path, file, { cacheControl:'3600', upsert:false });
+        if(error){ toast('آپلود ناموفق بود', error.message); return; }
+        const { data: pub } = client.storage.from('chat-files').getPublicUrl(path);
+        chatPendingFile = { url: pub.publicUrl, name: file.name, type: file.type || '' };
+        showChatUploadPreview();
+    };
+    function showChatUploadPreview(){
+        const box = document.getElementById('chat-upload-preview');
+        if(!box) return;
+        if(!chatPendingFile){ box.style.display = 'none'; box.innerHTML = ''; return; }
+        box.style.display = 'flex';
+        box.innerHTML = `<span>📎 ${esc(chatPendingFile.name)}</span><button onclick="cancelChatUpload()">✕</button>`;
+    }
+    window.cancelChatUpload = function(){ chatPendingFile = null; showChatUploadPreview(); };
+
+    async function refreshChatUnreadBadge(){
+        const dot = document.getElementById('chat-unread-dot');
+        if(!dot || !chatCurrentUserId) return;
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { count } = await client.from('messages').select('id', { count:'exact', head:true })
+            .eq('receiver_id', chatCurrentUserId).is('read_at', null);
+        dot.style.display = (count && count > 0) ? 'block' : 'none';
+    }
+
+    function subscribeChatRealtime(myId){
+        const client = getSupabaseClient();
+        if(!client || !myId) return;
+        if(chatMessagesChannel){ try{ client.removeChannel(chatMessagesChannel); }catch(e){} chatMessagesChannel = null; }
+        chatMessagesChannel = client.channel('chat_messages_' + myId)
+            .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:`receiver_id=eq.${myId}` }, (payload) => {
+                const msg = payload.new;
+                const windowOpen = document.getElementById('chat-overlay').classList.contains('open')
+                    && document.getElementById('chat-view-window').style.display !== 'none';
+                if(windowOpen && msg.sender_id === chatActivePeerId){
+                    appendChatMessage(msg);
+                    client.from('messages').update({ read_at: new Date().toISOString() }).eq('id', msg.id).then(() => {});
+                } else {
+                    getProfileById(msg.sender_id).then(p => toast('پیام جدید 💬', chatFullName(p) + ' برات پیام فرستاد.'));
+                }
+                refreshChatUnreadBadge();
+                const listOpen = document.getElementById('chat-overlay').classList.contains('open')
+                    && document.getElementById('chat-view-list').style.display !== 'none';
+                if(listOpen) loadConversations();
+            })
+            .subscribe();
+    }
+
+    async function chatOnAuthChange(){
+        const client = getSupabaseClient();
+        if(!client) return;
+        const { data:{ session } } = await client.auth.getSession();
+        if(session?.user){
+            chatCurrentUserId = session.user.id;
+            chatMyProfile = null;
+            await ensureOwnProfile();
+            updateAppUserGreeting();
+            subscribeChatRealtime(chatCurrentUserId);
+            refreshChatUnreadBadge();
+        } else {
+            chatCurrentUserId = null; chatMyProfile = null;
+            if(chatMessagesChannel){ const c = getSupabaseClient(); try{ c?.removeChannel(chatMessagesChannel); }catch(e){} chatMessagesChannel = null; }
+            const greetEl = document.getElementById('app-user-greeting');
+            if(greetEl){ greetEl.style.display = 'none'; }
+            const dot = document.getElementById('chat-unread-dot');
+            if(dot) dot.style.display = 'none';
+            window.closeChatPanel();
+        }
+    }
+
+    window.initChat = function(){
+        /* هوک زدن غیرمخرب به تابع موجود authRefreshUI: بعد از هر بار ورود/خروج
+           یا تغییر وضعیت حساب، وضعیت گفتگو هم به‌روزرسانی می‌شود. */
+        const originalAuthRefreshUI = window.authRefreshUI;
+        if(typeof originalAuthRefreshUI === 'function'){
+            window.authRefreshUI = async function(){
+                await originalAuthRefreshUI();
+                try{ await chatOnAuthChange(); }catch(e){ console.error('خطا در به‌روزرسانی گفتگو:', e); }
+            };
+        }
+        const overlay = document.getElementById('chat-overlay');
+        if(overlay){
+            overlay.addEventListener('click', (e) => { if(e.target === overlay) closeChatPanel(); });
+        }
+        chatOnAuthChange();
+    };
 })();
 </script>
 
