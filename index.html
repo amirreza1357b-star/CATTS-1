@@ -2554,20 +2554,20 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             #panda-mascot .tail, #panda-mascot .eyes-open, #panda-mascot::before { animation: none !important; }
         }
     /* ===================== سیستم گفتگو (چت) بین کاربران ===================== */
-    /* ===================== دکمه‌ی شناور گفتگو (پایین صفحه، سمت راست) ===================== */
+    /* ===================== دکمه‌ی شناور گفتگو (پایین صفحه، سمت چپ - مثل تلگرام) ===================== */
     .chat-fab{
-        position: fixed; bottom: 20px; right: 20px; z-index: 900;
+        position: fixed; bottom: 20px; left: 20px; z-index: 900;
         width: 56px; height: 56px; border-radius: 50%;
-        background: linear-gradient(150deg,#6366f1,#ec4899);
+        background: linear-gradient(150deg, var(--accent), var(--purple));
         color: #fff; border: none; font-size: 1.4rem;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 8px 22px rgba(99,102,241,.5);
+        box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 50%, transparent);
         cursor: pointer; transition: transform .2s ease, box-shadow .2s ease;
     }
-    .chat-fab:hover{ transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 26px rgba(99,102,241,.6); }
+    .chat-fab:hover{ transform: translateY(-3px) scale(1.05); }
     .chat-fab:active{ transform: scale(.94); }
-    .chat-fab .announcement-unread-dot{ top: -2px; left: -2px; }
-    @media(max-width:480px){ .chat-fab{ width:50px; height:50px; font-size:1.25rem; bottom:16px; right:16px; } }
+    .chat-fab .announcement-unread-dot{ top: -2px; right: -2px; left: auto; }
+    @media(max-width:480px){ .chat-fab{ width:50px; height:50px; font-size:1.25rem; bottom:16px; left:16px; } }
     .app-user-greeting{ font-size:.78rem; color:var(--text-secondary); padding:0 4px; display:none; align-items:center; white-space:nowrap; }
     .chat-overlay{ position:fixed; inset:0; z-index:2000; background:var(--bg-solid); display:none; }
     .chat-overlay.open{ display:flex; animation:fadeInUp .2s ease; }
@@ -2618,6 +2618,33 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-msg-ticks{ font-size:.62rem; margin-right:2px; }
     .chat-msg-ticks.read{ color:#38bdf8; }
     .chat-msg-deleted{ font-style:italic; opacity:.6; font-size:.8rem; }
+
+    /* ---- جستجو در لیست گفتگوها ---- */
+    .chat-search-bar-wrap{ padding:8px 12px 0; flex-shrink:0; }
+    .chat-search-bar-wrap .chat-search-input{ margin:0; width:100%; }
+
+    /* ---- پیام‌های ذخیره‌شده (پین‌شده بالای لیست) ---- */
+    .chat-saved-item .chat-avatar{ background:linear-gradient(135deg,#0ea5e9,#6366f1); font-size:1.15rem; }
+
+    /* ---- ری‌اکشن‌ها ---- */
+    .chat-msg-reactions{ display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+    .chat-msg-reaction-chip{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:1px 7px; font-size:.72rem; display:inline-flex; align-items:center; gap:3px; cursor:pointer; }
+    .chat-msg-reaction-chip.mine{ background:color-mix(in srgb, var(--accent) 30%, transparent); border-color:var(--accent); }
+    .chat-reaction-picker{ position:absolute; top:-46px; display:none; gap:4px; background:var(--card-bg); border:var(--border); border-radius:999px; padding:6px 8px; box-shadow:0 8px 20px rgba(0,0,0,.4); z-index:6; }
+    .chat-msg.in .chat-reaction-picker{ left:0; }
+    .chat-msg.out .chat-reaction-picker{ right:0; }
+    .chat-msg-bubble.reacting .chat-reaction-picker{ display:flex; }
+    .chat-reaction-picker span{ font-size:1.15rem; cursor:pointer; transition:transform .12s ease; padding:2px; }
+    .chat-reaction-picker span:hover{ transform:scale(1.3); }
+    .chat-heart-burst{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.6rem; pointer-events:none; animation: chatHeartBurst .7s ease forwards; z-index:7; }
+    @keyframes chatHeartBurst{ 0%{ opacity:0; transform:scale(.3); } 30%{ opacity:1; transform:scale(1.15); } 60%{ transform:scale(1); } 100%{ opacity:0; transform:scale(1.3) translateY(-14px); } }
+
+    /* ---- فوروارد پیام ---- */
+    .chat-forward-banner{ display:none; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; background:rgba(139,92,246,.12); border-top:var(--border); font-size:.78rem; flex-shrink:0; }
+    .chat-forward-banner button{ background:none; border:none; color:var(--danger); cursor:pointer; font-size:.85rem; }
+
+    /* ---- عکس گروه هنگام ساخت ---- */
+    .chat-avatar-picker.group-avatar{ background:linear-gradient(135deg,#8b5cf6,#6366f1); }
     .chat-msg{ display:flex; }
     .chat-msg.out{ justify-content:flex-end; }
     .chat-msg.in{ justify-content:flex-start; }
@@ -2721,6 +2748,9 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <button class="chat-icon-btn" onclick="openGroupCreatePicker()" title="گروه جدید">👥</button>
         <button class="chat-icon-btn" onclick="openContactPicker()" title="گفتگوی جدید">➕</button>
       </div>
+      <div class="chat-search-bar-wrap">
+        <input id="chat-list-search" class="chat-search-input" type="text" placeholder="🔍 جستجو در گفتگوها..." oninput="renderConversationList()">
+      </div>
       <div id="chat-conversations-list" class="chat-conversations-list">
         <div class="chat-empty-state">در حال بارگذاری...</div>
       </div>
@@ -2745,7 +2775,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
       </div>
     </div>
 
-    <!-- انتخاب عضو برای گفتگوی جدید یا ساخت گروه -->
+    <!-- انتخاب عضو برای گفتگوی جدید، ساخت گروه یا فوروارد پیام -->
     <div id="chat-view-contacts" class="chat-view">
       <div class="chat-top-bar">
         <button class="chat-icon-btn" onclick="showChatListView()">→</button>
@@ -2756,14 +2786,18 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
       <div id="chat-contacts-list" class="chat-contacts-list"></div>
     </div>
 
-    <!-- نام‌گذاری گروه جدید -->
+    <!-- نام‌گذاری و عکس گروه جدید -->
     <div id="chat-view-group-name" class="chat-view">
       <div class="chat-top-bar">
         <button class="chat-icon-btn" onclick="showChatContactsGroupMode()">→</button>
-        <div class="chat-top-title">اسم گروه</div>
+        <div class="chat-top-title">ساخت گروه</div>
         <span style="width:38px;"></span>
       </div>
       <div class="chat-setup-box">
+        <label class="chat-avatar-picker group-avatar" id="chat-group-avatar-picker">
+          <span id="chat-group-avatar-inner">👥</span>
+          <input id="chat-group-avatar-input" type="file" accept="image/*" style="display:none;" onchange="handleChatGroupAvatarSelect(event)">
+        </label>
         <p class="neo-muted" id="chat-group-members-count">۰ عضو انتخاب شده</p>
         <input id="chat-group-name-input" type="text" placeholder="اسم گروه را وارد کن">
         <button class="btn btn-purple" style="width:100%;margin-top:4px;" onclick="createChatGroup()">ساخت گروه</button>
@@ -7390,16 +7424,24 @@ loadSmartNotes();
     let chatWindowMode = 'dm';        /* 'dm' یا 'group' */
     let chatMessagesChannel = null;
     let chatGroupMessagesChannel = null;
+    let chatReactionsChannel = null;
     let chatPresenceChannel = null;
     let chatPendingFile = null;
     let chatPendingAvatarFile = null;
+    let chatPendingGroupAvatarFile = null;
     let chatAllContacts = [];
     let chatOnlineIds = {};
     let chatMyGroupIds = [];
     const chatGroupsCache = {};
-    let chatPickerMode = 'dm';        /* 'dm' یا 'group-select' */
+    let chatPickerMode = 'dm';        /* 'dm' | 'group-select' | 'forward' */
     let chatSelectedMemberIds = [];
     let chatPollTimer = null;
+    let chatLastConvItems = [];       /* برای جستجوی سریع بدون درخواست جدید */
+    let chatForwardMessage = null;    /* پیامی که در حال فوروارد شدن است */
+    let chatLastTapMsgId = null;
+    let chatLastTapTime = 0;
+    let chatLongPressTimer = null;
+    const chatReactionEmojis = ['❤️','😂','👍','😮','😢','🔥'];
 
     function esc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? ''); }
     function fa(n){ return (typeof faNum === 'function') ? faNum(n) : String(n); }
@@ -7586,9 +7628,6 @@ loadSmartNotes();
         document.getElementById('chat-overlay').classList.add('open');
         const profile = await ensureOwnProfile();
         if(!profile){
-            /* این حالت فقط وقتی پیش میاد که اصلاً اتصال به دیتابیس برقرار نشه
-               (مثلاً قطعی اینترنت)؛ به‌جای گیر کردن، همون فرم کوچیک نام رو
-               به‌عنوان آخرین راه‌حل نشون می‌دیم. */
             toast('اتصال برقرار نشد', 'لطفاً دوباره امتحان کن.');
             showChatSetupView();
             startChatPolling();
@@ -7605,7 +7644,7 @@ loadSmartNotes();
     };
 
     /* ---------------------------------------------------------------- */
-    /* لیست مکالمات: ادغام گفتگوهای خصوصی و گروه‌ها در یک لیست              */
+    /* لیست مکالمات: ادغام گفتگوهای خصوصی، گروه‌ها، پیام‌های ذخیره‌شده و جستجو */
     /* ---------------------------------------------------------------- */
     async function fetchMyGroups(){
         const client = getSupabaseClient();
@@ -7623,8 +7662,7 @@ loadSmartNotes();
             rows.forEach(r => { lastReadMap[r.group_id] = r.last_read_at; });
             return (groups || []).map(g => ({ group: g, lastReadAt: lastReadMap[g.id] || null }));
         }catch(e){
-            /* اگه جدول‌های گروه هنوز ساخته نشده باشن (اسکریپت SQL سوم اجرا نشده)،
-               نباید کل لیست گفتگوها خراب بشه - فقط بخش گروه‌ها رو نادیده می‌گیریم. */
+            /* اگه جدول‌های گروه هنوز ساخته نشده باشن، فقط بخش گروه‌ها نادیده گرفته می‌شه */
             chatMyGroupIds = [];
             return [];
         }
@@ -7635,26 +7673,30 @@ loadSmartNotes();
         const client = getSupabaseClient();
         if(!client || !chatCurrentUserId || !listEl) return;
         try{
-            await loadConversationsInner(listEl, client);
+            await loadConversationsInner(client);
         }catch(e){
             listEl.innerHTML = '<div class="chat-empty-state">مشکلی در بارگذاری گفتگوها پیش اومد.<br>لطفاً دوباره امتحان کن.</div>';
         }
     }
 
-    async function loadConversationsInner(listEl, client){
+    async function loadConversationsInner(client){
         const [dmResult, groupInfos] = await Promise.all([
             client.from('messages').select('*')
                 .or(`sender_id.eq.${chatCurrentUserId},receiver_id.eq.${chatCurrentUserId}`)
                 .order('created_at', { ascending:false }).limit(500),
             fetchMyGroups()
         ]);
+        const listEl = document.getElementById('chat-conversations-list');
         const msgs = dmResult.data;
         if(dmResult.error){ listEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری گفتگوها</div>'; return; }
 
         const byPeer = {};
         (msgs || []).forEach(m => {
+            const isSelf = m.sender_id === chatCurrentUserId && m.receiver_id === chatCurrentUserId;
             const peer = m.sender_id === chatCurrentUserId ? m.receiver_id : m.sender_id;
+            if(isSelf) return; /* پیام‌های ذخیره‌شده جدا مدیریت می‌شن، نه به‌عنوان یه مخاطب معمولی */
             if(!byPeer[peer]) byPeer[peer] = { last: m, unread: 0 };
+            if(new Date(m.created_at) > new Date(byPeer[peer].last.created_at)) byPeer[peer].last = m;
             if(m.receiver_id === chatCurrentUserId && !m.read_at) byPeer[peer].unread++;
         });
         const peerIds = Object.keys(byPeer);
@@ -7679,19 +7721,41 @@ loadSmartNotes();
         }
 
         const items = [];
-        peerIds.forEach(pid => items.push({ type:'dm', id: pid, time: byPeer[pid].last.created_at, last: byPeer[pid].last, unread: byPeer[pid].unread }));
+        peerIds.forEach(pid => items.push({ type:'dm', id: pid, name: chatFullName(chatProfilesCache[pid]), time: byPeer[pid].last.created_at, last: byPeer[pid].last, unread: byPeer[pid].unread }));
         groupInfos.forEach(gi => {
             const last = groupLastMsgs[gi.group.id];
-            items.push({ type:'group', id: gi.group.id, time: last ? last.created_at : gi.group.created_at, last, unread: groupUnread[gi.group.id] || 0 });
+            items.push({ type:'group', id: gi.group.id, name: gi.group.name, time: last ? last.created_at : gi.group.created_at, last, unread: groupUnread[gi.group.id] || 0 });
         });
+        items.sort((a,b) => new Date(b.time) - new Date(a.time));
+        chatLastConvItems = items;
+        renderConversationList();
+    }
 
-        if(!items.length){
-            listEl.innerHTML = '<div class="chat-empty-state">هنوز گفتگویی نداری.<br>روی ➕ (گفتگوی خصوصی) یا 👥 (گروه) بزن.</div>';
+    window.renderConversationList = function(){
+        const listEl = document.getElementById('chat-conversations-list');
+        if(!listEl) return;
+        const q = (document.getElementById('chat-list-search')?.value || '').trim().toLowerCase();
+        const savedHtml = (!q || 'پیام‌های ذخیره‌شده'.includes(q) || 'ذخیره'.includes(q)) ? `
+            <div class="chat-conv-item chat-saved-item" onclick="openSavedMessages()">
+                <div class="chat-avatar-wrap"><div class="chat-avatar">🔖</div></div>
+                <div class="chat-conv-info">
+                    <div class="chat-conv-top"><span class="chat-conv-name">پیام‌های ذخیره‌شده</span></div>
+                    <div class="chat-conv-bottom"><span class="chat-conv-preview">یادداشت‌ها و فایل‌های خودت</span></div>
+                </div>
+            </div>` : '';
+
+        const filtered = q ? chatLastConvItems.filter(it => (it.name || '').toLowerCase().includes(q)) : chatLastConvItems;
+
+        if(!filtered.length && !savedHtml){
+            listEl.innerHTML = '<div class="chat-empty-state">چیزی پیدا نشد.</div>';
             return;
         }
-        items.sort((a,b) => new Date(b.time) - new Date(a.time));
+        if(!chatLastConvItems.length && !q){
+            listEl.innerHTML = savedHtml + '<div class="chat-empty-state">هنوز گفتگویی نداری.<br>روی ➕ (گفتگوی خصوصی) یا 👥 (گروه) بزن.</div>';
+            return;
+        }
 
-        listEl.innerHTML = items.map(it => {
+        const itemsHtml = filtered.map(it => {
             if(it.type === 'dm'){
                 const p = chatProfilesCache[it.id];
                 const last = it.last;
@@ -7720,7 +7784,7 @@ loadSmartNotes();
                 }
                 const time = last ? new Date(last.created_at).toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit' }) : '';
                 return `<div class="chat-conv-item" onclick="openGroupConversation('${it.id}')" data-group="${it.id}">
-                    <div class="chat-avatar-wrap"><div class="chat-avatar">👥</div></div>
+                    <div class="chat-avatar-wrap"><div class="chat-avatar">${chatAvatarInnerHtml(g)}</div></div>
                     <div class="chat-conv-info">
                         <div class="chat-conv-top"><span class="chat-conv-name"><span class="chat-conv-group-badge">گروه</span>${esc(g?.name || 'گروه')}</span><span class="chat-conv-time">${fa(time)}</span></div>
                         <div class="chat-conv-bottom"><span class="chat-conv-preview">${preview}</span>${it.unread ? `<span class="chat-unread-badge">${fa(it.unread)}</span>` : ''}</div>
@@ -7728,10 +7792,15 @@ loadSmartNotes();
                 </div>`;
             }
         }).join('');
-    }
+        listEl.innerHTML = savedHtml + itemsHtml;
+    };
+
+    window.openSavedMessages = function(){
+        openConversation(chatCurrentUserId, true);
+    };
 
     /* ---------------------------------------------------------------- */
-    /* انتخاب مخاطب: گفتگوی خصوصی یا انتخاب چندتایی برای ساخت گروه         */
+    /* انتخاب مخاطب: گفتگوی خصوصی، انتخاب چندتایی برای گروه، یا فوروارد     */
     /* ---------------------------------------------------------------- */
     window.openContactPicker = async function(){
         chatPickerMode = 'dm';
@@ -7746,6 +7815,18 @@ loadSmartNotes();
         chatSelectedMemberIds = [];
         document.getElementById('chat-contacts-title').textContent = 'اعضای گروه را انتخاب کن';
         document.getElementById('chat-contacts-next-btn').style.display = 'flex';
+        showChatContactsView();
+        await loadAllContacts();
+    };
+    window.openForwardPicker = async function(msgId){
+        const el = document.querySelector(`.chat-msg[data-id="${msgId}"] .chat-msg-text`);
+        const bubbleData = chatCurrentMessagesMap[msgId];
+        if(!bubbleData){ toast('این پیام دیگه در دسترس نیست', ''); return; }
+        chatForwardMessage = bubbleData;
+        chatPickerMode = 'forward';
+        chatSelectedMemberIds = [];
+        document.getElementById('chat-contacts-title').textContent = 'فوروارد به...';
+        document.getElementById('chat-contacts-next-btn').style.display = 'none';
         showChatContactsView();
         await loadAllContacts();
     };
@@ -7771,11 +7852,31 @@ loadSmartNotes();
         if(!el) return;
         const q = (document.getElementById('chat-contact-search')?.value || '').trim().toLowerCase();
         const filtered = chatAllContacts.filter(p => !q || chatFullName(p).toLowerCase().includes(q) || (p.email || '').toLowerCase().includes(q));
-        if(!filtered.length){ el.innerHTML = '<div class="chat-empty-state">کسی پیدا نشد.</div>'; return; }
         const groupMode = chatPickerMode === 'group-select';
-        el.innerHTML = filtered.map(p => {
+        const forwardMode = chatPickerMode === 'forward';
+        let html = '';
+        if(forwardMode && (!q || 'پیام‌های ذخیره‌شده'.includes(q))){
+            html += `<div class="chat-contact-item" onclick="forwardMessageTo('self', null)">
+                <div class="chat-avatar-wrap"><div class="chat-avatar">🔖</div></div>
+                <div><div class="chat-contact-name">پیام‌های ذخیره‌شده</div></div>
+            </div>`;
+        }
+        if(forwardMode && chatMyGroupIds.length){
+            const gq = q;
+            Object.values(chatGroupsCache).filter(g => chatMyGroupIds.includes(g.id) && (!gq || g.name.toLowerCase().includes(gq))).forEach(g => {
+                html += `<div class="chat-contact-item" onclick="forwardMessageTo('group', '${g.id}')">
+                    <div class="chat-avatar-wrap"><div class="chat-avatar">${chatAvatarInnerHtml(g)}</div></div>
+                    <div><div class="chat-contact-name"><span class="chat-conv-group-badge">گروه</span>${esc(g.name)}</div></div>
+                </div>`;
+            });
+        }
+        if(!filtered.length && !html){ el.innerHTML = '<div class="chat-empty-state">کسی پیدا نشد.</div>'; return; }
+        html += filtered.map(p => {
             const selected = chatSelectedMemberIds.includes(p.id);
-            const clickAction = groupMode ? `toggleGroupMemberSelect('${p.id}', this)` : `openConversation('${p.id}')`;
+            let clickAction;
+            if(groupMode) clickAction = `toggleGroupMemberSelect('${p.id}', this)`;
+            else if(forwardMode) clickAction = `forwardMessageTo('dm', '${p.id}')`;
+            else clickAction = `openConversation('${p.id}')`;
             return `<div class="chat-contact-item${selected ? ' selected' : ''}" onclick="${clickAction}">
                 <div class="chat-avatar-wrap">
                     <div class="chat-avatar">${chatAvatarInnerHtml(p)}</div>
@@ -7788,6 +7889,7 @@ loadSmartNotes();
                 ${groupMode ? `<span class="chat-contact-check">✓</span>` : ''}
             </div>`;
         }).join('');
+        el.innerHTML = html;
     };
     window.toggleGroupMemberSelect = function(userId, el){
         const idx = chatSelectedMemberIds.indexOf(userId);
@@ -7798,20 +7900,46 @@ loadSmartNotes();
         if(!chatSelectedMemberIds.length){ toast('حداقل یک نفر رو انتخاب کن', ''); return; }
         document.getElementById('chat-group-members-count').textContent = fa(chatSelectedMemberIds.length) + ' عضو انتخاب شده';
         document.getElementById('chat-group-name-input').value = '';
+        document.getElementById('chat-group-avatar-inner').innerHTML = '👥';
+        chatPendingGroupAvatarFile = null;
         showChatView('chat-view-group-name');
+    };
+    window.handleChatGroupAvatarSelect = function(e){
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if(!file) return;
+        if(file.size > 5 * 1024 * 1024){ toast('عکس خیلی بزرگ است', 'حداکثر حجم مجاز ۵ مگابایت است.'); return; }
+        chatPendingGroupAvatarFile = file;
+        const avEl = document.getElementById('chat-group-avatar-inner');
+        if(avEl){
+            const url = URL.createObjectURL(file);
+            avEl.innerHTML = `<img src="${url}" alt="">`;
+        }
     };
     window.createChatGroup = async function(){
         const name = document.getElementById('chat-group-name-input')?.value.trim();
         if(!name){ toast('اسم گروه را وارد کن', ''); return; }
         const client = getSupabaseClient();
         if(!client) return;
-        const { data: group, error } = await client.from('chat_groups').insert({ name, created_by: chatCurrentUserId }).select().maybeSingle();
+        let avatarUrl = null;
+        if(chatPendingGroupAvatarFile){
+            toast('در حال آپلود عکس گروه...', '');
+            const safeName = chatPendingGroupAvatarFile.name.replace(/[^a-zA-Z0-9آ-ی._-]/g, '_');
+            const path = 'group-avatars/' + chatCurrentUserId + '/' + Date.now() + '_' + safeName;
+            const { error: upErr } = await client.storage.from('chat-files').upload(path, chatPendingGroupAvatarFile, { cacheControl:'3600', upsert:false });
+            if(!upErr){
+                const { data: pub } = client.storage.from('chat-files').getPublicUrl(path);
+                avatarUrl = pub.publicUrl;
+            }
+        }
+        const { data: group, error } = await client.from('chat_groups').insert({ name, created_by: chatCurrentUserId, avatar_url: avatarUrl }).select().maybeSingle();
         if(error){ toast('ساخت گروه ناموفق بود', error.message); return; }
         chatGroupsCache[group.id] = group;
         const memberRows = [chatCurrentUserId, ...chatSelectedMemberIds].map(uid => ({ group_id: group.id, user_id: uid, last_read_at: uid === chatCurrentUserId ? new Date().toISOString() : null }));
         const { error: memErr } = await client.from('chat_group_members').insert(memberRows);
         if(memErr){ toast('افزودن اعضا با خطا مواجه شد', memErr.message); }
         if(!chatMyGroupIds.includes(group.id)) chatMyGroupIds.push(group.id);
+        chatPendingGroupAvatarFile = null;
         subscribeChatGroupRealtime(chatCurrentUserId);
         toast('گروه ساخته شد 🎉', name);
         openGroupConversation(group.id);
@@ -7831,7 +7959,97 @@ loadSmartNotes();
         statusText.textContent = online ? 'آنلاین' : 'آفلاین';
     }
 
-    window.openConversation = async function(peerId){
+    /* ---------------------------------------------------------------- */
+    /* ری‌اکشن‌ها: گرفتن، رندر، تاگل                                       */
+    /* ---------------------------------------------------------------- */
+    let chatCurrentReactions = {};   /* messageId -> [{user_id, emoji}] */
+    let chatCurrentMessagesMap = {}; /* messageId -> row (برای فوروارد و کپی) */
+    window.chatCurrentMessagesMap = chatCurrentMessagesMap;
+
+    async function fetchReactionsFor(messageIds, messageType){
+        chatCurrentReactions = {};
+        if(!messageIds.length) return;
+        const client = getSupabaseClient();
+        if(!client) return;
+        try{
+            const { data } = await client.from('message_reactions').select('*')
+                .in('message_id', messageIds).eq('message_type', messageType);
+            (data || []).forEach(r => {
+                if(!chatCurrentReactions[r.message_id]) chatCurrentReactions[r.message_id] = [];
+                chatCurrentReactions[r.message_id].push(r);
+            });
+        }catch(e){ /* اگه جدول ری‌اکشن هنوز ساخته نشده، فقط بدون ری‌اکشن نمایش می‌دیم */ }
+    }
+    function reactionsHtml(messageId){
+        const rows = chatCurrentReactions[messageId];
+        if(!rows || !rows.length) return '';
+        const byEmoji = {};
+        rows.forEach(r => { (byEmoji[r.emoji] = byEmoji[r.emoji] || []).push(r.user_id); });
+        return `<div class="chat-msg-reactions">` + Object.keys(byEmoji).map(emo => {
+            const mine = byEmoji[emo].includes(chatCurrentUserId);
+            return `<span class="chat-msg-reaction-chip${mine ? ' mine' : ''}" onclick="toggleChatReaction('${messageId}', '${emo}', event)">${emo} ${fa(byEmoji[emo].length)}</span>`;
+        }).join('') + `</div>`;
+    }
+    window.toggleChatReaction = async function(messageId, emoji, e){
+        if(e) e.stopPropagation();
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentUserId) return;
+        const messageType = chatWindowMode === 'group' ? 'group' : 'dm';
+        const rows = chatCurrentReactions[messageId] || [];
+        const already = rows.find(r => r.user_id === chatCurrentUserId && r.emoji === emoji);
+        try{
+            if(already){
+                await client.from('message_reactions').delete().eq('id', already.id);
+                chatCurrentReactions[messageId] = rows.filter(r => r.id !== already.id);
+            } else {
+                const { data } = await client.from('message_reactions')
+                    .insert({ message_id: messageId, message_type: messageType, user_id: chatCurrentUserId, emoji })
+                    .select().maybeSingle();
+                if(data){ chatCurrentReactions[messageId] = [...rows, data]; }
+            }
+        }catch(err){ toast('این قابلیت هنوز فعال نشده', 'اسکریپت SQL چهارم رو اجرا کن.'); return; }
+        const holder = document.querySelector(`.chat-msg[data-id="${messageId}"] .chat-msg-reactions-holder`);
+        if(holder) holder.innerHTML = reactionsHtml(messageId);
+        closeReactionPickers();
+    };
+    function closeReactionPickers(){
+        document.querySelectorAll('.chat-msg-bubble.reacting').forEach(b => b.classList.remove('reacting'));
+    }
+    window.openReactionPicker = function(bubbleEl, e){
+        if(e) e.preventDefault();
+        closeReactionPickers();
+        bubbleEl.classList.add('reacting');
+    };
+    function reactionPickerHtml(messageId){
+        return `<div class="chat-reaction-picker">${chatReactionEmojis.map(em => `<span onclick="toggleChatReaction('${messageId}', '${em}', event)">${em}</span>`).join('')}</div>`;
+    }
+    window.chatBubblePointerDown = function(bubbleEl, messageId){
+        clearTimeout(chatLongPressTimer);
+        chatLongPressTimer = setTimeout(() => { openReactionPicker(bubbleEl); }, 480);
+    };
+    window.chatBubblePointerUp = function(){ clearTimeout(chatLongPressTimer); };
+    window.chatBubbleTap = function(bubbleEl, messageId, e){
+        if(e && (e.target.closest('a') || e.target.closest('button') || e.target.closest('.chat-msg-reaction-chip'))) return;
+        const now = Date.now();
+        if(chatLastTapMsgId === messageId && (now - chatLastTapTime) < 320){
+            /* دابل‌تپ = ری‌اکشن سریع قلب، مثل تلگرام/اینستاگرام */
+            toggleChatReaction(messageId, '❤️');
+            spawnHeartBurst(bubbleEl);
+            chatLastTapMsgId = null; chatLastTapTime = 0;
+            return;
+        }
+        chatLastTapMsgId = messageId; chatLastTapTime = now;
+        toggleChatMsgMenu(bubbleEl, e);
+    };
+    function spawnHeartBurst(bubbleEl){
+        const burst = document.createElement('div');
+        burst.className = 'chat-heart-burst';
+        burst.textContent = '❤️';
+        bubbleEl.appendChild(burst);
+        setTimeout(() => burst.remove(), 700);
+    }
+
+    window.openConversation = async function(peerId, isSaved){
         chatWindowMode = 'dm';
         chatActivePeerId = peerId;
         chatActiveGroupId = null;
@@ -7842,16 +8060,25 @@ loadSmartNotes();
         try{
             const titleEl = document.getElementById('chat-window-title');
             const avatarEl = document.getElementById('chat-window-avatar');
-            const profile = await getProfileById(peerId);
-            if(titleEl) titleEl.textContent = chatFullName(profile);
-            if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(profile);
-            updateChatWindowStatus(peerId);
+            const statusEl = document.getElementById('chat-window-status');
+            if(isSaved || peerId === chatCurrentUserId){
+                if(titleEl) titleEl.textContent = '🔖 پیام‌های ذخیره‌شده';
+                if(avatarEl) avatarEl.innerHTML = '🔖';
+                if(statusEl) statusEl.style.display = 'none';
+            } else {
+                const profile = await getProfileById(peerId);
+                if(titleEl) titleEl.textContent = chatFullName(profile);
+                if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(profile);
+                updateChatWindowStatus(peerId);
+            }
             const client = getSupabaseClient();
             if(!client) return;
             const { data: msgs, error } = await client.from('messages').select('*')
                 .or(`and(sender_id.eq.${chatCurrentUserId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${chatCurrentUserId})`)
                 .order('created_at', { ascending:true }).limit(300);
             if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
+            (msgs || []).forEach(m => { chatCurrentMessagesMap[m.id] = m; });
+            await fetchReactionsFor((msgs || []).map(m => m.id), 'dm');
             renderChatMessages(msgs || [], false);
             try{
                 await client.from('messages').update({ read_at: new Date().toISOString() })
@@ -7882,7 +8109,7 @@ loadSmartNotes();
             const titleEl = document.getElementById('chat-window-title');
             const avatarEl = document.getElementById('chat-window-avatar');
             if(titleEl) titleEl.textContent = group ? group.name : 'گروه';
-            if(avatarEl) avatarEl.innerHTML = '👥';
+            if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(group) === esc(chatInitials(group)) ? '👥' : chatAvatarInnerHtml(group);
             const statusEl = document.getElementById('chat-window-status');
             const { count: memberCount } = await client.from('chat_group_members').select('user_id', { count:'exact', head:true }).eq('group_id', groupId);
             if(statusEl){ statusEl.classList.remove('online'); statusEl.style.display = 'flex'; document.getElementById('chat-window-status-text').textContent = fa(memberCount || 0) + ' عضو'; }
@@ -7890,6 +8117,8 @@ loadSmartNotes();
                 .eq('group_id', groupId).order('created_at', { ascending:true }).limit(300);
             if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
             await fetchProfilesByIds([...new Set((msgs || []).map(m => m.sender_id))]);
+            (msgs || []).forEach(m => { chatCurrentMessagesMap[m.id] = m; });
+            await fetchReactionsFor((msgs || []).map(m => m.id), 'group');
             renderChatMessages(msgs || [], true);
             try{
                 await client.from('chat_group_members').update({ last_read_at: new Date().toISOString() })
@@ -7928,10 +8157,15 @@ loadSmartNotes();
         const text = m.content ? `<div class="chat-msg-text">${esc(m.content)}</div>` : '';
         const deleteBtn = mine ? `<button class="danger" onclick="deleteChatMessage('${m.id}', event)">🗑 حذف</button>` : '';
         const copyBtn = m.content ? `<button onclick="copyChatMessage('${m.id}', event)">📋 کپی</button>` : '';
+        const forwardBtn = `<button onclick="openForwardPicker('${m.id}'); event.stopPropagation();">↪️ فوروارد</button>`;
         return `<div class="chat-msg ${mine ? 'in' : 'out'}" data-id="${m.id}">
-            <div class="chat-msg-bubble" onclick="toggleChatMsgMenu(this, event)">
-                <div class="chat-msg-actions">${copyBtn}${deleteBtn}</div>
+            <div class="chat-msg-bubble" onclick="chatBubbleTap(this, '${m.id}', event)"
+                 onmousedown="chatBubblePointerDown(this, '${m.id}')" onmouseup="chatBubblePointerUp()" onmouseleave="chatBubblePointerUp()"
+                 ontouchstart="chatBubblePointerDown(this, '${m.id}')" ontouchend="chatBubblePointerUp()" oncontextmenu="event.preventDefault(); openReactionPicker(this);">
+                <div class="chat-msg-actions">${copyBtn}${forwardBtn}${deleteBtn}</div>
+                ${reactionPickerHtml(m.id)}
                 ${senderLabel}${media}${text}<span class="chat-msg-time">${fa(time)} ${chatTicksHtml(m)}</span>
+                <div class="chat-msg-reactions-holder">${reactionsHtml(m.id)}</div>
             </div>
         </div>`;
     }
@@ -7943,6 +8177,7 @@ loadSmartNotes();
         el.scrollTop = el.scrollHeight;
     }
     function appendChatMessage(m, isGroup){
+        chatCurrentMessagesMap[m.id] = m;
         const el = document.getElementById('chat-messages');
         if(!el) return;
         if(el.querySelector('.chat-empty-state')) el.innerHTML = '';
@@ -7954,11 +8189,13 @@ loadSmartNotes();
         if(e && (e.target.closest('a') || e.target.closest('button'))) return;
         const wasOpen = bubbleEl.classList.contains('menu-open');
         document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+        closeReactionPickers();
         if(!wasOpen) bubbleEl.classList.add('menu-open');
     };
     document.addEventListener('click', function(e){
         if(!e.target.closest('.chat-msg-bubble')){
             document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+            closeReactionPickers();
         }
     });
 
@@ -7971,6 +8208,26 @@ loadSmartNotes();
             toast('کپی شد 📋', '');
         }catch(err){ toast('کپی نشد', 'مرورگرت اجازه نداد.'); }
         document.querySelectorAll('.chat-msg-bubble.menu-open').forEach(b => b.classList.remove('menu-open'));
+    };
+
+    window.forwardMessageTo = async function(targetType, targetId){
+        const msg = chatForwardMessage;
+        if(!msg){ toast('پیامی برای فوروارد انتخاب نشده', ''); return; }
+        const client = getSupabaseClient();
+        if(!client) return;
+        const payload = { content: msg.content || null, file_url: msg.file_url || null, file_name: msg.file_name || null, file_type: msg.file_type || null };
+        try{
+            if(targetType === 'self'){
+                await client.from('messages').insert({ ...payload, sender_id: chatCurrentUserId, receiver_id: chatCurrentUserId });
+            } else if(targetType === 'dm'){
+                await client.from('messages').insert({ ...payload, sender_id: chatCurrentUserId, receiver_id: targetId });
+            } else if(targetType === 'group'){
+                await client.from('chat_group_messages').insert({ ...payload, sender_id: chatCurrentUserId, group_id: targetId });
+            }
+            toast('فوروارد شد ↪️', '');
+        }catch(err){ toast('فوروارد ناموفق بود', err.message || ''); }
+        chatForwardMessage = null;
+        showChatListView();
     };
 
     window.deleteChatMessage = async function(msgId, e){
@@ -8097,6 +8354,7 @@ loadSmartNotes();
         chatMessagesChannel = client.channel('chat_messages_' + myId)
             .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:`receiver_id=eq.${myId}` }, (payload) => {
                 const msg = payload.new;
+                if(msg.sender_id === myId && msg.receiver_id === myId) return; /* پیام‌های ذخیره‌شده خودم، محلی اضافه شده */
                 const windowOpen = document.getElementById('chat-overlay').classList.contains('open')
                     && document.getElementById('chat-view-window').style.display !== 'none' && chatWindowMode === 'dm';
                 if(windowOpen && msg.sender_id === chatActivePeerId){
@@ -8139,7 +8397,7 @@ loadSmartNotes();
         chatGroupMessagesChannel = client.channel('chat_group_messages_' + myId)
             .on('postgres_changes', { event:'INSERT', schema:'public', table:'chat_group_messages' }, (payload) => {
                 const msg = payload.new;
-                if(msg.sender_id === myId) return; /* پیام خودمان قبلاً محلی اضافه شده */
+                if(msg.sender_id === myId) return;
                 if(!chatMyGroupIds.includes(msg.group_id)) return;
                 const windowOpen = document.getElementById('chat-overlay').classList.contains('open')
                     && document.getElementById('chat-view-window').style.display !== 'none' && chatWindowMode === 'group';
@@ -8160,6 +8418,31 @@ loadSmartNotes();
                     setTimeout(() => { if(chatCurrentUserId === myId) subscribeChatGroupRealtime(myId); }, 2500);
                 }
             });
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Realtime ری‌اکشن‌ها                                                */
+    /* ---------------------------------------------------------------- */
+    function subscribeChatReactionsRealtime(myId){
+        const client = getSupabaseClient();
+        if(!client || !myId) return;
+        if(chatReactionsChannel){ try{ client.removeChannel(chatReactionsChannel); }catch(e){} chatReactionsChannel = null; }
+        chatReactionsChannel = client.channel('chat_reactions_' + myId)
+            .on('postgres_changes', { event: '*', schema:'public', table:'message_reactions' }, (payload) => {
+                const row = payload.new || payload.old;
+                if(!row) return;
+                const msgId = row.message_id;
+                if(!document.querySelector(`.chat-msg[data-id="${msgId}"]`)) return;
+                /* دوباره ری‌اکشن‌های همین پیام رو تازه می‌کنیم */
+                const isGroup = chatWindowMode === 'group';
+                client.from('message_reactions').select('*').eq('message_id', msgId).eq('message_type', isGroup ? 'group' : 'dm')
+                    .then(({ data }) => {
+                        chatCurrentReactions[msgId] = data || [];
+                        const holder = document.querySelector(`.chat-msg[data-id="${msgId}"] .chat-msg-reactions-holder`);
+                        if(holder) holder.innerHTML = reactionsHtml(msgId);
+                    });
+            })
+            .subscribe();
     }
 
     /* ---------------------------------------------------------------- */
@@ -8185,6 +8468,7 @@ loadSmartNotes();
         if(document.visibilityState === 'visible' && chatCurrentUserId){
             subscribeChatRealtime(chatCurrentUserId);
             subscribeChatGroupRealtime(chatCurrentUserId);
+            subscribeChatReactionsRealtime(chatCurrentUserId);
             subscribeChatPresence(chatCurrentUserId);
             chatSilentRefresh();
         }
@@ -8193,6 +8477,7 @@ loadSmartNotes();
         if(chatCurrentUserId){
             subscribeChatRealtime(chatCurrentUserId);
             subscribeChatGroupRealtime(chatCurrentUserId);
+            subscribeChatReactionsRealtime(chatCurrentUserId);
             subscribeChatPresence(chatCurrentUserId);
             chatSilentRefresh();
         }
@@ -8210,6 +8495,7 @@ loadSmartNotes();
             await fetchMyGroups();
             subscribeChatRealtime(chatCurrentUserId);
             subscribeChatGroupRealtime(chatCurrentUserId);
+            subscribeChatReactionsRealtime(chatCurrentUserId);
             subscribeChatPresence(chatCurrentUserId);
             refreshChatUnreadBadge();
         } else {
@@ -8217,6 +8503,7 @@ loadSmartNotes();
             const c = getSupabaseClient();
             if(chatMessagesChannel){ try{ c?.removeChannel(chatMessagesChannel); }catch(e){} chatMessagesChannel = null; }
             if(chatGroupMessagesChannel){ try{ c?.removeChannel(chatGroupMessagesChannel); }catch(e){} chatGroupMessagesChannel = null; }
+            if(chatReactionsChannel){ try{ c?.removeChannel(chatReactionsChannel); }catch(e){} chatReactionsChannel = null; }
             if(chatPresenceChannel){ try{ c?.removeChannel(chatPresenceChannel); }catch(e){} chatPresenceChannel = null; }
             stopChatPolling();
             const greetEl = document.getElementById('app-user-greeting');
