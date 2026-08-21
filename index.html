@@ -7460,22 +7460,43 @@ loadSmartNotes();
         const client = getSupabaseClient();
         if(!client || !chatCurrentUserId) return null;
         if(chatMyProfile) return chatMyProfile;
-        const { data } = await client.from('profiles').select('*').eq('id', chatCurrentUserId).maybeSingle();
-        if(data){ chatMyProfile = data; chatProfilesCache[data.id] = data; return data; }
+        try{
+            const { data } = await client.from('profiles').select('*').eq('id', chatCurrentUserId).maybeSingle();
+            if(data){ chatMyProfile = data; chatProfilesCache[data.id] = data; return data; }
+        }catch(e){}
         const { data:{ session } } = await client.auth.getSession();
         const email = session?.user?.email || '';
         let pending = null;
         try{ pending = JSON.parse(localStorage.getItem('chat_pending_profile_' + email) || 'null'); }catch(e){}
         if(pending && pending.firstName){
-            const { data: created, error } = await client.from('profiles')
-                .upsert({ id: chatCurrentUserId, first_name: pending.firstName, last_name: pending.lastName || '', email })
-                .select().maybeSingle();
-            if(!error && created){
-                chatMyProfile = created; chatProfilesCache[created.id] = created;
-                try{ localStorage.removeItem('chat_pending_profile_' + email); }catch(e){}
-                return created;
-            }
+            try{
+                const { data: created, error } = await client.from('profiles')
+                    .upsert({ id: chatCurrentUserId, first_name: pending.firstName, last_name: pending.lastName || '', email })
+                    .select().maybeSingle();
+                if(!error && created){
+                    chatMyProfile = created; chatProfilesCache[created.id] = created;
+                    try{ localStorage.removeItem('chat_pending_profile_' + email); }catch(e){}
+                    return created;
+                }
+            }catch(e){}
         }
+        /* دیگه اسم اجباری نیست: اگه پروفایلی پیدا نشد، خودکار یه اسم مهمان
+           می‌سازیم (مهمان ۱، مهمان ۲...) و کاربر هر وقت خواست از صفحه‌ی
+           «پروفایل من» می‌تونه اسم واقعیشو بذاره. */
+        try{
+            let guestNum = 1;
+            try{
+                const { count } = await client.from('profiles').select('id', { count:'exact', head:true });
+                guestNum = (count || 0) + 1;
+            }catch(e){}
+            const { data: guest, error: guestErr } = await client.from('profiles')
+                .upsert({ id: chatCurrentUserId, first_name: 'مهمان', last_name: String(guestNum), email })
+                .select().maybeSingle();
+            if(!guestErr && guest){
+                chatMyProfile = guest; chatProfilesCache[guest.id] = guest;
+                return guest;
+            }
+        }catch(e){}
         return null;
     }
 
@@ -7564,7 +7585,15 @@ loadSmartNotes();
         chatCurrentUserId = session.user.id;
         document.getElementById('chat-overlay').classList.add('open');
         const profile = await ensureOwnProfile();
-        if(!profile){ showChatSetupView(); startChatPolling(); return; }
+        if(!profile){
+            /* این حالت فقط وقتی پیش میاد که اصلاً اتصال به دیتابیس برقرار نشه
+               (مثلاً قطعی اینترنت)؛ به‌جای گیر کردن، همون فرم کوچیک نام رو
+               به‌عنوان آخرین راه‌حل نشون می‌دیم. */
+            toast('اتصال برقرار نشد', 'لطفاً دوباره امتحان کن.');
+            showChatSetupView();
+            startChatPolling();
+            return;
+        }
         updateAppUserGreeting();
         subscribeChatPresence(chatCurrentUserId);
         showChatListView();
@@ -7581,22 +7610,38 @@ loadSmartNotes();
     async function fetchMyGroups(){
         const client = getSupabaseClient();
         if(!client || !chatCurrentUserId) return [];
-        const { data: gm } = await client.from('chat_group_members').select('group_id,last_read_at').eq('user_id', chatCurrentUserId);
-        const rows = gm || [];
-        chatMyGroupIds = rows.map(r => r.group_id);
-        if(!chatMyGroupIds.length) return [];
-        const { data: groups } = await client.from('chat_groups').select('*').in('id', chatMyGroupIds);
-        (groups || []).forEach(g => { chatGroupsCache[g.id] = g; });
-        const lastReadMap = {};
-        rows.forEach(r => { lastReadMap[r.group_id] = r.last_read_at; });
-        return (groups || []).map(g => ({ group: g, lastReadAt: lastReadMap[g.id] || null }));
+        try{
+            const { data: gm, error: gmErr } = await client.from('chat_group_members').select('group_id,last_read_at').eq('user_id', chatCurrentUserId);
+            if(gmErr) throw gmErr;
+            const rows = gm || [];
+            chatMyGroupIds = rows.map(r => r.group_id);
+            if(!chatMyGroupIds.length) return [];
+            const { data: groups, error: gErr } = await client.from('chat_groups').select('*').in('id', chatMyGroupIds);
+            if(gErr) throw gErr;
+            (groups || []).forEach(g => { chatGroupsCache[g.id] = g; });
+            const lastReadMap = {};
+            rows.forEach(r => { lastReadMap[r.group_id] = r.last_read_at; });
+            return (groups || []).map(g => ({ group: g, lastReadAt: lastReadMap[g.id] || null }));
+        }catch(e){
+            /* اگه جدول‌های گروه هنوز ساخته نشده باشن (اسکریپت SQL سوم اجرا نشده)،
+               نباید کل لیست گفتگوها خراب بشه - فقط بخش گروه‌ها رو نادیده می‌گیریم. */
+            chatMyGroupIds = [];
+            return [];
+        }
     }
 
     async function loadConversations(){
         const listEl = document.getElementById('chat-conversations-list');
         const client = getSupabaseClient();
         if(!client || !chatCurrentUserId || !listEl) return;
+        try{
+            await loadConversationsInner(listEl, client);
+        }catch(e){
+            listEl.innerHTML = '<div class="chat-empty-state">مشکلی در بارگذاری گفتگوها پیش اومد.<br>لطفاً دوباره امتحان کن.</div>';
+        }
+    }
 
+    async function loadConversationsInner(listEl, client){
         const [dmResult, groupInfos] = await Promise.all([
             client.from('messages').select('*')
                 .or(`sender_id.eq.${chatCurrentUserId},receiver_id.eq.${chatCurrentUserId}`)
@@ -7792,26 +7837,30 @@ loadSmartNotes();
         chatActiveGroupId = null;
         showChatWindowView();
         cancelChatUpload();
-        const titleEl = document.getElementById('chat-window-title');
-        const avatarEl = document.getElementById('chat-window-avatar');
-        const profile = await getProfileById(peerId);
-        if(titleEl) titleEl.textContent = chatFullName(profile);
-        if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(profile);
-        updateChatWindowStatus(peerId);
         const msgsEl = document.getElementById('chat-messages');
         if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
-        const client = getSupabaseClient();
-        if(!client) return;
-        const { data: msgs, error } = await client.from('messages').select('*')
-            .or(`and(sender_id.eq.${chatCurrentUserId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${chatCurrentUserId})`)
-            .order('created_at', { ascending:true }).limit(300);
-        if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
-        renderChatMessages(msgs || [], false);
         try{
-            await client.from('messages').update({ read_at: new Date().toISOString() })
-                .eq('sender_id', peerId).eq('receiver_id', chatCurrentUserId).is('read_at', null);
-        }catch(e){}
-        refreshChatUnreadBadge();
+            const titleEl = document.getElementById('chat-window-title');
+            const avatarEl = document.getElementById('chat-window-avatar');
+            const profile = await getProfileById(peerId);
+            if(titleEl) titleEl.textContent = chatFullName(profile);
+            if(avatarEl) avatarEl.innerHTML = chatAvatarInnerHtml(profile);
+            updateChatWindowStatus(peerId);
+            const client = getSupabaseClient();
+            if(!client) return;
+            const { data: msgs, error } = await client.from('messages').select('*')
+                .or(`and(sender_id.eq.${chatCurrentUserId},receiver_id.eq.${peerId}),and(sender_id.eq.${peerId},receiver_id.eq.${chatCurrentUserId})`)
+                .order('created_at', { ascending:true }).limit(300);
+            if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
+            renderChatMessages(msgs || [], false);
+            try{
+                await client.from('messages').update({ read_at: new Date().toISOString() })
+                    .eq('sender_id', peerId).eq('receiver_id', chatCurrentUserId).is('read_at', null);
+            }catch(e){}
+            refreshChatUnreadBadge();
+        }catch(e){
+            if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">مشکلی پیش اومد.<br>دوباره امتحان کن.</div>';
+        }
     };
 
     window.openGroupConversation = async function(groupId){
@@ -7820,32 +7869,36 @@ loadSmartNotes();
         chatActivePeerId = null;
         showChatWindowView();
         cancelChatUpload();
-        const client = getSupabaseClient();
-        if(!client) return;
-        let group = chatGroupsCache[groupId];
-        if(!group){
-            const { data } = await client.from('chat_groups').select('*').eq('id', groupId).maybeSingle();
-            group = data; if(group) chatGroupsCache[groupId] = group;
-        }
-        const titleEl = document.getElementById('chat-window-title');
-        const avatarEl = document.getElementById('chat-window-avatar');
-        if(titleEl) titleEl.textContent = group ? group.name : 'گروه';
-        if(avatarEl) avatarEl.innerHTML = '👥';
-        const statusEl = document.getElementById('chat-window-status');
-        const { count: memberCount } = await client.from('chat_group_members').select('user_id', { count:'exact', head:true }).eq('group_id', groupId);
-        if(statusEl){ statusEl.classList.remove('online'); statusEl.style.display = 'flex'; document.getElementById('chat-window-status-text').textContent = fa(memberCount || 0) + ' عضو'; }
         const msgsEl = document.getElementById('chat-messages');
         if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
-        const { data: msgs, error } = await client.from('chat_group_messages').select('*')
-            .eq('group_id', groupId).order('created_at', { ascending:true }).limit(300);
-        if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
-        await fetchProfilesByIds([...new Set((msgs || []).map(m => m.sender_id))]);
-        renderChatMessages(msgs || [], true);
         try{
-            await client.from('chat_group_members').update({ last_read_at: new Date().toISOString() })
-                .eq('group_id', groupId).eq('user_id', chatCurrentUserId);
-        }catch(e){}
-        loadConversations();
+            const client = getSupabaseClient();
+            if(!client) return;
+            let group = chatGroupsCache[groupId];
+            if(!group){
+                const { data } = await client.from('chat_groups').select('*').eq('id', groupId).maybeSingle();
+                group = data; if(group) chatGroupsCache[groupId] = group;
+            }
+            const titleEl = document.getElementById('chat-window-title');
+            const avatarEl = document.getElementById('chat-window-avatar');
+            if(titleEl) titleEl.textContent = group ? group.name : 'گروه';
+            if(avatarEl) avatarEl.innerHTML = '👥';
+            const statusEl = document.getElementById('chat-window-status');
+            const { count: memberCount } = await client.from('chat_group_members').select('user_id', { count:'exact', head:true }).eq('group_id', groupId);
+            if(statusEl){ statusEl.classList.remove('online'); statusEl.style.display = 'flex'; document.getElementById('chat-window-status-text').textContent = fa(memberCount || 0) + ' عضو'; }
+            const { data: msgs, error } = await client.from('chat_group_messages').select('*')
+                .eq('group_id', groupId).order('created_at', { ascending:true }).limit(300);
+            if(error){ if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری پیام‌ها</div>'; return; }
+            await fetchProfilesByIds([...new Set((msgs || []).map(m => m.sender_id))]);
+            renderChatMessages(msgs || [], true);
+            try{
+                await client.from('chat_group_members').update({ last_read_at: new Date().toISOString() })
+                    .eq('group_id', groupId).eq('user_id', chatCurrentUserId);
+            }catch(e){}
+            loadConversations();
+        }catch(e){
+            if(msgsEl) msgsEl.innerHTML = '<div class="chat-empty-state">مشکلی پیش اومد.<br>دوباره امتحان کن.</div>';
+        }
     };
 
     function chatTicksHtml(m){
