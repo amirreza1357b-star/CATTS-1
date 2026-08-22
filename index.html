@@ -15,6 +15,52 @@ if (typeof window.faNum === 'undefined') {
   };
 }
 </script>
+<script>
+/* ==========================================================================
+   Phase 2 — Global Error Handler (بخش ۱۸ و ۲۵ پرامپت)
+   هیچ خطای خام JS نباید بدون پیام به کاربر برسه. این هندلر مستقل از بقیه‌ی
+   برنامه کار می‌کنه (همین ابتدای <head>) تا حتی اگه یک اسکریپت دیگر بعداً
+   خطا بده یا کل صفحه لود نشه، کاربر صفحه‌ی خالی/سفید نبینه.
+   ========================================================================== */
+(function(){
+    var toastEl = null, hideTimer = null, shownCount = 0, lastMsg = '', lastMsgTs = 0;
+    function ensureToast(){
+        if(toastEl && document.body.contains(toastEl)) return toastEl;
+        toastEl = document.createElement('div');
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('dir', 'rtl');
+        toastEl.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);' +
+            'background:#2a1414;border:1px solid #7f1d1d;color:#fecaca;padding:10px 16px;' +
+            'border-radius:12px;font-family:Vazirmatn,Tahoma,sans-serif;font-size:13px;' +
+            'z-index:999999;max-width:90vw;box-shadow:0 8px 24px rgba(0,0,0,.4);' +
+            'display:none;text-align:center;line-height:1.8;';
+        (document.body || document.documentElement).appendChild(toastEl);
+        return toastEl;
+    }
+    function showGlobalError(msg){
+        // از سیل خطاهای تکراری (مثلاً در یک حلقه) جلوگیری کن
+        var now = Date.now();
+        if(msg === lastMsg && (now - lastMsgTs) < 4000) return;
+        lastMsg = msg; lastMsgTs = now;
+        try{
+            var el = ensureToast();
+            el.textContent = '⚠️ یک خطای غیرمنتظره رخ داد. اطلاعات شما ذخیره شده و از دست نرفته؛ اگر مشکل ادامه داشت، صفحه را رفرش کن.';
+            el.style.display = 'block';
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(function(){ el.style.display = 'none'; }, 6000);
+        }catch(e){ /* اگر حتی نمایش toast هم شکست خورد، حداقل در کنسول ثبت شود */ }
+        shownCount++;
+    }
+    window.addEventListener('error', function(ev){
+        console.error('[Global Error]', ev.error || ev.message, ev.filename, ev.lineno);
+        showGlobalError(ev.message);
+    });
+    window.addEventListener('unhandledrejection', function(ev){
+        console.error('[Unhandled Promise Rejection]', ev.reason);
+        showGlobalError(ev.reason && ev.reason.message);
+    });
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -378,6 +424,48 @@ if (typeof window.faNum === 'undefined') {
             outline: none;
             border-color: var(--gold);
             box-shadow: 0 0 10px rgba(236, 72, 153, 0.25);
+        }
+
+        /* حالت‌های تایمر (تست/مطالعه) */
+        .timer-mode-switch{ display:flex; gap:8px; margin-bottom:14px; }
+        .timer-mode-btn{ flex:1; padding:12px 10px; min-height:44px; border-radius:12px; border:1px solid rgba(255,255,255,.1);
+            background:rgba(255,255,255,.04); color:var(--text-secondary); cursor:pointer; font-weight:800; transition:.2s; }
+        .timer-mode-btn.active{ background:linear-gradient(135deg,#22d3ee,#6366f1); color:#07111b; border-color:transparent; }
+        .timer-section.mode-study{ border-color: rgba(168,85,247,.4); box-shadow: 0 12px 35px rgba(168,85,247,.14); }
+        .timer-mode-btn#mode-btn-study.active{ background:linear-gradient(135deg,#a855f7,#22d3ee); }
+        /* تایمر مطالعه — رنگ خفن‌تر (گرادیان بنفش↔فیروزه‌ای با درخشش پالسی)
+           و اندازه‌ی رقم‌ها کوچک‌تر تا ۸ رقم (۰۰:۰۰:۰۰) داخل دایره جا شود
+           و بیرون نزند. */
+        #study-timer{ background:conic-gradient(from -90deg, #a855f7, #22d3ee var(--timer-progress,0%), rgba(255,255,255,.055) 0) !important; }
+        #study-timer .timer-core-dot{ background:#a855f7 !important; box-shadow:0 0 14px #a855f7 !important; }
+        #study-timer .timer-label{ color:#c4b5fd !important; }
+        #study-timer .timer-digits{
+            font-size: 2.3rem !important;
+            min-width: 0 !important;
+            letter-spacing: .01em !important;
+            color: #c084fc; /* fallback رنگ ثابت برای مرورگرهایی که background-clip:text را پشتیبانی نمی‌کنند */
+            background: linear-gradient(90deg, #c084fc, #22d3ee, #a855f7);
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: none !important;
+            filter: drop-shadow(0 0 14px rgba(168,85,247,.45));
+            animation: studyDigitsShine 4s ease-in-out infinite;
+        }
+        @keyframes studyDigitsShine { 0%,100%{ background-position:0% center; } 50%{ background-position:100% center; } }
+        @media(max-width:650px){ #study-timer .timer-digits{ font-size: 1.7rem !important; } }
+
+
+
+        /* Phase 6 — Accessibility (بخش ۱۹ پرامپت): تا اینجا فقط input/select
+           هنگام focus حلقه‌ی مشخص داشتند؛ دکمه‌ها، لینک‌ها و عناصر تعاملی
+           دیگر برای کاربر کیبورد هیچ نشانه‌ای نداشتند. این قانون فقط برای
+           ناوبری با کیبورد (focus-visible) فعال می‌شود، پس برای کاربرانی که
+           با موس کار می‌کنند ظاهر برنامه اصلاً تغییر نمی‌کند. */
+        button:focus-visible, .btn:focus-visible, a:focus-visible,
+        [tabindex]:focus-visible, input:focus-visible, select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid var(--accent, #22d3ee) !important;
+            outline-offset: 2px !important;
         }
 
         .btn {
@@ -973,6 +1061,8 @@ input, select {
 .goal-subject-ring span{font-size:.58rem;color:var(--text-secondary);}
 .goal-subject-name{font-weight:900;font-size:1rem;margin-bottom:4px;}
 .goal-subject-meta{font-size:.72rem;color:var(--text-secondary);line-height:1.8;}
+.goal-behind-badge{margin-top:8px;padding:7px 10px;border-radius:9px;font-size:.7rem;font-weight:700;line-height:1.7;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);color:#fca5a5;}
+.goal-behind-badge.good{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:#86efac;}
 .goal-subject-meta b{color:var(--gold);}
 .goal-mini-progress{height:7px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin-top:8px;}
 .goal-mini-progress>i{display:block;height:100%;width:var(--w,0%);background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:10px;}
@@ -1266,8 +1356,8 @@ header{margin-bottom:22px;}
 /* ===== تاریخ شمسی هوشمند ===== */
 .smart-date-line{display:none;width:max-content;max-width:100%;margin:0 auto 8px;padding:5px 11px;border:1px solid rgba(34,211,238,.16);border-radius:999px;background:rgba(34,211,238,.045);color:var(--text-secondary);font-size:.68rem;cursor:pointer;transition:.2s}.smart-date-line.visible{display:block}.smart-date-line:hover{color:var(--accent);border-color:rgba(34,211,238,.35);transform:translateY(-1px)}
 .date-settings-panel{position:fixed;inset:0;z-index:1500;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,2,12,.68);backdrop-filter:blur(9px)}.date-settings-panel.show{display:flex}.date-settings-box{width:min(430px,100%);padding:22px;border-radius:24px;background:linear-gradient(145deg,#15122d,#090817);border:1px solid rgba(34,211,238,.24);box-shadow:0 25px 80px rgba(0,0,0,.55)}.date-settings-box h3{font-size:1.15rem;margin-bottom:8px}.date-settings-box p{color:var(--text-secondary);font-size:.78rem;line-height:1.9;margin-bottom:14px}.date-setting-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.date-setting-grid input{margin:0}.date-setting-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.daily-vitals-card{background:linear-gradient(145deg,rgba(34,211,238,.065),rgba(99,102,241,.045),rgba(251,146,60,.04));border-color:rgba(34,211,238,.16)}.daily-vitals-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.mini-date-btn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-primary);border-radius:11px;padding:8px 11px;cursor:pointer;font-weight:800}.daily-vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}.daily-ring-card{text-align:center;padding:14px 10px;border-radius:18px;background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.07)}.daily-ring{width:128px;height:128px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--ring-color) var(--p),rgba(255,255,255,.065) 0);box-shadow:0 0 28px color-mix(in srgb,var(--ring-color) 13%,transparent)}.daily-ring::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--bg-solid);box-shadow:inset 0 0 24px rgba(0,0,0,.22)}.daily-ring>div{position:relative;z-index:1}.daily-ring b{display:block;font-size:1.35rem}.daily-ring span{font-size:.65rem;color:var(--text-secondary)}.daily-ring.study{--ring-color:#22d3ee}.daily-ring.action{--ring-color:#fb923c}.daily-ring-card strong{display:block;font-size:.88rem}.daily-ring-card small{display:block;color:var(--text-secondary);font-size:.68rem;margin-top:4px}
-.planner-archive-wrap{margin-top:18px}.planner-archive-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.planner-archives{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.planner-archive-card{position:relative;overflow:hidden;padding:16px;border-radius:20px;background:linear-gradient(145deg,rgba(34,211,238,.08),rgba(99,102,241,.08),rgba(251,146,60,.06));border:1px solid rgba(99,102,241,.22);box-shadow:0 12px 28px rgba(0,0,0,.18)}.planner-archive-card::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:4px;background:linear-gradient(90deg,#22d3ee,#6366f1,#fb923c)}.planner-archive-title{font-weight:900;font-size:1rem}.planner-archive-meta{font-size:.72rem;color:var(--text-secondary);line-height:1.8;margin:6px 0 11px}.planner-archive-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.planner-archive-actions button{min-height:40px;padding:7px 9px;border-radius:11px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.045);color:var(--text-primary);cursor:pointer;font-weight:800}.planner-archive-actions button.primary{background:linear-gradient(135deg,#22d3ee,#6366f1);border:0;color:#07111b}.planner-archive-empty{padding:20px;text-align:center;color:var(--text-secondary);border:1px dashed rgba(255,255,255,.12);border-radius:16px}@media(max-width:650px){.daily-vitals-grid{gap:8px}.daily-ring{width:108px;height:108px}.date-setting-grid{grid-template-columns:1fr 1fr}.planner-archive-actions{grid-template-columns:1fr}.daily-vitals-head{flex-direction:column}.mini-date-btn{width:100%}}
+.daily-vitals-card{background:linear-gradient(145deg,rgba(34,211,238,.065),rgba(99,102,241,.045),rgba(251,146,60,.04));border-color:rgba(34,211,238,.16)}.daily-vitals-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.mini-date-btn{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-primary);border-radius:11px;padding:8px 11px;cursor:pointer;font-weight:800}.daily-vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}.daily-ring-card{text-align:center;padding:14px 10px;border-radius:18px;background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.07)}.daily-ring{width:128px;height:128px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--ring-color) var(--p),rgba(255,255,255,.065) 0);box-shadow:0 0 28px color-mix(in srgb,var(--ring-color) 13%,transparent)}.daily-ring::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--bg-solid);box-shadow:inset 0 0 24px rgba(0,0,0,.22)}.daily-ring>div{position:relative;z-index:1}.daily-ring b{display:block;font-size:1.35rem}.daily-ring span{font-size:.65rem;color:var(--text-secondary)}.daily-ring.study{--ring-color:#22d3ee}.daily-ring.action{--ring-color:#fb923c}.daily-ring.hours{--ring-color:#c084fc}.daily-ring-card strong{display:block;font-size:.88rem}.daily-ring-card small{display:block;color:var(--text-secondary);font-size:.68rem;margin-top:4px}
+.planner-archive-wrap{margin-top:18px}.planner-archive-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.planner-archives{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.planner-archive-card{position:relative;overflow:hidden;padding:16px;border-radius:20px;background:linear-gradient(145deg,rgba(34,211,238,.08),rgba(99,102,241,.08),rgba(251,146,60,.06));border:1px solid rgba(99,102,241,.22);box-shadow:0 12px 28px rgba(0,0,0,.18)}.planner-archive-card::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:4px;background:linear-gradient(90deg,#22d3ee,#6366f1,#fb923c)}.planner-archive-title{font-weight:900;font-size:1rem}.planner-archive-meta{font-size:.72rem;color:var(--text-secondary);line-height:1.8;margin:6px 0 11px}.planner-archive-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.planner-archive-actions button{min-height:40px;padding:7px 9px;border-radius:11px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.045);color:var(--text-primary);cursor:pointer;font-weight:800}.planner-archive-actions button.primary{background:linear-gradient(135deg,#22d3ee,#6366f1);border:0;color:#07111b}.planner-archive-empty{padding:20px;text-align:center;color:var(--text-secondary);border:1px dashed rgba(255,255,255,.12);border-radius:16px}@media(max-width:650px){.daily-vitals-grid{gap:8px;grid-template-columns:1fr 1fr}.daily-vitals-grid .daily-ring-card:nth-child(3){grid-column:1/-1}.daily-ring{width:108px;height:108px}.date-setting-grid{grid-template-columns:1fr 1fr}.planner-archive-actions{grid-template-columns:1fr}.daily-vitals-head{flex-direction:column}.mini-date-btn{width:100%}.topic-analytics-grid{grid-template-columns:1fr!important}}
 
 /* ===== تایمر نهایی: HUD مداری، سبک و بدون درایفت ===== */
 .timer-display{
@@ -2615,39 +2705,9 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-msg-bubble.menu-open .chat-msg-actions{ display:flex; }
     .chat-msg-actions button{ background:rgba(255,255,255,.06); border:none; color:var(--text-primary); border-radius:8px; padding:5px 9px; font-size:.75rem; cursor:pointer; white-space:nowrap; }
     .chat-msg-actions button.danger{ color:#f87171; }
-    .chat-msg-ticks{ display:inline-flex; align-items:center; margin-right:3px; vertical-align:-2px; }
-    .chat-msg-ticks svg{ display:block; }
-    .chat-msg-ticks svg path{ stroke:rgba(255,255,255,.72); }
-    .chat-msg.in .chat-msg-ticks svg path{ stroke:var(--text-secondary); }
-    .chat-msg-ticks.read svg path{ stroke:#38bdf8 !important; }
+    .chat-msg-ticks{ font-size:.62rem; margin-right:2px; }
+    .chat-msg-ticks.read{ color:#38bdf8; }
     .chat-msg-deleted{ font-style:italic; opacity:.6; font-size:.8rem; }
-
-    /* ---- تنظیمات چت ---- */
-    .chat-settings-list{ flex:1; overflow-y:auto; padding:14px; }
-    .chat-settings-group{ margin-bottom:18px; }
-    .chat-settings-group-title{ font-size:.72rem; font-weight:800; color:var(--text-secondary); padding:0 6px 8px; letter-spacing:.02em; }
-    .chat-settings-card{ background:var(--card-bg); border:var(--border); border-radius:16px; overflow:hidden; }
-    .chat-settings-row{ display:flex; align-items:center; gap:12px; padding:13px 14px; border-bottom:var(--border); cursor:default; }
-    .chat-settings-row:last-child{ border-bottom:none; }
-    .chat-settings-row.clickable{ cursor:pointer; transition:background .15s ease; }
-    .chat-settings-row.clickable:hover{ background:var(--card-bg-hover); }
-    .chat-settings-row-icon{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; background:rgba(139,92,246,.16); }
-    .chat-settings-row-body{ flex:1; min-width:0; }
-    .chat-settings-row-title{ font-size:.86rem; font-weight:700; }
-    .chat-settings-row-desc{ font-size:.72rem; color:var(--text-secondary); margin-top:2px; line-height:1.6; }
-    .chat-settings-row-arrow{ color:var(--text-secondary); font-size:.8rem; flex-shrink:0; }
-    .chat-toggle-switch{ position:relative; width:42px; height:24px; border-radius:999px; background:rgba(255,255,255,.14); flex-shrink:0; cursor:pointer; transition:background .2s ease; border:none; padding:0; }
-    .chat-toggle-switch.on{ background:var(--accent); }
-    .chat-toggle-switch::after{ content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.3); }
-    .chat-toggle-switch.on::after{ transform:translateX(-18px); }
-    .chat-fontsize-options{ display:flex; gap:8px; padding:10px 14px; }
-    .chat-fontsize-opt{ flex:1; text-align:center; padding:9px 4px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid transparent; cursor:pointer; font-weight:700; color:var(--text-secondary); transition:.15s ease; }
-    .chat-fontsize-opt.active{ background:color-mix(in srgb, var(--accent) 22%, transparent); border-color:var(--accent); color:var(--text-primary); }
-    body.chat-font-small .chat-msg-bubble{ font-size:.76rem; }
-    body.chat-font-medium .chat-msg-bubble{ font-size:.85rem; }
-    body.chat-font-large .chat-msg-bubble{ font-size:.98rem; }
-    .chat-settings-danger-btn{ width:100%; background:rgba(244,63,94,.12); color:var(--danger); border:1px solid rgba(244,63,94,.3); border-radius:12px; padding:11px; font-weight:700; font-size:.82rem; cursor:pointer; }
-    .chat-settings-version{ text-align:center; color:var(--text-secondary); font-size:.68rem; padding:16px 0 4px; }
 
     /* ---- جستجو در لیست گفتگوها ---- */
     .chat-search-bar-wrap{ padding:8px 12px 0; flex-shrink:0; }
@@ -2739,7 +2799,13 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
           <input id="neo-auth-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
           <input id="neo-auth-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
           <div class="neo-cloud-actions" style="margin-top:10px;"><button class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
+          <p style="text-align:center;margin-top:8px;margin-bottom:0;"><a href="javascript:void(0)" onclick="authForgotPassword()" style="font-size:.72rem;color:var(--text-secondary);text-decoration:underline;">رمز عبور را فراموش کرده‌ام</a></p>
           <p class="neo-muted" style="font-size:.66rem;margin-top:6px;margin-bottom:0;">نام و نام‌خانوادگی فقط برای «ساخت حساب» لازم است؛ برای ورود فقط ایمیل و رمز کافی است.</p>
+        </div>
+        <div id="neo-reset-password-box" class="neo-auth-box" style="display:none;margin-top:10px;">
+          <p class="neo-muted" style="font-size:.72rem;margin-bottom:8px;">یک رمز عبور جدید (حداقل ۶ کاراکتر) وارد کن:</p>
+          <input id="neo-new-password" type="password" placeholder="رمز عبور جدید" style="width:100%;margin-bottom:8px;">
+          <button class="btn btn-success" style="width:100%;" onclick="authSetNewPassword()">ثبت رمز جدید</button>
         </div>
         <div id="neo-user-box" class="neo-user-box" style="display:none"><span>👤 <b id="neo-auth-user-name"></b><br><small id="neo-auth-user-email" style="color:var(--text-secondary);"></small></span><button class="btn btn-purple" onclick="manualCloudSync()" style="padding:6px 12px;font-size:.75rem;">🔄 همگام‌سازی</button><button class="btn btn-danger" onclick="authSignOut()" style="padding:6px 12px;font-size:.75rem;">خروج</button></div>
         <div id="neo-cloud-status" class="neo-cloud-status">هنوز وارد حساب نشده‌ای</div>
@@ -2755,7 +2821,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <!-- تکمیل پروفایل (اولین بار) -->
     <div id="chat-view-setup" class="chat-view">
       <div class="chat-top-bar">
-        <button class="chat-icon-btn" onclick="closeChatPanel()">✕</button>
+        <button class="chat-icon-btn" onclick="closeChatPanel()" aria-label="بستن گفتگو">✕</button>
         <div class="chat-top-title">تکمیل پروفایل</div>
         <span style="width:38px;"></span>
       </div>
@@ -2770,12 +2836,11 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <!-- لیست مکالمات -->
     <div id="chat-view-list" class="chat-view" style="display:flex;">
       <div class="chat-top-bar">
-        <button class="chat-icon-btn" onclick="closeChatPanel()">✕</button>
+        <button class="chat-icon-btn" onclick="closeChatPanel()" aria-label="بستن گفتگو">✕</button>
         <div class="chat-own-header" onclick="showChatMyProfileView()">
           <div class="chat-avatar" id="chat-own-avatar">👤</div>
           <div class="chat-top-title" style="font-size:.92rem;">💬 گفتگوها</div>
         </div>
-        <button class="chat-icon-btn" onclick="showChatSettingsView()" title="تنظیمات">⚙️</button>
         <button class="chat-icon-btn" onclick="openGroupCreatePicker()" title="گروه جدید">👥</button>
         <button class="chat-icon-btn" onclick="openContactPicker()" title="گفتگوی جدید">➕</button>
       </div>
@@ -2803,109 +2868,6 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <input id="chat-myprofile-lastname" type="text" placeholder="نام خانوادگی">
         <textarea id="chat-myprofile-bio" placeholder="بیوگرافی کوتاه (اختیاری)" maxlength="160"></textarea>
         <button class="btn btn-purple" style="width:100%;margin-top:4px;" onclick="saveChatMyProfile()">ذخیره</button>
-      </div>
-    </div>
-
-    <!-- تنظیمات چت -->
-    <div id="chat-view-settings" class="chat-view">
-      <div class="chat-top-bar">
-        <button class="chat-icon-btn" onclick="showChatListView()">→</button>
-        <div class="chat-top-title">تنظیمات</div>
-        <span style="width:38px;"></span>
-      </div>
-      <div class="chat-settings-list">
-
-        <div class="chat-settings-group">
-          <div class="chat-settings-group-title">حساب</div>
-          <div class="chat-settings-card">
-            <div class="chat-settings-row clickable" onclick="showChatMyProfileView()">
-              <div class="chat-settings-row-icon">👤</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">پروفایل من</div>
-                <div class="chat-settings-row-desc">نام، بیوگرافی و عکس پروفایل</div>
-              </div>
-              <div class="chat-settings-row-arrow">‹</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="chat-settings-group">
-          <div class="chat-settings-group-title">ظاهر</div>
-          <div class="chat-settings-card">
-            <div class="chat-settings-row">
-              <div class="chat-settings-row-icon">🌗</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">حالت تیره / روشن</div>
-                <div class="chat-settings-row-desc">تم کل برنامه رو تغییر می‌ده</div>
-              </div>
-              <button class="chat-toggle-switch" id="chat-settings-theme-toggle" onclick="toggleTheme(); updateChatSettingsThemeToggle();"></button>
-            </div>
-            <div class="chat-settings-row" style="display:block;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:2px;">
-                <div class="chat-settings-row-icon">🔤</div>
-                <div class="chat-settings-row-body">
-                  <div class="chat-settings-row-title">اندازه متن پیام‌ها</div>
-                </div>
-              </div>
-              <div class="chat-fontsize-options" id="chat-fontsize-options">
-                <div class="chat-fontsize-opt" data-size="small" onclick="setChatFontSize('small')">کوچک</div>
-                <div class="chat-fontsize-opt" data-size="medium" onclick="setChatFontSize('medium')">متوسط</div>
-                <div class="chat-fontsize-opt" data-size="large" onclick="setChatFontSize('large')">بزرگ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="chat-settings-group">
-          <div class="chat-settings-group-title">اعلان‌ها</div>
-          <div class="chat-settings-card">
-            <div class="chat-settings-row">
-              <div class="chat-settings-row-icon">🔔</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">اعلان مرورگر</div>
-                <div class="chat-settings-row-desc">وقتی صفحه باز نیست، پیام جدید نوتیف بده</div>
-              </div>
-              <button class="chat-toggle-switch" id="chat-settings-notif-toggle" onclick="toggleChatSetting('browserNotif', 'chat-settings-notif-toggle')"></button>
-            </div>
-            <div class="chat-settings-row">
-              <div class="chat-settings-row-icon">🔊</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">صدای پیام جدید</div>
-                <div class="chat-settings-row-desc">با رسیدن پیام یه صدای کوتاه پخش می‌شه</div>
-              </div>
-              <button class="chat-toggle-switch" id="chat-settings-sound-toggle" onclick="toggleChatSetting('sound', 'chat-settings-sound-toggle')"></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="chat-settings-group">
-          <div class="chat-settings-group-title">حریم خصوصی و گفتگو</div>
-          <div class="chat-settings-card">
-            <div class="chat-settings-row">
-              <div class="chat-settings-row-icon">✓✓</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">تیک آبی (خوانده‌شد)</div>
-                <div class="chat-settings-row-desc">اگه خاموش باشه، تیک‌ها آبی نمی‌شن</div>
-              </div>
-              <button class="chat-toggle-switch" id="chat-settings-readreceipt-toggle" onclick="toggleChatSetting('readReceipts', 'chat-settings-readreceipt-toggle')"></button>
-            </div>
-            <div class="chat-settings-row">
-              <div class="chat-settings-row-icon">⏎</div>
-              <div class="chat-settings-row-body">
-                <div class="chat-settings-row-title">ارسال با Enter</div>
-                <div class="chat-settings-row-desc">زدن کلید Enter پیام رو می‌فرسته</div>
-              </div>
-              <button class="chat-toggle-switch" id="chat-settings-enter-toggle" onclick="toggleChatSetting('enterToSend', 'chat-settings-enter-toggle')"></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="chat-settings-group">
-          <div class="chat-settings-group-title">داده‌ها</div>
-          <button class="chat-settings-danger-btn" onclick="clearChatLocalCache()">🗑 پاک‌کردن کش محلی گفتگوها</button>
-        </div>
-
-        <div class="chat-settings-version">نسخه گفتگو ۱.۰</div>
       </div>
     </div>
 
@@ -2958,7 +2920,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
           📎
           <input id="chat-file-input" type="file" style="display:none;" onchange="handleChatFileSelect(event)">
         </label>
-        <input id="chat-text-input" class="chat-text-input" type="text" placeholder="پیام بنویس..." onkeydown="if(event.key==='Enter' && (typeof window.chatEnterToSendEnabled !== 'function' || window.chatEnterToSendEnabled())){sendChatMessage();}">
+        <input id="chat-text-input" class="chat-text-input" type="text" placeholder="پیام بنویس..." onkeydown="if(event.key==='Enter'){sendChatMessage();}">
         <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
       </div>
     </div>
@@ -3134,7 +3096,9 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             <div class="daily-vitals-grid">
                 <div class="daily-ring-card"><div class="daily-ring study" id="daily-study-ring" style="--p:0%"><div><b id="daily-study-percent">۰٪</b><span>مطالعه</span></div></div><strong>مطالعه امروز</strong><small id="daily-study-caption">۰ از ۹ پارت انجام شده</small></div>
                 <div class="daily-ring-card"><div class="daily-ring action" id="daily-action-ring" style="--p:0%"><div><b id="daily-action-percent">۰٪</b><span>عملکرد</span></div></div><strong>عملکرد امروز</strong><small id="daily-action-caption">۰ تست ثبت شده</small></div>
+                <div class="daily-ring-card"><div class="daily-ring hours" id="daily-hours-ring" style="--p:0%"><div><b id="daily-hours-percent">۰</b><span>ساعت</span></div></div><strong>ساعت مطالعه امروز</strong><small id="daily-hours-caption">هنوز چیزی ثبت نشده</small></div>
             </div>
+            <div id="dashboard-recommendation" style="margin-top:14px;padding:13px 15px;border-radius:14px;background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.22);font-size:.85rem;line-height:1.85;display:none;"></div>
         </div>
 
         <div class="glass-card home-goal-card goal-dashboard-v2">
@@ -3165,7 +3129,13 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 
         <div class="grid-two">
             <!-- تایمر -->
-            <div class="glass-card timer-section">
+            <div class="glass-card timer-section" id="timer-section-card">
+                <div class="timer-mode-switch">
+                    <button class="btn timer-mode-btn active" id="mode-btn-exam" onclick="switchTimerMode('exam')">🧪 تست</button>
+                    <button class="btn timer-mode-btn" id="mode-btn-study" onclick="switchTimerMode('study')">📖 مطالعه</button>
+                </div>
+
+                <div id="exam-timer-panel">
                 <div class="section-title">⏳ تایمر آزمون</div>
                 <select id="track-select" onchange="updateTimerSubjects()">
                     <option value="تجربی">🧬 رشته تجربی</option>
@@ -3187,6 +3157,20 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
                 <div class="controls">
                     <button class="btn btn-success" id="startPauseBtn" onclick="toggleTimer()">شروع</button>
                     <button class="btn btn-danger" onclick="resetTimer()">بازنشانی</button>
+                </div>
+                </div>
+
+                <div id="study-timer-panel" style="display:none;">
+                <div class="section-title">📖 تایمر مطالعه</div>
+                <p class="rate-hint" style="margin-bottom:10px;">هر بار «توقف» بزنی، زمان ذخیره می‌شود؛ با «شروع» دوباره از همان‌جا ادامه پیدا می‌کند. بعد از ساعت ۱۱ شب مجموع خالص مطالعه‌ی امروز اعلام می‌شود.</p>
+
+                <div class="timer-display" id="study-timer"><div class="timer-hud"><i class="timer-core-dot"></i><span class="timer-label">STUDY MODE</span><span class="timer-digits" id="study-timer-digits">۰۰:۰۰:۰۰</span><span class="timer-sub">ساعت · دقیقه · ثانیه</span></div></div>
+
+                <div class="controls">
+                    <button class="btn btn-success" id="startStudyBtn" onclick="toggleStudyStopwatch()">شروع</button>
+                    <button class="btn btn-danger" onclick="resetTodayStudyTime()">بازنشانی امروز</button>
+                </div>
+                <div class="rate-hint" id="study-today-total" style="text-align:center;margin-top:10px;font-weight:800;">مجموع خالص مطالعه‌ی امروز: ۰ دقیقه</div>
                 </div>
             </div>
 
@@ -3276,6 +3260,22 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <div class="glass-card" id="insights-card">
             <div class="section-title">🧭 تحلیل هوشمند نقاط ضعف</div>
             <div id="insights-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <div class="glass-card" id="topic-analytics-card">
+            <div class="section-title">📚 تحلیل بر اساس مبحث</div>
+            <p class="rate-hint" style="margin-bottom:12px;">بر اساس مباحثی که هنگام ثبت نتیجه وارد کرده‌ای؛ برای دقت بیشتر حتماً «مبحث تست‌ها» را در ثبت نتیجه پر کن.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="topic-analytics-grid">
+                <div>
+                    <div style="font-weight:800;color:var(--success);margin-bottom:8px;">🟢 نقاط قوت</div>
+                    <div id="topic-strengths-list" style="display:flex;flex-direction:column;gap:6px;font-size:.82rem;"></div>
+                </div>
+                <div>
+                    <div style="font-weight:800;color:var(--danger);margin-bottom:8px;">🔴 نقاط ضعف</div>
+                    <div id="topic-weaknesses-list" style="display:flex;flex-direction:column;gap:6px;font-size:.82rem;"></div>
+                </div>
+            </div>
+            <div id="topic-recommendation" style="margin-top:16px;padding:14px;border-radius:14px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.22);font-size:.88rem;line-height:1.9;"></div>
         </div>
 
         <div class="glass-card">
@@ -3413,7 +3413,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
           <div class="planner-modal-box" onclick="event.stopPropagation()">
             <div class="planner-modal-head">
               <div id="planner-modal-title" class="planner-modal-title">🗓️ برنامه روز</div>
-              <button class="planner-close" onclick="closePlannerModal()">✕</button>
+              <button class="planner-close" onclick="closePlannerModal()" aria-label="بستن">✕</button>
             </div>
             <div class="planner-modal-intro"><span>⚡</span><div><strong>پارت‌ها را خودت اضافه کن</strong><small>هر چند پارت که می‌خوای بساز؛ درس، ساعت و وضعیت هر پارت را مشخص کن، تیک بزن تا پیشرفت روزت را ببینی.</small></div></div>
             <div class="planner-range-box">
@@ -3464,7 +3464,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
   <div class="planner-modal-box" onclick="event.stopPropagation()">
     <div class="planner-modal-head">
       <div id="history-detail-title" class="planner-modal-title">📄 جزئیات آزمون</div>
-      <button class="planner-close" onclick="closeHistoryDetail()">✕</button>
+      <button class="planner-close" onclick="closeHistoryDetail()" aria-label="بستن">✕</button>
     </div>
     <div id="history-detail-body" class="history-detail-body"></div>
   </div>
@@ -3531,6 +3531,9 @@ function toggleAnnouncementPopup(){
 /* ---------------------------------------------------------------------- */
 /* 0) ابزارهای پایه                                                        */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: UTILS — اعداد فارسی/انگلیسی، escape، تاریخ، تومبستون‌ها
+/* ========================================================================== */
 function faNum(n){ return String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]); }
 function enNum(s){ return String(s).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)); }
 function escapeHtml(str){
@@ -3659,6 +3662,9 @@ const TRASH_SECTIONS = {
     planner:  { label: 'برنامه‌ی هفتگی',       icon: '🗓️' },
     notes:    { label: 'نکات',                icon: '📝' }
 };
+/* ========================================================================== */
+/* MODULE: TRASH / RECYCLE BIN
+/* ========================================================================== */
 function getTrash(){
     const t = safeParse(TRASH_KEY, {});
     Object.keys(TRASH_SECTIONS).forEach(k => { if(!Array.isArray(t[k])) t[k] = []; });
@@ -3799,6 +3805,9 @@ function renderTrashUI(){
 /* ---------------------------------------------------------------------- */
 /* 2) تاریخچه‌ی آزمون‌ها (History)                                         */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: HISTORY / TEST TRACKING
+/* ========================================================================== */
 function getHistory(){ return safeParse('study_tracker_data', []); }
 function setHistory(arr){ safeSet('study_tracker_data', arr); }
 
@@ -3932,6 +3941,7 @@ function updateUI(){
 
     loadErrors();
     generateInsights(history);
+    renderTopicAnalytics();
     if(typeof updateChart === 'function' && myChart) updateChart();
     if(typeof updateRadarChart === 'function') updateRadarChart();
     updateStudyDashboard();
@@ -4060,6 +4070,93 @@ function generateInsights(history){
     });
 }
 
+/* ========================================================================== */
+/* MODULE: TOPIC-LEVEL ANALYTICS (بخش ۷ و ۱۰ پرامپت — Phase 8)
+   تحلیل واقعی بر اساس مبحث (نه فقط درس): نقاط قوت/ضعف، نرخ بی‌جواب‌ماندن
+   (به‌عنوان جایگزین صادقانه‌ی «مشکل زمانی» — چون این نسخه زمان هر سؤال را
+   جداگانه ثبت نمی‌کند، پس به‌جای ادعای دقیق زمانی، نرخ بی‌جواب‌ماندن که از
+   داده‌ی واقعی موجود است گزارش می‌شود) و یک پیشنهاد مشخص «الان چی بخونم».
+   ========================================================================== */
+/* محاسبه‌ی مشترک پیشنهاد مطالعه — هم در تب آمار (تحلیل کامل) و هم در
+   داشبورد امروز (خلاصه) از همین یک تابع استفاده می‌شود تا منطق در دو جا
+   تکرار نشود (بخش ۲۴ پرامپت: جلوگیری از duplicate code). */
+function computeStudyRecommendation(){
+    const history = getHistory();
+    const groups = {}; // key: "درس › مبحث"
+    history.forEach(item => {
+        const subject = item.subject || 'نامشخص';
+        const topic = (item.topic || '').trim();
+        const key = topic ? `${subject} › ${topic}` : subject;
+        if(!groups[key]) groups[key] = { subject, topic, percents: [], unansweredRates: [] };
+        groups[key].percents.push(Number(item.percent) || 0);
+        const total = Number(item.totalTests) || 0;
+        if(total > 0) groups[key].unansweredRates.push((Number(item.unanswered) || 0) / total);
+    });
+    const rows = Object.entries(groups).map(([key, g]) => {
+        const avg = g.percents.reduce((a,b)=>a+b,0) / g.percents.length;
+        const avgUnanswered = g.unansweredRates.length ? (g.unansweredRates.reduce((a,b)=>a+b,0) / g.unansweredRates.length) * 100 : 0;
+        return { key, subject: g.subject, topic: g.topic, avg, count: g.percents.length, avgUnanswered };
+    });
+    if(!rows.length) return { rows: [], pool: [], strengths: [], weaknesses: [] };
+    const reliable = rows.filter(r => r.count >= 2);
+    const pool = reliable.length ? reliable : rows;
+    const strengths = pool.filter(r => r.avg >= 70).sort((a,b) => b.avg - a.avg).slice(0, 4);
+    const weaknesses = pool.filter(r => r.avg < 60).sort((a,b) => a.avg - b.avg).slice(0, 4);
+    return { rows, pool, strengths, weaknesses };
+}
+function buildRecommendationMessage({ pool, strengths, weaknesses }){
+    if(weaknesses.length){
+        const top = weaknesses[0];
+        const errorsForSubject = getErrors().filter(e => e.subject === top.subject).length;
+        let msg = `🎯 <b>اولویت امروز: ${escapeHtml(top.key)}</b> (میانگین ${faNum(top.avg.toFixed(0))}٪). پیشنهاد: حدود ۱۵ تست از این مبحث تمرین کن`;
+        if(errorsForSubject > 0) msg += ` و ${faNum(errorsForSubject)} خطای ثبت‌شده‌ی «${escapeHtml(top.subject)}» را در دفتر خطاها مرور کن`;
+        msg += '.';
+        if(top.avgUnanswered >= 25) msg += ` <br>⏱️ نرخ بی‌جواب‌ماندن در این مبحث ${faNum(top.avgUnanswered.toFixed(0))}٪ است — احتمالاً زمان کافی برایش نمی‌گذاری یا هنوز تسلط کافی نداری.`;
+        return msg;
+    } else if(strengths.length){
+        const secondBest = pool.slice().sort((a,b)=>a.avg-b.avg)[0];
+        return `✅ نقطه‌ضعف بحرانی‌ای شناسایی نشد. برای رشد بیشتر، روی «${escapeHtml(secondBest?.key || strengths[0].key)}» که نسبتاً از بقیه ضعیف‌تر است تمرکز کن.`;
+    }
+    return 'برای دریافت پیشنهاد دقیق‌تر، چند آزمون دیگر ثبت کن.';
+}
+function renderTopicAnalytics(){
+    const strengthsEl = document.getElementById('topic-strengths-list');
+    const weaknessesEl = document.getElementById('topic-weaknesses-list');
+    const recoEl = document.getElementById('topic-recommendation');
+    if(!strengthsEl || !weaknessesEl || !recoEl) return;
+
+    const { rows, pool, strengths, weaknesses } = computeStudyRecommendation();
+    if(!rows.length){
+        strengthsEl.innerHTML = `<span style="color:var(--text-secondary);">هنوز داده‌ای برای تحلیل نیست.</span>`;
+        weaknessesEl.innerHTML = '';
+        recoEl.innerHTML = 'بعد از ثبت چند نتیجه‌ی آزمون (ترجیحاً با پرکردن فیلد «مبحث تست‌ها»)، اینجا پیشنهاد مطالعه‌ی امروزت نمایش داده می‌شود.';
+        renderDashboardRecommendation({ rows, pool, strengths, weaknesses });
+        return;
+    }
+
+    const renderRow = (r, good) => {
+        const lowConfidence = r.count < 2 ? ` <span style="opacity:.6;">(داده کم)</span>` : '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);">
+            <span>${escapeHtml(r.key)}${lowConfidence}</span>
+            <b style="color:${good ? 'var(--success)' : 'var(--danger)'};">${faNum(r.avg.toFixed(0))}٪</b>
+        </div>`;
+    };
+
+    strengthsEl.innerHTML = strengths.length ? strengths.map(r => renderRow(r, true)).join('') : `<span style="color:var(--text-secondary);">هنوز نقطه‌قوت مشخصی (میانگین ≥ ۷۰٪) شناسایی نشده.</span>`;
+    weaknessesEl.innerHTML = weaknesses.length ? weaknesses.map(r => renderRow(r, false)).join('') : `<span style="color:var(--text-secondary);">نقطه‌ضعف بحرانی (میانگین زیر ۶۰٪) شناسایی نشد. 👍</span>`;
+    recoEl.innerHTML = buildRecommendationMessage({ pool, strengths, weaknesses });
+    renderDashboardRecommendation({ rows, pool, strengths, weaknesses });
+}
+/* Phase 10 — نسخه‌ی خلاصه‌ی همین پیشنهاد روی داشبورد «امروز» (بخش ۴ و ۱۰
+   پرامپت: داشبورد باید در نگاه اول بگوید امروز چه کاری باید انجام بدهی). */
+function renderDashboardRecommendation({ rows, weaknesses }){
+    const el = document.getElementById('dashboard-recommendation'); if(!el) return;
+    if(!rows.length || !weaknesses.length){ el.style.display = 'none'; return; }
+    const top = weaknesses[0];
+    el.style.display = 'block';
+    el.innerHTML = `🎯 <b>پیشنهاد امروز:</b> «${escapeHtml(top.key)}» ضعیف‌ترین مبحث توئه (${faNum(top.avg.toFixed(0))}٪) — حدود ۱۵ تست از همین مبحث بزن.`;
+}
+
 /* ---------------------------------------------------------------------- */
 /* 5) نمودار خطی و راداری (Chart.js)                                       */
 /* ---------------------------------------------------------------------- */
@@ -4067,6 +4164,9 @@ let myChart = null;
 let radarChart = null;
 const RADAR_SUBJECTS = ["حسابان","آمار (گسسته)","هندسه","شیمی","فیزیک","زیست","زمین‌شناسی"];
 
+/* ========================================================================== */
+/* MODULE: CHARTS & ANALYTICS
+/* ========================================================================== */
 function getChartThemeColors(){
     const isLight = document.body.classList.contains('light-mode');
     return {
@@ -4175,6 +4275,9 @@ const tagColors = { 'بی‌دقتی_محاسباتی':'#f43f5e', 'زمان':'#f
 const difficultyLabels = { 'آسان':'🟢 آسان', 'متوسط':'🟡 متوسط', 'دشوار':'🔴 دشوار' };
 const timeStandardLabels = { 'کمتر':'⏩ کم‌تر از استاندارد', 'مطابق':'➡️ مطابق استاندارد', 'بیشتر':'⏪ بیشتر از استاندارد' };
 
+/* ========================================================================== */
+/* MODULE: MISTAKE BOOK (Errors)
+/* ========================================================================== */
 function getErrors(){ return safeParse('study_errors', []); }
 function setErrors(arr){ safeSet('study_errors', arr); }
 
@@ -4336,6 +4439,9 @@ const SUBJECT_RATES = {
 let timeLeft = 0, timerId = null, timerState = 'idle', timerTotal = 1800;
 let timerDisplay, minutesInput, secondsInput, startPauseBtn;
 
+/* ========================================================================== */
+/* MODULE: STUDY TIMER
+/* ========================================================================== */
 function getInputSeconds(){
     const m = parseInt(minutesInput?.value) || 0;
     const s = parseInt(secondsInput?.value) || 0;
@@ -4523,9 +4629,194 @@ function resumeTimerIfActive(){
     runTimerLoop();
 }
 
+/* ========================================================================== */
+/* MODULE: STUDY STOPWATCH (تایمر مطالعه — بخش جدید)
+   استوپ‌واچ خالص مطالعه: هر بار «شروع» زده می‌شود از همان‌جا که متوقف شده
+   ادامه پیدا می‌کند و مجموع خالص هر روز جداگانه در localStorage ذخیره
+   می‌شود. هر ۵ ثانیه یک «checkpoint» می‌زنیم تا حتی اگر تب بسته/ریفرش شود
+   بیش از چند ثانیه از زمان مطالعه گم نشود، و اگر مطالعه از یک روز به روز
+   بعد کشیده شود، ثانیه‌ها درست بین دو روز تقسیم می‌شوند.
+   ========================================================================== */
+let studyState = 'idle', studyStartTs = null, studyTickId = null, studyTimerDisplayEl = null;
+function getStudyDailyMap(){ return safeParse('study_stopwatch_daily_v1', {}); }
+function setStudyDailyMap(m){ safeSet('study_stopwatch_daily_v1', m); }
+function getStudySecondsForDate(dateKey){ return Number(getStudyDailyMap()[dateKey]) || 0; }
+function addStudySeconds(dateKey, sec){
+    if(sec <= 0) return;
+    const m = getStudyDailyMap();
+    m[dateKey] = (Number(m[dateKey]) || 0) + sec;
+    setStudyDailyMap(m);
+}
+function getTodayStudySeconds(){ return getStudySecondsForDate(localDateKey(new Date())); }
+/* بخشی از زمان سپری‌شده که ممکن است از یک روز به روز بعد کشیده شده باشد را
+   بین روزهای مربوطه تقسیم می‌کند (مثلاً اگر مطالعه از ۲۳:۵۸ تا ۰۰:۰۳ باشد). */
+function distributeStudySeconds(fromTs, toTs){
+    let cursor = fromTs;
+    while(cursor < toTs){
+        const cursorDate = new Date(cursor);
+        const nextMidnight = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), cursorDate.getDate() + 1, 0, 0, 0, 0).getTime();
+        const segmentEnd = Math.min(toTs, nextMidnight);
+        const seconds = Math.round((segmentEnd - cursor) / 1000);
+        if(seconds > 0) addStudySeconds(localDateKey(cursorDate), seconds);
+        cursor = segmentEnd;
+    }
+}
+function formatHMS(totalSeconds){
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+    return faNum(String(h).padStart(2,'0')) + ':' + faNum(String(m).padStart(2,'0')) + ':' + faNum(String(sec).padStart(2,'0'));
+}
+function formatHoursMinutesFa(totalSeconds){
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+    if(h <= 0) return `${faNum(m)} دقیقه`;
+    return `${faNum(h)} ساعت و ${faNum(m)} دقیقه`;
+}
+/* Phase 11 — Performance: قبلاً renderStudyStopwatch هر ثانیه هم
+   localStorage را می‌خواند (getTodayStudySeconds → JSON.parse) و هم کل
+   updateDailyVitals (که خودش getWeeklyPlan + کل getHistory().reduce +
+   getSubjectGoals را هر بار اجرا می‌کرد) را صدا می‌زد — یعنی هر ثانیه چند
+   JSON.parse و پیمایش کامل تاریخچه، فقط برای آپدیت یک عدد ساعت! حالا مقدار
+   پایه‌ی «امروز» فقط در لحظاتی که واقعاً عوض می‌شود (شروع/توقف/چک‌پوینت/
+   بازنشانی) از localStorage خوانده و کش می‌شود، و تیک هر ثانیه فقط یک جمع
+   ساده‌ی عددی انجام می‌دهد. */
+let studyBaseSecondsCache = 0;
+function refreshStudyBaseCache(){ studyBaseSecondsCache = getTodayStudySeconds(); }
+function renderStudyStopwatch(){
+    studyTimerDisplayEl = studyTimerDisplayEl || document.getElementById('study-timer');
+    const digitsEl = document.getElementById('study-timer-digits');
+    const liveExtra = studyState === 'running' && studyStartTs ? Math.floor((Date.now() - studyStartTs) / 1000) : 0;
+    const totalToday = studyBaseSecondsCache + liveExtra;
+    if(digitsEl) digitsEl.textContent = formatHMS(totalToday);
+    const totalEl = document.getElementById('study-today-total');
+    if(totalEl) totalEl.textContent = 'مجموع خالص مطالعه‌ی امروز: ' + formatHoursMinutesFa(totalToday);
+    if(studyTimerDisplayEl){
+        const progress = Math.min(100, (totalToday % 3600) / 3600 * 100); // یک دور کامل حلقه = هر ۶۰ دقیقه مطالعه
+        studyTimerDisplayEl.style.setProperty('--timer-progress', progress + '%');
+    }
+    updateStudyHoursRingOnly(totalToday); // سبک: فقط ۳ نود DOM، بدون خواندن از localStorage/history
+}
+/* آپدیت سبک فقط حلقه‌ی سوم داشبورد (بدون محاسبه‌ی مجدد دو حلقه‌ی دیگر که
+   نیاز به getWeeklyPlan/getHistory دارند) — برای صدا زدن هر ثانیه امن است. */
+function updateStudyHoursRingOnly(totalSeconds){
+    const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+    const ring = (id, v) => { const e = document.getElementById(id); if(e) e.style.setProperty('--p', v + '%'); };
+    const studyHoursForRing = Math.min(100, (totalSeconds / (6*3600)) * 100);
+    set('daily-hours-percent', faNum(Math.floor(totalSeconds/3600)) + 'س ' + faNum(Math.floor((totalSeconds%3600)/60)) + 'د');
+    set('daily-hours-caption', totalSeconds > 0 ? formatHoursMinutesFa(totalSeconds) + ' مطالعه‌ی خالص' : 'هنوز تایمر مطالعه را نزده‌ای');
+    ring('daily-hours-ring', studyHoursForRing);
+}
+/* هر ۵ ثانیه اجرا می‌شود: زمان سپری‌شده از آخرین checkpoint را واقعاً در
+   localStorage ذخیره می‌کند و start را به «الان» ریست می‌کند تا اگر تب بسته
+   شود، حداکثر ۵ ثانیه گم شود — نه بیشتر. */
+function studyCheckpoint(){
+
+    if(studyState !== 'running' || !studyStartTs) return;
+    const now = Date.now();
+    distributeStudySeconds(studyStartTs, now);
+    studyStartTs = now;
+    localStorage.setItem('study_stopwatch_running_since', String(studyStartTs));
+    refreshStudyBaseCache();
+    renderStudyStopwatch();
+    updateDailyVitals(); // آپدیت کامل (شامل حلقه‌های دیگر) فقط هر ۵ ثانیه، نه هر ثانیه
+}
+function toggleStudyStopwatch(){
+    const btn = document.getElementById('startStudyBtn');
+    if(studyState === 'running'){
+        // توقف: checkpoint نهایی بزن و کامل متوقف کن
+        studyCheckpoint();
+        studyState = 'idle';
+        studyStartTs = null;
+        localStorage.removeItem('study_stopwatch_running_since');
+        clearInterval(studyTickId); studyTickId = null;
+        if(btn){ btn.textContent = 'شروع'; btn.className = 'btn btn-success'; }
+        document.getElementById('study-timer')?.classList.remove('timer-running');
+    } else {
+        studyState = 'running';
+        studyStartTs = Date.now();
+        localStorage.setItem('study_stopwatch_running_since', String(studyStartTs));
+        refreshStudyBaseCache();
+        if(btn){ btn.textContent = 'توقف'; btn.className = 'btn btn-purple'; }
+        document.getElementById('study-timer')?.classList.add('timer-running');
+        clearInterval(studyTickId);
+        studyTickId = setInterval(() => {
+            renderStudyStopwatch();
+            if(Date.now() - studyStartTs >= 5000) studyCheckpoint();
+        }, 1000);
+    }
+    renderStudyStopwatch();
+    updateDailyVitals();
+}
+function resetTodayStudyTime(){
+    if(!confirm('مجموع خالص مطالعه‌ی امروز صفر شود؟ (زمان‌های ثبت‌شده در روزهای قبل حذف نمی‌شود)')) return;
+    if(studyState === 'running'){ studyCheckpoint(); } // ابتدا زمان جاری را ذخیره کن تا محاسبه‌ی صفر کردن درست باشد
+    const m = getStudyDailyMap();
+    m[localDateKey(new Date())] = 0;
+    setStudyDailyMap(m);
+    studyStartTs = Date.now(); // اگر در حال اجراست، از همین لحظه دوباره بشمار
+    localStorage.setItem('study_stopwatch_running_since', String(studyStartTs));
+    refreshStudyBaseCache();
+    renderStudyStopwatch();
+    updateDailyVitals();
+}
+/* اگر تایمر مطالعه هنگام بستن/رفرش صفحه در حال اجرا بوده، اینجا آن را
+   دوباره فعال می‌کنیم (بدون گم‌شدن دیتا، چون هر ۵ ثانیه checkpoint ذخیره
+   شده بود). */
+function resumeStudyStopwatchIfActive(){
+    refreshStudyBaseCache();
+    const since = Number(localStorage.getItem('study_stopwatch_running_since') || 0);
+    if(!since) { renderStudyStopwatch(); return; }
+    studyState = 'running';
+    studyStartTs = since;
+    const btn = document.getElementById('startStudyBtn');
+    if(btn){ btn.textContent = 'توقف'; btn.className = 'btn btn-purple'; }
+    document.getElementById('study-timer')?.classList.add('timer-running');
+    clearInterval(studyTickId);
+    studyTickId = setInterval(() => {
+        renderStudyStopwatch();
+        if(Date.now() - studyStartTs >= 5000) studyCheckpoint();
+    }, 1000);
+    renderStudyStopwatch();
+}
+/* جابه‌جایی بین حالت «تست» و «مطالعه» */
+function switchTimerMode(mode){
+    const examPanel = document.getElementById('exam-timer-panel');
+    const studyPanel = document.getElementById('study-timer-panel');
+    const examBtn = document.getElementById('mode-btn-exam');
+    const studyBtn = document.getElementById('mode-btn-study');
+    const card = document.getElementById('timer-section-card');
+    if(mode === 'study'){
+        if(examPanel) examPanel.style.display = 'none';
+        if(studyPanel) studyPanel.style.display = 'block';
+        examBtn?.classList.remove('active'); studyBtn?.classList.add('active');
+        card?.classList.add('mode-study');
+        renderStudyStopwatch();
+    } else {
+        if(examPanel) examPanel.style.display = 'block';
+        if(studyPanel) studyPanel.style.display = 'none';
+        studyBtn?.classList.remove('active'); examBtn?.classList.add('active');
+        card?.classList.remove('mode-study');
+    }
+    localStorage.setItem('timer_active_mode', mode);
+}
+/* بعد از ساعت ۱۱ شب (۲۳:۰۰)، یک‌بار در روز مجموع خالص مطالعه را اعلام کن. */
+function checkStudyNightWrapup(){
+    const now = new Date();
+    if(now.getHours() < 23) return;
+    const today = localDateKey(now);
+    const flagKey = 'study_wrapup_shown_' + today;
+    if(localStorage.getItem(flagKey)) return;
+    localStorage.setItem(flagKey, '1');
+    const totalToday = getTodayStudySeconds() + (studyState === 'running' && studyStartTs ? Math.floor((Date.now() - studyStartTs)/1000) : 0);
+    showReminderToast('🌙 جمع‌بندی امروز', 'امروز در مجموع ' + formatHoursMinutesFa(totalToday) + ' خالص مطالعه کردی. آفرین! 👏');
+}
+
 /* ---------------------------------------------------------------------- */
 /* 8) تم روز/شب و تب‌ها                                                    */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: THEME & TABS
+/* ========================================================================== */
 function applyStoredTheme(){
     if(localStorage.getItem('theme_mode') === 'light'){
         document.body.classList.add('light-mode');
@@ -4549,6 +4840,9 @@ function switchTab(tabId, btn){
 /* ---------------------------------------------------------------------- */
 /* 9) هدف‌گذاری تفکیکی دروس + ثبت تست روزانه                                */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: GOALS
+/* ========================================================================== */
 function getSubjectGoals(){ return safeParse('subject_goals_v2', {}); }
 function setSubjectGoals(g){ safeSet('subject_goals_v2', g); }
 function getDailyGoalLog(){ return safeParse('daily_goal_tests_v2', []); }
@@ -4642,14 +4936,32 @@ function renderGoalDashboard(){
     if(!entries.length){ box.innerHTML = ''; if(empty) empty.style.display = 'block'; return; }
     if(empty) empty.style.display = 'none';
     const [ws, we] = weekKeyRange(), [ms, me] = monthKeyRange();
+    const dayOfWeekElapsed = Math.min(7, Math.floor((new Date(localDateKey(new Date())) - new Date(ws)) / 86400000) + 1);
+    const daysLeftInWeek = Math.max(1, 7 - dayOfWeekElapsed);
     box.innerHTML = entries.map(([subject, g]) => {
         const w = Number(g.weekly) || 0, m = Number(g.monthly) || 0;
         const doneW = sumGoalTests(subject, ws, we), doneM = sumGoalTests(subject, ms, me);
         const p = w ? Math.min(100, doneW/w*100) : 0, mp = m ? Math.min(100, doneM/m*100) : 0;
+        /* Phase 9 — تشخیص عقب‌افتادگی از برنامه‌ی هفتگی + پیشنهاد جبران
+           (بخش ۵ پرامپت: «۲۷ تست عقب هستی» + پیشنهاد جبران) */
+        let behindHtml = '';
+        if(w > 0){
+            const expectedByNow = Math.round((w * dayOfWeekElapsed) / 7);
+            const deficit = expectedByNow - doneW;
+            if(deficit > 0){
+                const perDay = Math.ceil(deficit / daysLeftInWeek);
+                behindHtml = `<div class="goal-behind-badge">⚠️ ${faNum(deficit)} تست از برنامه‌ی این هفته عقب هستی. برای جبران، تا آخر هفته روزی ${faNum(perDay)} تست بیشتر بزن.</div>`;
+            } else if(p >= 100){
+                behindHtml = `<div class="goal-behind-badge good">🏆 هدف این هفته کامل شد!</div>`;
+            } else {
+                behindHtml = `<div class="goal-behind-badge good">✅ طبق برنامه پیش می‌ری.</div>`;
+            }
+        }
         return `<div class="goal-subject-card ${p>=100?'completed':''}">
             <div class="goal-subject-ring" style="--p:${p}%"><div><b>${faNum(Math.round(p))}٪</b><span>هفتگی</span></div></div>
             <div><div class="goal-subject-name">${escapeHtml(subject)} ${p>=100?'🏆':''}</div>
             <div class="goal-subject-meta">این هفته: <b>${faNum(doneW)}</b> از ${faNum(w)} تست<br>این ماه: <b>${faNum(doneM)}</b> از ${faNum(m)} تست</div>
+            ${behindHtml}
             <div class="goal-mini-progress" title="پیشرفت ماهانه"><i style="--w:${mp}%"></i></div>
             <div style="font-size:.62rem;color:var(--text-secondary);margin-top:4px">پیشرفت ماهانه ${faNum(Math.round(mp))}٪</div></div></div>`;
     }).join('');
@@ -4757,6 +5069,9 @@ document.addEventListener('click', (e) => {
 const FA_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const FA_WEEKDAYS = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
 
+/* ========================================================================== */
+/* MODULE: COUNTDOWN / JALALI DATE
+/* ========================================================================== */
 function deviceUsesPersianCalendar(){
     try{ const o = new Intl.DateTimeFormat().resolvedOptions(); return o.calendar === 'persian' || o.calendar === 'persian-proleptic'; }
     catch(e){ return false; }
@@ -4846,6 +5161,9 @@ function clearManualDate(){
 /* ---------------------------------------------------------------------- */
 /* 12) داشبورد امروز (رینگ‌های مطالعه/عملکرد)                               */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: DAILY VITALS (Dashboard summary)
+/* ========================================================================== */
 function updateDailyVitals(){
     const today = localDateKey(new Date());
     const plan = getWeeklyPlan();
@@ -4867,6 +5185,11 @@ function updateDailyVitals(){
     set('daily-action-percent', faNum(action) + '٪');
     set('daily-action-caption', goal ? `${faNum(tests)} از ${faNum(goal)} تست` : `${faNum(tests)} تست ثبت شده`);
     ring('daily-action-ring', action);
+    const studySeconds = getTodayStudySeconds() + (typeof studyState !== 'undefined' && studyState === 'running' && studyStartTs ? Math.floor((Date.now() - studyStartTs)/1000) : 0);
+    const studyHoursForRing = Math.min(100, (studySeconds / (6*3600)) * 100); // حلقه با ۶ ساعت پر می‌شود
+    set('daily-hours-percent', faNum(Math.floor(studySeconds/3600)) + 'س ' + faNum(Math.floor((studySeconds%3600)/60)) + 'د');
+    set('daily-hours-caption', studySeconds > 0 ? formatHoursMinutesFa(studySeconds) + ' مطالعه‌ی خالص' : 'هنوز تایمر مطالعه را نزده‌ای');
+    ring('daily-hours-ring', studyHoursForRing);
 }
 function sumGoalTestsToday(){
     const goals = getSubjectGoals();
@@ -4888,6 +5211,9 @@ const PLANNER_DAYS = [
     { key:'jome', name:'جمعه', emoji:'✨', c1:'#c084fc', c2:'#22d3ee' }
 ];
 const PLANNER_PARTS = 9; // فقط برای سازگاری با کد قدیمی نگه داشته شده؛ دیگر برای محدودکردن تعداد پارت استفاده نمی‌شود
+/* ========================================================================== */
+/* MODULE: WEEKLY PLANNER
+/* ========================================================================== */
 function emptyPlannerParts(){ return []; } // پیش‌فرض حالا خالی است؛ کاربر با «افزودن پارت» خودش تعداد را مشخص می‌کند
 function normalizePlannerDay(v){
     const base = { parts: [], notes:'', rangeStart:'', rangeEnd:'', updatedAt:0 };
@@ -5165,6 +5491,9 @@ function archiveCurrentWeek(manual){
 /* ---------------------------------------------------------------------- */
 /* 14) یادآور هوشمند                                                        */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: SMART REMINDER
+/* ========================================================================== */
 function getLastStudyActivity(){
     let latest = Number(localStorage.getItem('smart_reminder_last_activity') || 0);
     getHistory().forEach(x => { const t = Date.parse(x.timestamp||''); if(t > latest) latest = t; });
@@ -5222,6 +5551,9 @@ function checkSmartReminder(manual){
 /* ---------------------------------------------------------------------- */
 /* 15) پشتیبان‌گیری محلی (Export / Import)                                  */
 /* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: BACKUP / EXPORT / IMPORT (Data Integrity)
+/* ========================================================================== */
 function isValidHistoryArray(arr){ return Array.isArray(arr) && arr.every(item => item && typeof item === 'object' && typeof item.subject === 'string' && !isNaN(parseFloat(item.percent))); }
 function isValidErrorsArray(arr){ return Array.isArray(arr) && arr.every(item => item && typeof item === 'object' && typeof item.subject === 'string'); }
 
@@ -5242,6 +5574,7 @@ function collectBackupData(){
         countdownTargetTs: localStorage.getItem('countdown_target_date_ts') || '',
         manualJDate: localStorage.getItem('manual_jdate') || '',
         manualJDateAnchor: localStorage.getItem('manual_jdate_anchor') || '',
+        studyStopwatchDaily: getStudyDailyMap(),
         updatedAt: new Date().toISOString()
     };
 }
@@ -5252,8 +5585,39 @@ function exportData(){
     a.href = url; a.download = `StudyBackup_${localDateKey()}.json`; a.click();
     URL.revokeObjectURL(url);
 }
+/* ---------------------------------------------------------------------- */
+/* Phase 3 — Data Integrity: Version Check + Safety Snapshot (بخش ۱۴،۱۵،۲۶) */
+/* ---------------------------------------------------------------------- */
+const CURRENT_BACKUP_VERSION = 4;
+/* بررسی سازگاری نسخه‌ی فایل پشتیبان قبل از هر اعمال. اگر فایل مربوط به یک
+   نسخه‌ی آینده‌ی برنامه باشد (که این نسخه از کد نمی‌شناسدش)، به‌جای اعمال
+   کورکورانه و خراب‌کردن احتمالی داده، با پیام واضح رد می‌شود. نسخه‌های
+   قدیمی‌تر یا بدون version (فایل‌های خیلی قدیمی) با هشدار پذیرفته می‌شوند
+   چون فیلدهای جدید همه اختیاری/optional تعریف شده‌اند. */
+function checkBackupVersion(data){
+    const v = Number(data.version);
+    if(!data.version){ console.warn('[Backup] فایل بدون شماره نسخه است؛ به‌عنوان نسخه‌ی قدیمی در نظر گرفته می‌شود.'); return; }
+    if(Number.isNaN(v)) throw new Error('شماره نسخه‌ی فایل پشتیبان نامعتبر است.');
+    if(v > CURRENT_BACKUP_VERSION) throw new Error(`این فایل پشتیبان مربوط به نسخه‌ی جدیدتری از برنامه است (v${v})؛ لطفاً برنامه را به‌روزرسانی کن.`);
+}
+/* قبل از هر عملیات خطرناک (Import که کل داده را overwrite می‌کند)، یک
+   نسخه‌ی امن از وضعیت فعلی محلی نگه می‌داریم تا در صورت پشیمانی/خرابی
+   فایل ورودی، قابل بازگردانی باشد. */
+function savePreImportSnapshot(){
+    try{ safeSet('neo_pre_import_backup', { data: collectBackupData(), savedAt: new Date().toISOString() }); }
+    catch(e){ console.warn('[Backup] ذخیره‌ی نسخه‌ی امن قبل از import ممکن نشد.', e); }
+}
+function restorePreImportBackup(){
+    const snap = safeParse('neo_pre_import_backup', null);
+    if(!snap || !snap.data){ alert('نسخه‌ی امن قبل از آخرین بازیابی پیدا نشد.'); return; }
+    applyBackupData(snap.data, { merge:false });
+    scheduleCloudSync();
+    alert('↩️ وضعیت قبل از آخرین بازیابی برگردانده شد (نسخه‌ی ذخیره‌شده در ' + new Date(snap.savedAt).toLocaleString('fa-IR') + ').');
+}
+
 function applyBackupData(data, { merge } = { merge:false }){
     if(!data || typeof data !== 'object') return;
+    checkBackupVersion(data);
     if(data.history !== undefined && !isValidHistoryArray(data.history)) throw new Error('history نامعتبر است.');
     if(data.errors !== undefined && !isValidErrorsArray(data.errors)) throw new Error('errors نامعتبر است.');
 
@@ -5296,6 +5660,13 @@ function applyBackupData(data, { merge } = { merge:false }){
             localStorage.setItem('countdown_target_date', data.countdownTarget);
             localStorage.setItem('countdown_target_date_ts', String(remoteTs||nowTs()));
         }
+        /* برای هر روز، مقدار بیشتر بین محلی و ابری نگه داشته می‌شود (نه جمع
+           ساده) تا اگر دو دستگاه هر دو یک بازه‌ی مشابه را sync کرده باشند،
+           زمان مطالعه دوبار شمرده نشود. */
+        const localStudy = getStudyDailyMap(), remoteStudy = data.studyStopwatchDaily || {};
+        const mergedStudy = Object.assign({}, localStudy);
+        Object.keys(remoteStudy).forEach(k => { mergedStudy[k] = Math.max(Number(mergedStudy[k])||0, Number(remoteStudy[k])||0); });
+        setStudyDailyMap(mergedStudy);
     } else {
         if(data.history !== undefined) setHistory(data.history);
         if(data.errors !== undefined) setErrors(data.errors);
@@ -5310,6 +5681,7 @@ function applyBackupData(data, { merge } = { merge:false }){
         if(data.manualJDate) localStorage.setItem('manual_jdate', data.manualJDate);
         if(data.manualJDateAnchor) localStorage.setItem('manual_jdate_anchor', data.manualJDateAnchor);
         if(data.countdownTarget) localStorage.setItem('countdown_target_date', data.countdownTarget);
+        if(data.studyStopwatchDaily !== undefined) setStudyDailyMap(data.studyStopwatchDaily);
         if(data.countdownTargetTs) localStorage.setItem('countdown_target_date_ts', data.countdownTargetTs);
     }
     if(merge && beforeSnapshot !== null){
@@ -5320,16 +5692,21 @@ function applyBackupData(data, { merge } = { merge:false }){
 }
 function importData(event){
     const file = event.target.files[0]; if(!file) return;
+    if(!confirm('⚠️ این کار همه‌ی اطلاعات فعلی روی این دستگاه را با محتوای فایل جایگزین می‌کند. یک نسخه‌ی امن از وضعیت فعلی قبل از این کار نگه داشته می‌شود و در صورت نیاز قابل بازگردانی است. ادامه می‌دهی؟')){
+        event.target.value = ''; return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
         try{
             const data = JSON.parse(e.target.result);
+            savePreImportSnapshot(); // نسخه‌ی امن — قابل بازگردانی با restorePreImportBackup()
             applyBackupData(data, { merge:false });
             scheduleCloudSync();
             alert('✅ همه‌ی اطلاعات بازیابی شد!');
-        }catch(err){ alert('فایل پشتیبان نامعتبر یا خراب است: ' + (err.message||'')); }
+        }catch(err){ alert('فایل پشتیبان نامعتبر یا خراب است: ' + (err.message||'') + '\nهیچ تغییری روی اطلاعات فعلی اعمال نشد.'); }
         finally{ event.target.value = ''; }
     };
+    reader.onerror = () => alert('خواندن فایل با خطا مواجه شد.');
     reader.readAsText(file);
 }
 function refreshEverything(){
@@ -5371,10 +5748,61 @@ function printReport(){
 */
 let sb = null, sbChannel = null, cloudBusy = false, autoSyncTimer = null, applyingRemote = false, cloudDebounce = null;
 
+/* ---------------------------------------------------------------------- */
+/* Phase 2 — Device ID + Conflict Detection (بخش ۱۲ پرامپت)                */
+/* این بخش رفتار merge فعلی رو تغییر نمی‌ده (همچنان merge اتفاق می‌افته و  */
+/* هیچ داده‌ای گم نمی‌شه)، فقط یک لایه‌ی «تشخیص و ثبت conflict» اضافه می‌کنه */
+/* تا وقتی دو دستگاه همزمان چیزی رو تغییر دادن، به‌جای overwrite کورکورانه، */
+/* هم merge idempotent فعلی اجرا بشه و هم rowی از conflict برای دیباگ/آینده */
+/* (مثلاً نمایش «تغییرات همزمان» به کاربر) ثبت بشه.                        */
+/* ---------------------------------------------------------------------- */
+/* ========================================================================== */
+/* MODULE: DEVICE ID & CONFLICT DETECTION
+/* ========================================================================== */
+function getDeviceId(){
+    let id = localStorage.getItem('neo_device_id');
+    if(!id){
+        id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('neo_device_id', id);
+    }
+    return id;
+}
+function getLastKnownRemoteUpdatedAt(){ return localStorage.getItem('neo_last_known_remote_updated_at') || ''; }
+function setLastKnownRemoteUpdatedAt(v){ if(v) localStorage.setItem('neo_last_known_remote_updated_at', v); }
+function getLocalDirtySince(){ return localStorage.getItem('neo_local_dirty_since') || ''; }
+function markLocalDirty(){ if(!getLocalDirtySince()) localStorage.setItem('neo_local_dirty_since', new Date().toISOString()); }
+function clearLocalDirty(){ localStorage.removeItem('neo_local_dirty_since'); }
+function logConflict(entry){
+    try{
+        const log = safeParse('neo_conflict_log', []);
+        log.push(Object.assign({ ts: new Date().toISOString(), deviceId: getDeviceId() }, entry));
+        // فقط ۲۰ مورد آخر نگه داشته می‌شود تا localStorage پر نشود
+        safeSet('neo_conflict_log', log.slice(-20));
+        console.warn('[Sync Conflict]', entry);
+    }catch(e){}
+}
+/* تشخیص conflict قبل از merge: اگر هم محلی از آخرین sync موفق تغییر کرده
+   (dirty) و هم نسخه‌ی ابری از آخرین باری که دیدیمش عوض شده (یعنی یک دستگاه
+   دیگر هم چیزی push کرده)، یعنی تغییر همزمان رخ داده. merge idempotent
+   فعلی (Tombstone-based) همچنان همه‌چیز را درست ادغام می‌کند؛ اینجا فقط
+   این رویداد را برای شفافیت ثبت می‌کنیم. */
+function detectConflict(remoteUpdatedAt){
+    const lastKnown = getLastKnownRemoteUpdatedAt();
+    const dirtySince = getLocalDirtySince();
+    const remoteChangedByOther = lastKnown && remoteUpdatedAt && remoteUpdatedAt !== lastKnown;
+    const localHasUnsyncedChanges = !!dirtySince;
+    if(remoteChangedByOther && localHasUnsyncedChanges){
+        logConflict({ type:'concurrent_edit', remoteUpdatedAt, lastKnownRemoteUpdatedAt: lastKnown, localDirtySince: dirtySince });
+    }
+}
+
 const DEFAULT_CLOUD_CFG = {
     url: 'https://yhglpaqeezjeyciavnhy.supabase.co',
     key: 'sb_publishable_a6RafZQVKifR8oDSpZ8KGQ_5SnqxGf5'
 };
+/* ========================================================================== */
+/* MODULE: AUTH & CLOUD SYNC
+/* ========================================================================== */
 function cloudCfg(){
     const stored = safeParse('neo_cloud_cfg', null);
     return stored && stored.url && stored.key ? stored : DEFAULT_CLOUD_CFG;
@@ -5454,6 +5882,45 @@ window.authSignIn = async function(){
     setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...', true);
     await authRefreshUI();
 };
+/* ---------------------------------------------------------------------- */
+/* Phase 4 — Password Reset Flow (بخش ۱۳ پرامپت: «Password reset» ازقلم    */
+/* افتاده بود؛ کاربری که رمزش را فراموش می‌کرد راهی برای بازیابی نداشت.)   */
+/* ---------------------------------------------------------------------- */
+window.authForgotPassword = async function(){
+    const client = getSupabaseClient();
+    const email = document.getElementById('neo-auth-email')?.value.trim();
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!email){ setCloudStatus('برای بازیابی رمز، ابتدا ایمیل را در فیلد بالا وارد کن.'); return; }
+    setCloudStatus('در حال ارسال ایمیل بازیابی...');
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    if(error){ setCloudStatus('ارسال ایمیل بازیابی ناموفق بود: ' + error.message); return; }
+    setCloudStatus('📩 لینک بازیابی رمز به ایمیلت ارسال شد؛ آن را باز کن.', true);
+};
+/* وقتی کاربر روی لینک ایمیل بازیابی کلیک می‌کند، Supabase یک session موقت
+   از نوع recovery در همین صفحه می‌سازد. اینجا آن رویداد را می‌گیریم و
+   فرم «رمز جدید» را نشان می‌دهیم. */
+function initPasswordRecoveryListener(){
+    const client = getSupabaseClient(); if(!client) return;
+    client.auth.onAuthStateChange((event) => {
+        if(event === 'PASSWORD_RECOVERY'){
+            const box = document.getElementById('neo-reset-password-box');
+            if(box) box.style.display = 'block';
+            setCloudStatus('🔑 حالا رمز عبور جدیدت را وارد کن.', true);
+        }
+    });
+}
+window.authSetNewPassword = async function(){
+    const client = getSupabaseClient();
+    const newPassword = document.getElementById('neo-new-password')?.value;
+    if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!newPassword || newPassword.length < 6){ setCloudStatus('رمز جدید باید حداقل ۶ کاراکتر باشد.'); return; }
+    setCloudStatus('در حال ثبت رمز جدید...');
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if(error){ setCloudStatus('ثبت رمز جدید ناموفق بود: ' + error.message); return; }
+    const box = document.getElementById('neo-reset-password-box'); if(box) box.style.display = 'none';
+    setCloudStatus('✅ رمز عبور با موفقیت تغییر کرد.', true);
+    await authRefreshUI();
+};
 window.authSignOut = async function(){
     /* رفع باگ «نمی‌شه خروج کرد»: قبلاً اگر client.auth.signOut() به هر
        دلیلی (قطعی شبکه، تاخیر) خطا می‌داد، تابع همان‌جا متوقف می‌شد و
@@ -5497,12 +5964,14 @@ async function pullAndMergeFromCloud(){
         const { data: remote, error } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
         if(error) throw error;
         if(remote && remote.data){
+            detectConflict(remote.updated_at);
             applyMergedRemote(remote.data);
             setCloudStatus('☁️ اطلاعات با موفقیت ادغام و همگام شد.', true);
         } else {
             setCloudStatus('☁️ اولین ورود؛ اطلاعات محلی به ابر منتقل می‌شود.', true);
         }
         await pushToCloud(); // نسخه‌ی نهایی (ادغام‌شده) را به ابر پس بفرست تا دو طرف یکسان باشند
+        clearLocalDirty();
     }catch(e){
         setCloudStatus('❌ دریافت اطلاعات ابری ناموفق بود: ' + (e.message || 'خطای نامشخص'));
     }
@@ -5513,8 +5982,10 @@ async function pushToCloud(){
     const { data:{ session } } = await client.auth.getSession();
     if(!session?.user) return;
     const payload = collectCloudData();
-    const { error } = await client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: new Date().toISOString() }, { onConflict:'user_id' });
+    const nowIso = new Date().toISOString();
+    const { error } = await client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: nowIso }, { onConflict:'user_id' });
     if(error) throw error;
+    setLastKnownRemoteUpdatedAt(nowIso); // بعد از push موفق، این نسخه را به‌عنوان آخرین نسخه‌ی شناخته‌شده‌ی ابری ثبت کن
 }
 /* هنگامی که یکی از پنجره‌های ویرایش (برنامه هفتگی، نکته و...) باز است،
    یعنی کاربر وسط تایپ/ویرایش است. در این حالت هنوز اجازه می‌دهیم اطلاعاتِ
@@ -5537,9 +6008,10 @@ async function cloudSyncNow(){
             // همیشه اول با ابر ادغام کن (نه فقط overwrite) تا هیچ حذفی گم/برنگردانده نشود
             const { data: remote, error: rerr } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
             if(rerr) throw rerr;
-            if(remote && remote.data) applyMergedRemote(remote.data);
+            if(remote && remote.data){ detectConflict(remote.updated_at); applyMergedRemote(remote.data); }
         }
         await pushToCloud();
+        clearLocalDirty();
         setCloudStatus('☁️ همگام‌سازی موفق؛ همه‌چیز به‌روز است.', true);
     }catch(e){
         setCloudStatus('❌ همگام‌سازی انجام نشد: ' + (e.message || 'خطای نامشخص'));
@@ -5559,6 +6031,7 @@ async function manualCloudSync(){
 }
 function scheduleCloudSync(){
     if(applyingRemote) return; // از حلقه‌ی برگشتی جلوگیری کن
+    markLocalDirty(); // این یک تغییر واقعی محلی است؛ برای تشخیص conflict علامت بزن
     const client = getSupabaseClient();
     if(!client) return;
     clearTimeout(cloudDebounce);
@@ -5599,6 +6072,7 @@ function initCloud(){
     getSupabaseClient();
     authRefreshUI();
     if(sb) sb.auth.onAuthStateChange(() => setTimeout(authRefreshUI, 0));
+    if(sb) initPasswordRecoveryListener();
 }
 
 /* رفع باگ «هرچی رو میزنی ظاهر میشه و سریع پاک میشه»: قبلاً هر تایپ یا
@@ -5625,9 +6099,10 @@ window.onload = function(){
     secondsInput?.addEventListener('input', syncDisplayFromInputs);
 
     safeRun(applyStoredTheme, 'applyStoredTheme');
-    safeRun(() => { if(typeof window.initChatSettings === 'function') window.initChatSettings(); }, 'initChatSettings');
     safeRun(resetTimer, 'resetTimer');
     safeRun(resumeTimerIfActive, 'resumeTimerIfActive');
+    safeRun(() => switchTimerMode(localStorage.getItem('timer_active_mode') || 'exam'), 'switchTimerMode');
+    safeRun(resumeStudyStopwatchIfActive, 'resumeStudyStopwatchIfActive');
     safeRun(updateTimerSubjects, 'updateTimerSubjects');
     safeRun(updateUI, 'updateUI');
     safeRun(initChart, 'initChart');
@@ -5645,6 +6120,9 @@ window.onload = function(){
     safeRun(initChat, 'initChat');
 
     setInterval(() => { safeRun(renderSmartDate, 'renderSmartDate'); safeRun(updateDailyVitals, 'updateDailyVitals'); }, 60000);
+    setInterval(() => safeRun(checkStudyNightWrapup, 'checkStudyNightWrapup'), 60000);
+    safeRun(checkStudyNightWrapup, 'checkStudyNightWrapup');
+
 
     if('serviceWorker' in navigator){
         window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(() => {}); });
@@ -5919,6 +6397,9 @@ window.onload = function(){
    ========================================================= */
 
 const SMART_NOTES_KEY = "smart_study_notes_v4";
+/* ========================================================================== */
+/* MODULE: SMART NOTES
+/* ========================================================================== */
 function openImageLightbox(src){
     let ov = document.getElementById('smart-image-lightbox');
     if(!ov){
@@ -7578,103 +8059,6 @@ loadSmartNotes();
     let chatLongPressTimer = null;
     const chatReactionEmojis = ['❤️','😂','👍','😮','😢','🔥'];
 
-    /* ---------------------------------------------------------------- */
-    /* تنظیمات چت — ذخیره محلی (localStorage)                             */
-    /* ---------------------------------------------------------------- */
-    const CHAT_SETTINGS_KEY = 'chat_settings_v1';
-    const chatSettingsDefault = { browserNotif:false, sound:true, readReceipts:true, enterToSend:true, fontSize:'medium' };
-    let chatSettings = Object.assign({}, chatSettingsDefault);
-
-    function loadChatSettings(){
-        try{
-            const raw = localStorage.getItem(CHAT_SETTINGS_KEY);
-            if(raw) chatSettings = Object.assign({}, chatSettingsDefault, JSON.parse(raw));
-        }catch(e){ chatSettings = Object.assign({}, chatSettingsDefault); }
-    }
-    function saveChatSettingsToStorage(){
-        try{ localStorage.setItem(CHAT_SETTINGS_KEY, JSON.stringify(chatSettings)); }catch(e){}
-    }
-    function applyChatFontSizeClass(){
-        document.body.classList.remove('chat-font-small','chat-font-medium','chat-font-large');
-        document.body.classList.add('chat-font-' + (chatSettings.fontSize || 'medium'));
-    }
-    window.setChatFontSize = function(size){
-        chatSettings.fontSize = size;
-        saveChatSettingsToStorage();
-        applyChatFontSizeClass();
-        renderChatSettingsUI();
-    };
-    window.toggleChatSetting = function(key, toggleElId){
-        chatSettings[key] = !chatSettings[key];
-        if(key === 'browserNotif' && chatSettings.browserNotif && 'Notification' in window && Notification.permission === 'default'){
-            Notification.requestPermission().then(perm => {
-                if(perm !== 'granted'){ chatSettings.browserNotif = false; saveChatSettingsToStorage(); renderChatSettingsUI(); toast('اجازه داده نشد', 'برای فعال کردن اعلان، از تنظیمات مرورگر اجازه بده.'); }
-            });
-        }
-        saveChatSettingsToStorage();
-        renderChatSettingsUI();
-    };
-    function renderChatSettingsUI(){
-        const setToggle = (id, on) => { const el = document.getElementById(id); if(el) el.classList.toggle('on', !!on); };
-        setToggle('chat-settings-notif-toggle', chatSettings.browserNotif);
-        setToggle('chat-settings-sound-toggle', chatSettings.sound);
-        setToggle('chat-settings-readreceipt-toggle', chatSettings.readReceipts);
-        setToggle('chat-settings-enter-toggle', chatSettings.enterToSend);
-        document.querySelectorAll('#chat-fontsize-options .chat-fontsize-opt').forEach(el => {
-            el.classList.toggle('active', el.getAttribute('data-size') === (chatSettings.fontSize || 'medium'));
-        });
-        updateChatSettingsThemeToggle();
-    }
-    window.updateChatSettingsThemeToggle = function(){
-        const el = document.getElementById('chat-settings-theme-toggle');
-        if(el) el.classList.toggle('on', document.body.classList.contains('light-mode'));
-    };
-    window.showChatSettingsView = function(){ showChatView('chat-view-settings'); renderChatSettingsUI(); };
-    window.chatEnterToSendEnabled = function(){ return !!chatSettings.enterToSend; };
-    window.initChatSettings = function(){ loadChatSettings(); applyChatFontSizeClass(); };
-    window.clearChatLocalCache = function(){
-        chatProfilesCache && Object.keys(chatProfilesCache).forEach(k => delete chatProfilesCache[k]);
-        Object.keys(chatGroupsCache).forEach(k => delete chatGroupsCache[k]);
-        chatLastConvItems = [];
-        toast('پاک شد 🗑', 'کش محلی گفتگوها پاک شد.');
-        loadConversations();
-    };
-
-    /* صدای کوتاه پیام جدید — بدون فایل خارجی، با Web Audio API */
-    function playChatMessageSound(){
-        if(!chatSettings.sound) return;
-        try{
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.type = 'sine';
-            o.frequency.setValueAtTime(880, ctx.currentTime);
-            o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
-            g.gain.setValueAtTime(0.16, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-            o.connect(g); g.connect(ctx.destination);
-            o.start(); o.stop(ctx.currentTime + 0.24);
-            setTimeout(() => { try{ ctx.close(); }catch(e){} }, 400);
-        }catch(e){}
-    }
-    /* اعلان مرورگر برای پیام جدید */
-    function sendChatBrowserNotification(title, body){
-        if(!chatSettings.browserNotif) return;
-        if(document.visibilityState === 'visible') return;
-        if(!('Notification' in window) || Notification.permission !== 'granted') return;
-        try{ new Notification(title, { body, icon:'🔔' }); }catch(e){}
-    }
-    /* تیک واتساپی — SVG با دو علامت چسبیده به هم */
-    function chatTickSvg(double){
-        if(!double){
-            return `<svg width="12" height="11" viewBox="0 0 12 11" xmlns="http://www.w3.org/2000/svg"><path d="M1.6 6.1 4.4 8.9 10.2 2" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        }
-        return `<svg width="18" height="11" viewBox="0 0 18 11" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 6.1 3.8 8.9 9.6 2" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6.4 6.1 9.2 8.9 15 2" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`;
-    }
-
     function esc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? ''); }
     function fa(n){ return (typeof faNum === 'function') ? faNum(n) : String(n); }
     function toast(title, msg){ if(typeof showReminderToast === 'function') showReminderToast(title, msg); }
@@ -8364,8 +8748,9 @@ loadSmartNotes();
 
     function chatTicksHtml(m){
         if(chatWindowMode !== 'dm' || m.sender_id !== chatCurrentUserId) return '';
-        const isRead = !!m.read_at && chatSettings.readReceipts;
-        return `<span class="chat-msg-ticks${isRead ? ' read' : ''}">${chatTickSvg(true)}</span>`;
+        return m.read_at
+            ? `<span class="chat-msg-ticks read">✓✓</span>`
+            : `<span class="chat-msg-ticks">✓</span>`;
     }
 
     function chatBubbleHtml(m, isGroup){
@@ -8588,16 +8973,11 @@ loadSmartNotes();
                 if(msg.sender_id === myId && msg.receiver_id === myId) return; /* پیام‌های ذخیره‌شده خودم، محلی اضافه شده */
                 const windowOpen = document.getElementById('chat-overlay').classList.contains('open')
                     && document.getElementById('chat-view-window').style.display !== 'none' && chatWindowMode === 'dm';
-                playChatMessageSound();
                 if(windowOpen && msg.sender_id === chatActivePeerId){
                     appendChatMessage(msg, false);
                     client.from('messages').update({ read_at: new Date().toISOString() }).eq('id', msg.id).then(() => {});
                 } else {
-                    getProfileById(msg.sender_id).then(p => {
-                        const name = chatFullName(p);
-                        toast('پیام جدید 💬', name + ' برات پیام فرستاد.');
-                        sendChatBrowserNotification(name, msg.content || '📎 فایل ضمیمه');
-                    });
+                    getProfileById(msg.sender_id).then(p => toast('پیام جدید 💬', chatFullName(p) + ' برات پیام فرستاد.'));
                 }
                 refreshChatUnreadBadge();
                 const listOpen = document.getElementById('chat-overlay').classList.contains('open')
@@ -8612,7 +8992,7 @@ loadSmartNotes();
                         bubble.innerHTML = `<span class="chat-msg-deleted">🚫 این پیام حذف شد</span>`;
                     } else {
                         const ticksEl = bubble.querySelector('.chat-msg-ticks');
-                        if(ticksEl && msg.read_at && chatSettings.readReceipts){ ticksEl.classList.add('read'); }
+                        if(ticksEl && msg.read_at){ ticksEl.classList.add('read'); ticksEl.textContent = '✓✓'; }
                     }
                 }
             })
@@ -8637,18 +9017,13 @@ loadSmartNotes();
                 if(!chatMyGroupIds.includes(msg.group_id)) return;
                 const windowOpen = document.getElementById('chat-overlay').classList.contains('open')
                     && document.getElementById('chat-view-window').style.display !== 'none' && chatWindowMode === 'group';
-                playChatMessageSound();
                 if(windowOpen && msg.group_id === chatActiveGroupId){
                     getProfileById(msg.sender_id).then(() => appendChatMessage(msg, true));
                     client.from('chat_group_members').update({ last_read_at: new Date().toISOString() })
                         .eq('group_id', msg.group_id).eq('user_id', myId).then(() => {});
                 } else {
                     const g = chatGroupsCache[msg.group_id];
-                    getProfileById(msg.sender_id).then(p => {
-                        const label = (g ? g.name + ' — ' : '') + chatFullName(p);
-                        toast('پیام گروهی 👥', label);
-                        sendChatBrowserNotification(g ? g.name : 'پیام گروهی', chatFullName(p) + ': ' + (msg.content || '📎 فایل ضمیمه'));
-                    });
+                    getProfileById(msg.sender_id).then(p => toast('پیام گروهی 👥', (g ? g.name + ' — ' : '') + chatFullName(p)));
                 }
                 const listOpen = document.getElementById('chat-overlay').classList.contains('open')
                     && document.getElementById('chat-view-list').style.display !== 'none';
