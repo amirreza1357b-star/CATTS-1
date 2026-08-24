@@ -2319,6 +2319,63 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .br-topbar-title{ display:none; }
 }
 
+/* ========================================================================== */
+/* راهنمای کامل برنامه — دکمه‌ی ❓ بالای صفحه + مودال توضیح همه‌ی بخش‌ها        */
+/* ========================================================================== */
+#app-guide-btn{ position:relative; }
+#app-guide-btn .app-guide-ping{
+    position:absolute; top:-2px; left:-2px; width:12px; height:12px; border-radius:50%;
+    background:#ec4899; box-shadow:0 0 0 0 rgba(236,72,153,.6); animation:appGuidePing 1.8s ease-out infinite;
+}
+@keyframes appGuidePing{
+    0%{ box-shadow:0 0 0 0 rgba(236,72,153,.55); }
+    70%{ box-shadow:0 0 0 9px rgba(236,72,153,0); }
+    100%{ box-shadow:0 0 0 0 rgba(236,72,153,0); }
+}
+.app-guide-overlay{
+    position:fixed; inset:0; z-index:999996; background:rgba(0,0,0,.6); display:none;
+    align-items:center; justify-content:center; padding:16px;
+}
+.app-guide-overlay.open{ display:flex; }
+.app-guide-modal{
+    position:relative; width:100%; max-width:560px; max-height:88vh; overflow-y:auto;
+    background:linear-gradient(145deg,rgba(20,17,42,.98),rgba(9,8,20,.98));
+    border:1px solid rgba(139,92,246,.28); border-radius:24px;
+    box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 60px rgba(139,92,246,.12); padding:26px 22px;
+    animation:cloudModalIn .22s ease;
+}
+body.light-mode .app-guide-modal{ background:linear-gradient(145deg,rgba(255,252,245,.98),rgba(246,236,219,.98)); }
+.app-guide-close{
+    position:absolute; top:14px; left:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+    color:var(--text-primary); border-radius:12px; width:34px; height:34px; cursor:pointer; font-size:1rem; z-index:5;
+}
+.app-guide-title{ font-size:1.15rem; font-weight:900; margin-bottom:4px; padding-left:40px; }
+.app-guide-sub{ font-size:.8rem; color:var(--text-secondary); margin-bottom:18px; line-height:1.8; }
+.app-guide-list{ display:flex; flex-direction:column; gap:8px; }
+.app-guide-item{
+    border:1px solid rgba(255,255,255,.09); border-radius:14px; overflow:hidden; background:rgba(255,255,255,.03);
+}
+.app-guide-item-head{
+    display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; font-weight:800; font-size:.85rem;
+    background:transparent; border:none; width:100%; text-align:right; color:var(--text-primary); font-family:inherit;
+    transition:background .15s ease;
+}
+.app-guide-item-head:hover{ background:rgba(255,255,255,.05); }
+.app-guide-item-head .ic{ font-size:1.15rem; flex-shrink:0; }
+.app-guide-item-head .car{ margin-right:auto; opacity:.6; transition:transform .2s ease; font-size:.75rem; }
+.app-guide-item.open .app-guide-item-head .car{ transform:rotate(180deg); }
+.app-guide-item-body{
+    max-height:0; overflow:hidden; transition:max-height .25s ease, padding .25s ease;
+    font-size:.78rem; color:var(--text-secondary); line-height:1.9; padding:0 14px;
+}
+.app-guide-item.open .app-guide-item-body{ max-height:260px; padding:0 14px 14px; }
+.app-guide-footer{ display:flex; justify-content:flex-end; margin-top:18px; }
+.app-guide-footer button{
+    border:0; border-radius:12px; padding:11px 20px; cursor:pointer; font-family:inherit; font-weight:800; font-size:.82rem;
+    background:linear-gradient(135deg,#22d3ee,#6366f1); color:#07111b;
+}
+@media(max-width:480px){ .app-guide-modal{ padding:20px 16px; border-radius:20px; } }
+
 
 /* ---------- دکمه‌ها ---------- */
 
@@ -3193,6 +3250,59 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <span class="ambient-blob b2"></span>
     <span class="ambient-blob b3"></span>
 </div>
+<div class="app-guide-overlay" id="app-guide-overlay" onclick="if(event.target===this)closeAppGuide()">
+  <div class="app-guide-modal">
+    <button class="app-guide-close" onclick="closeAppGuide()">✕</button>
+    <div class="app-guide-title">📘 راهنمای کامل برنامه</div>
+    <div class="app-guide-sub">این سامانه چند بخش داره؛ روی هرکدوم از موارد زیر بزن تا توضیحش باز بشه. هر وقت خواستی، همین دکمه‌ی ❓ بالای صفحه رو دوباره بزن تا این راهنما باز بشه.</div>
+    <div class="app-guide-list" id="app-guide-list">
+      <div class="app-guide-item open">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">⏱️</span><span>زمان‌سنج (صفحه‌ی اصلی)</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">همون صفحه‌ای که اول وارد برنامه می‌شی. تایمر مطالعه/تست، آمار کلی (تعداد آزمون‌ها، میانگین دروس، بهترین عملکرد و استریک روزانه‌ت) و پاندای همراه اینجاست. با تب‌های بالای صفحه بین بخش‌های دیگه جابه‌جا می‌شی.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">🖼️</span><span>گالری</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">عکس‌ها و اسکرین‌شات‌هایی که ذخیره می‌کنی (مثلاً از بخش BR) اینجا جمع می‌شن. می‌تونی روی هرکدوم حاشیه‌نویسی، کراپ یا حذف انجام بدی و دانلودشون کنی.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">📖</span><span>BR — کتاب‌خوان و حاشیه‌نویس</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">اینجا می‌تونی PDF یا عکس باز کنی و روش قلم/ماژیک/متن/شکل بکشی، یا با دکمه‌ی 🆕 یک برگه‌ی خالی/خط‌دار/شطرنجی جدید بسازی. با اسکرول‌کردن، خودکار می‌ری صفحه‌ی بعد. با دکمه‌ی «💾 ذخیره» می‌تونی کل فایل رو با یادداشت‌هات به‌صورت یک PDF بگیری یا فقط همون صفحه رو در گالری ذخیره کنی.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">📊</span><span>آمار دروس</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">نمودار و تحلیل عملکردت به تفکیک هر درس، تا ببینی کجاها قوی‌تر و کجاها ضعیف‌تری.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">📕</span><span>دفتر خطاها</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">غلط‌های تکراری‌ات رو به تفکیک درس ثبت و مرور کن تا سر جلسه‌ی امتحان دوباره تکرار نشن.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">🎯</span><span>اهداف</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">برای خودت هدف‌گذاری روزانه/هفتگی/ماهانه کن و پیشرفتت رو نسبت به اون هدف دنبال کن.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">🗓️</span><span>برنامه هفتگی</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">برنامه‌ریزی ۷ روزه؛ هر روز رو به چند بازه‌ی زمانی تقسیم کن و درس هرکدوم رو مشخص کن.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">🗑️</span><span>سطل زباله</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">هرچیزی که حذف می‌کنی، اول میاد اینجا؛ یعنی اگه اشتباهی حذف کردی، از همین‌جا می‌تونی برش گردونی.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">☁️</span><span>حساب کاربری و همگام‌سازی ابری</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">با ساختن یک حساب، اطلاعاتت روی همه‌ی دستگاه‌هایی که باهاشون وارد می‌شی همگام می‌مونه؛ حذف‌ها هم درست بین دستگاه‌ها هماهنگ می‌شن.</div>
+      </div>
+      <div class="app-guide-item">
+        <button type="button" class="app-guide-item-head" onclick="toggleAppGuideItem(this)"><span class="ic">🌙</span><span>تم شب/روز، شمارش معکوس و اعلان</span><span class="car">▾</span></button>
+        <div class="app-guide-item-body">با آیکون ماه/خورشید بین حالت شب و روز جابه‌جا شو. آیکون 🚀 روزهای باقی‌مونده تا تاریخی که خودت تنظیم می‌کنی رو نشون می‌ده، و آیکون 📣 پیام‌های جدید سازنده‌ی برنامه رو نشون می‌ده.</div>
+      </div>
+    </div>
+    <div class="app-guide-footer">
+      <button type="button" onclick="closeAppGuide()">متوجه شدم، شروع کن ✅</button>
+    </div>
+  </div>
+</div>
+
 <div id="cloud-account-modal-overlay" onclick="if(event.target===this)toggleCloudAccountModal(false)">
   <div id="cloud-account-modal" style="position:relative;">
     <button id="cloud-account-modal-close" onclick="toggleCloudAccountModal(false)">✕</button>
@@ -3353,6 +3463,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <div class="app-bar-top">
             <div class="app-bar-icons">
                 <span id="app-user-greeting" class="app-user-greeting"></span>
+                <button id="app-guide-btn" onclick="openAppGuide()" title="راهنمای کامل برنامه">❓<span class="app-guide-ping" id="app-guide-ping"></span></button>
                 <button id="cloud-account-btn" onclick="toggleCloudAccountModal()"><span class="dot" id="cloud-account-dot"></span><span class="label">حساب کاربری</span></button>
                 <button id="theme-toggle" class="theme-switch" onclick="toggleTheme()" title="تغییر حالت روز/شب">
                     <span class="theme-switch-icon moon">🌙</span>
@@ -7585,6 +7696,35 @@ let brUndoStack = {};     // id -> [{page,data}] برای هر سند
 let brRedoStack = {};     // id -> [{page,data}]
 let brDrawing = false, brLastX = 0, brLastY = 0, brShapeStartX = 0, brShapeStartY = 0, brShapeSnapshot = null;
 let brCropMode = false, brCropStart = null;
+
+/* ========================================================================== */
+/* راهنمای کامل برنامه                                                        */
+/* ========================================================================== */
+const APP_GUIDE_SEEN_KEY = 'app_guide_seen_v1';
+function openAppGuide(){
+    document.getElementById('app-guide-overlay')?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    try{ localStorage.setItem(APP_GUIDE_SEEN_KEY, '1'); }catch(e){}
+    document.getElementById('app-guide-ping')?.remove();
+}
+function closeAppGuide(){
+    document.getElementById('app-guide-overlay')?.classList.remove('open');
+    document.body.style.overflow = '';
+}
+function toggleAppGuideItem(headBtn){
+    const item = headBtn.closest('.app-guide-item');
+    if(!item) return;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('#app-guide-list .app-guide-item.open').forEach(el => el.classList.remove('open'));
+    if(!wasOpen) item.classList.add('open');
+}
+document.addEventListener('DOMContentLoaded', function(){
+    let seen = false;
+    try{ seen = !!localStorage.getItem(APP_GUIDE_SEEN_KEY); }catch(e){}
+    if(!seen){
+        setTimeout(() => { openAppGuide(); }, 500);
+    }
+});
 
 function openBRApp(){
     let app = document.getElementById('br-app');
