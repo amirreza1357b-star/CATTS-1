@@ -3981,6 +3981,16 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
   </div>
 </div>
 
+<div id="app-confirm-modal" class="planner-modal" onclick="if(event.target===this) appConfirmModalCancel()">
+  <div class="planner-modal-box" onclick="event.stopPropagation()" style="max-width:340px;text-align:center;">
+    <div id="app-confirm-modal-text" style="padding:10px 4px 18px;font-size:.92rem;line-height:1.9;color:var(--text-primary);"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-danger" style="flex:1;" onclick="appConfirmModalOk()">بله، حذف کن</button>
+      <button class="btn" style="flex:1;" onclick="appConfirmModalCancel()">انصراف</button>
+    </div>
+  </div>
+</div>
+
 <div id="app-guide-modal" class="planner-modal" onclick="toggleAppGuideModal(false, event)">
   <div class="planner-modal-box" onclick="event.stopPropagation()">
     <div class="planner-modal-head">
@@ -4066,6 +4076,27 @@ function toggleAppGuideModal(show, ev){
     if(ev && ev.target !== ev.currentTarget) return;
     const modal = document.getElementById('app-guide-modal'); if(!modal) return;
     modal.style.display = show ? 'flex' : 'none';
+}
+let _appConfirmResolve = null;
+function appConfirm(message){
+    return new Promise((resolve) => {
+        _appConfirmResolve = resolve;
+        const textEl = document.getElementById('app-confirm-modal-text');
+        const modal = document.getElementById('app-confirm-modal');
+        if(!textEl || !modal){ resolve(window.confirm ? window.confirm(message) : true); return; }
+        textEl.textContent = message;
+        modal.style.display = 'flex';
+    });
+}
+function appConfirmModalOk(){
+    const modal = document.getElementById('app-confirm-modal'); if(modal) modal.style.display = 'none';
+    if(_appConfirmResolve) _appConfirmResolve(true);
+    _appConfirmResolve = null;
+}
+function appConfirmModalCancel(){
+    const modal = document.getElementById('app-confirm-modal'); if(modal) modal.style.display = 'none';
+    if(_appConfirmResolve) _appConfirmResolve(false);
+    _appConfirmResolve = null;
 }
 const MOTIVATIONAL_QUOTES = [
     'موفقیت جمع کوچک تلاش‌هایی است که هر روز تکرار می‌شوند.',
@@ -7120,14 +7151,16 @@ function galleryDownload(){
     a.href = src; a.download = prefix + '-' + (galleryIndex + 1) + '.png';
     document.body.appendChild(a); a.click(); a.remove();
 }
-function galleryDelete(){
+async function galleryDelete(){
     const imgs = currentGalleryImages(); if(!imgs.length) return;
-    if(!confirm('این عکس حذف شود؟')) return;
-    if(galleryCtxType === 'global') deleteGlobalGalleryAt(galleryIndex);
+    const ok = await appConfirm('این عکس حذف شود؟');
+    if(!ok) return;
+    if(galleryCtxType === 'global') await deleteGlobalGalleryAt(galleryIndex);
     imgs.splice(galleryIndex, 1);
     galleryOnChange();
     if(!imgs.length){ closeImageLightbox(); }
     else { renderGalleryViewer(); }
+    toast('🗑️ عکس حذف شد', '');
 }
 function galleryCrop(){
     const imgs = currentGalleryImages(); const src = imgs[galleryIndex]; if(!src) return;
@@ -7628,7 +7661,19 @@ function renderGlobalGallery(){
         return;
     }
     if(empty) empty.style.display = 'none';
-    grid.innerHTML = imgs.map((src, i) => `<img src="${src}" alt="تصویر گالری" onclick="openGalleryViewer('global', ${i})">`).join('');
+    grid.innerHTML = imgs.map((src, i) => `
+        <div class="smart-note-img-item">
+            <img src="${src}" alt="تصویر گالری" onclick="openGalleryViewer('global', ${i})">
+            <button type="button" class="smart-note-img-remove" title="حذف عکس" onclick="event.stopPropagation(); quickDeleteGlobalGalleryImage(${i})">✕</button>
+        </div>`).join('');
+}
+async function quickDeleteGlobalGalleryImage(index){
+    const ok = await appConfirm('این عکس حذف شود؟');
+    if(!ok) return;
+    await deleteGlobalGalleryAt(index);
+    globalGalleryCache.splice(index, 1);
+    renderGlobalGallery();
+    toast('🗑️ عکس حذف شد', '');
 }
 function fileToDataUrl(file){
     return new Promise((resolve, reject) => {
@@ -7824,6 +7869,7 @@ let brSize = 6;
 let brUndoStack = {};     // id -> [{page,data}] برای هر سند
 let brRedoStack = {};     // id -> [{page,data}]
 let brDrawing = false, brLastX = 0, brLastY = 0, brShapeStartX = 0, brShapeStartY = 0, brShapeSnapshot = null;
+let brStrokePoints = [];
 let brCropMode = false, brCropStart = null;
 
 function openBRApp(){
@@ -8534,6 +8580,7 @@ function setupBrOverlayEvents(){
             brShapeStartX = p.x; brShapeStartY = p.y;
         }
         brDrawing = true; brLastX = p.x; brLastY = p.y;
+        brStrokePoints = [{x: p.x, y: p.y}];
         try{ overlay.setPointerCapture(e.pointerId); }catch(err){}
     });
     overlay.addEventListener('pointermove', (e) => {
@@ -8567,7 +8614,19 @@ function setupBrOverlayEvents(){
             if(brTool === 'marker'){ octx.globalAlpha = 0.35; octx.lineWidth = brSize * 3; }
             else { octx.globalAlpha = 1; octx.lineWidth = brSize; }
         }
-        octx.beginPath(); octx.moveTo(brLastX, brLastY); octx.lineTo(p.x, p.y); octx.stroke();
+        brStrokePoints.push({x: p.x, y: p.y});
+        const n = brStrokePoints.length;
+        if(n < 3){
+            octx.beginPath(); octx.moveTo(brLastX, brLastY); octx.lineTo(p.x, p.y); octx.stroke();
+        } else {
+            const p0 = brStrokePoints[n - 3], p1 = brStrokePoints[n - 2], p2 = brStrokePoints[n - 1];
+            const midStart = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+            const midEnd = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+            octx.beginPath();
+            octx.moveTo(midStart.x, midStart.y);
+            octx.quadraticCurveTo(p1.x, p1.y, midEnd.x, midEnd.y);
+            octx.stroke();
+        }
         octx.globalAlpha = 1; octx.globalCompositeOperation = 'source-over';
         brLastX = p.x; brLastY = p.y;
     });
@@ -8600,6 +8659,7 @@ function setupBrOverlayEvents(){
         }
         if(brDrawing && doc){ doc.overlays[doc.page] = overlay.toDataURL(); }
         brDrawing = false;
+        brStrokePoints = [];
     }));
 }
 
