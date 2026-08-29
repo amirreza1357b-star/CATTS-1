@@ -4715,6 +4715,54 @@ function removeAIImagePreview(){
     document.getElementById('ai-image-preview-wrap').innerHTML = '';
 }
 
+/* ---------------------------------------------------------------------- */
+/* خلاصه‌ی آمار درسی کاربر برای دستیار هوشمند                              */
+/* از همون داده‌ی history (تاریخچه‌ی آزمون‌ها) که برنامه‌ی اصلی استفاده     */
+/* می‌کنه، یه خلاصه‌ی کوتاه می‌سازیم: میانگین درصد هر درس، بهترین نمره،   */
+/* و روند رشد (مقایسه‌ی اولین و آخرین آزمون هر درس) — این خلاصه، نه کل     */
+/* داده‌ی خام، همراه هر پیام برای هوش مصنوعی فرستاده می‌شه.                */
+/* ---------------------------------------------------------------------- */
+function buildAIStudyContext(){
+    try{
+        const history = (typeof getHistory === 'function') ? getHistory() : [];
+        if(!Array.isArray(history) || history.length === 0) return null;
+
+        const bySubject = {};
+        history.forEach(item => {
+            const subj = item.subject || 'نامشخص';
+            (bySubject[subj] = bySubject[subj] || []).push(item);
+        });
+
+        const subjects = Object.entries(bySubject).map(([subj, items]) => {
+            const percents = items.map(i => Number(i.percent) || 0);
+            const avg = percents.reduce((a,b) => a+b, 0) / percents.length;
+            const best = Math.max(...percents);
+            const sorted = items.slice().sort((a,b) => (a.timestamp || 0) > (b.timestamp || 0) ? 1 : -1);
+            const first = Number(sorted[0].percent) || 0;
+            const last = Number(sorted[sorted.length - 1].percent) || 0;
+            return {
+                subject: subj,
+                testsCount: items.length,
+                avgPercent: Math.round(avg * 10) / 10,
+                bestPercent: best,
+                growth: Math.round((last - first) * 10) / 10 // مثبت یعنی پیشرفت، منفی یعنی افت
+            };
+        });
+
+        const overallPercents = history.map(i => Number(i.percent) || 0);
+        const overallAvg = overallPercents.reduce((a,b) => a+b, 0) / overallPercents.length;
+
+        return {
+            totalTests: history.length,
+            overallAvgPercent: Math.round(overallAvg * 10) / 10,
+            subjects
+        };
+    } catch(e){
+        console.warn('[AI Context] خطا در ساخت خلاصه‌ی آمار:', e);
+        return null;
+    }
+}
+
 function sendAIMessage(){
     const input = document.getElementById('ai-input-text');
     const text = input.value.trim();
@@ -4780,7 +4828,8 @@ async function askAIWorker(sessionId, userMessage, imageDataUrl){
             body: JSON.stringify({
                 message: userMessage,
                 history: history,
-                image: imageDataUrl || null
+                image: imageDataUrl || null,
+                studyContext: buildAIStudyContext()
             })
         });
         const data = await res.json();
