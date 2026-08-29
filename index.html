@@ -4566,6 +4566,10 @@ function toggleCalculatorModal(show, ev){
    اتصال واقعی (Worker + OpenRouter) در فاز بعدی اضافه می‌شه.
    تاریخچه فعلاً روی همین مرورگر (localStorage) ذخیره می‌شه؛ در فاز بعدی به Supabase منتقل می‌شه. */
 
+/* 👇 بعد از ساختن Worker توی Cloudflare، آدرسش رو اینجا جایگزین کن، مثلا:
+   'https://your-worker-name.your-subdomain.workers.dev' */
+const AI_WORKER_URL = '';
+
 const AI_SESSIONS_KEY = 'ai_chat_sessions';
 let aiCurrentSessionId = null;
 let aiSelectedImage = null;
@@ -4727,18 +4731,61 @@ function sendAIMessage(){
     }
 
     session.messages.push({ role: 'user', content: text + (aiSelectedImage ? '\n📎 (تصویر پیوست شد)' : '') });
-
-    // ⚠️ فعلاً پاسخ واقعی هوش مصنوعی وصل نیست — این فقط جای‌نگه‌دار ظاهریه
-    session.messages.push({
-        role: 'assistant',
-        content: 'این بخش هنوز به هوش مصنوعی وصل نشده — در مرحله بعد که عملکردش رو می‌سازیم، اینجا جواب واقعی می‌گیری.'
-    });
-
     saveAISessions(sessions);
     input.value = '';
     input.style.height = 'auto';
     removeAIImagePreview();
     renderAIMessages();
+    renderAIHistoryList();
+
+    askAIWorker(session.id, text);
+}
+
+async function askAIWorker(sessionId, userMessage){
+    const box = document.getElementById('ai-messages');
+    const subtitle = document.getElementById('ai-panel-subtitle');
+
+    if(!AI_WORKER_URL){
+        appendAIReply(sessionId, '⚠️ آدرس Worker هنوز توی کد تنظیم نشده. اول Workerت رو بساز و آدرسش رو توی متغیر AI_WORKER_URL بذار.');
+        return;
+    }
+
+    // نشونه‌ی «در حال تایپ» موقت
+    const typingEl = document.createElement('div');
+    typingEl.className = 'ai-msg assistant';
+    typingEl.id = 'ai-typing-indicator';
+    typingEl.textContent = 'در حال فکر کردن...';
+    box.appendChild(typingEl);
+    box.scrollTop = box.scrollHeight;
+    if(subtitle) subtitle.textContent = 'در حال پاسخ...';
+
+    try{
+        const res = await fetch(AI_WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage })
+        });
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content
+            || data?.error?.message
+            || 'پاسخی دریافت نشد؛ دوباره امتحان کن.';
+        appendAIReply(sessionId, reply);
+    } catch(err){
+        appendAIReply(sessionId, '❌ اتصال به هوش مصنوعی برقرار نشد. اینترنت یا آدرس Worker رو بررسی کن.\n(' + err.message + ')');
+    } finally {
+        if(subtitle) subtitle.textContent = 'آماده کمک';
+    }
+}
+
+function appendAIReply(sessionId, content){
+    const sessions = getAISessions();
+    const session = sessions.find(s => s.id === sessionId);
+    if(!session) return;
+    session.messages.push({ role: 'assistant', content });
+    saveAISessions(sessions);
+    if(aiCurrentSessionId === sessionId){
+        renderAIMessages();
+    }
     renderAIHistoryList();
 }
 
