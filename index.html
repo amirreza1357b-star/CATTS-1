@@ -4566,9 +4566,10 @@ function toggleCalculatorModal(show, ev){
    اتصال واقعی (Worker + OpenRouter) در فاز بعدی اضافه می‌شه.
    تاریخچه فعلاً روی همین مرورگر (localStorage) ذخیره می‌شه؛ در فاز بعدی به Supabase منتقل می‌شه. */
 
-/* 👇 بعد از ساختن Worker توی Cloudflare، آدرسش رو اینجا جایگزین کن، مثلا:
-   'https://your-worker-name.your-subdomain.workers.dev' */
-const AI_WORKER_URL = '';
+/* 👇 آدرس Edge Function روی همون پروژه‌ی Supabase که برای بقیه‌ی برنامه استفاده می‌کنی.
+   الگوی آدرس همیشه اینه: https://<PROJECT-REF>.supabase.co/functions/v1/<اسم-فانکشن>
+   چون پروژه‌ی فعلی‌ت yhglpaqeezjeyciavnhy هست و اسم فانکشن رو ai-chat گذاشتیم: */
+const AI_WORKER_URL = 'https://yhglpaqeezjeyciavnhy.supabase.co/functions/v1/ai-chat';
 
 const AI_SESSIONS_KEY = 'ai_chat_sessions';
 let aiCurrentSessionId = null;
@@ -4730,7 +4731,9 @@ function sendAIMessage(){
         session.title = text.slice(0, 30);
     }
 
-    session.messages.push({ role: 'user', content: text + (aiSelectedImage ? '\n📎 (تصویر پیوست شد)' : '') });
+    const imageForThisMessage = aiSelectedImage; // قبل از پاک شدن، جدا نگه‌ش می‌داریم
+
+    session.messages.push({ role: 'user', content: text + (imageForThisMessage ? '\n📎 (تصویر پیوست شد)' : '') });
     saveAISessions(sessions);
     input.value = '';
     input.style.height = 'auto';
@@ -4738,15 +4741,15 @@ function sendAIMessage(){
     renderAIMessages();
     renderAIHistoryList();
 
-    askAIWorker(session.id, text);
+    askAIWorker(session.id, text, imageForThisMessage);
 }
 
-async function askAIWorker(sessionId, userMessage){
+async function askAIWorker(sessionId, userMessage, imageDataUrl){
     const box = document.getElementById('ai-messages');
     const subtitle = document.getElementById('ai-panel-subtitle');
 
     if(!AI_WORKER_URL){
-        appendAIReply(sessionId, '⚠️ آدرس Worker هنوز توی کد تنظیم نشده. اول Workerت رو بساز و آدرسش رو توی متغیر AI_WORKER_URL بذار.');
+        appendAIReply(sessionId, '⚠️ آدرس Edge Function هنوز توی کد تنظیم نشده. اول توی Supabase دیپلویش کن و آدرسش رو توی متغیر AI_WORKER_URL بذار.');
         return;
     }
 
@@ -4760,18 +4763,33 @@ async function askAIWorker(sessionId, userMessage){
     if(subtitle) subtitle.textContent = 'در حال پاسخ...';
 
     try{
+        // آخرین چند پیام این گفتگو رو هم می‌فرستیم تا مدل زمینه‌ی قبلی رو داشته باشه
+        const sessions = getAISessions();
+        const session = sessions.find(s => s.id === sessionId);
+        const history = (session?.messages || []).slice(-12).map(m => ({ role: m.role, content: m.content }));
+
+        const cfg = cloudCfg();
         const res = await fetch(AI_WORKER_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: userMessage })
+            headers: {
+                'Content-Type': 'application/json',
+                // کلید publishable سوپابیس (همونی که برای اتصال به دیتابیس استفاده می‌شه)،
+                // نه کلید هوش مصنوعی — این فقط برای اینه که سوپابیس اجازه‌ی صدا زدن فانکشن رو بده.
+                'Authorization': 'Bearer ' + cfg.key
+            },
+            body: JSON.stringify({
+                message: userMessage,
+                history: history,
+                image: imageDataUrl || null
+            })
         });
         const data = await res.json();
-        const reply = data?.choices?.[0]?.message?.content
-            || data?.error?.message
+        const reply = data?.reply
+            || data?.error
             || 'پاسخی دریافت نشد؛ دوباره امتحان کن.';
         appendAIReply(sessionId, reply);
     } catch(err){
-        appendAIReply(sessionId, '❌ اتصال به هوش مصنوعی برقرار نشد. اینترنت یا آدرس Worker رو بررسی کن.\n(' + err.message + ')');
+        appendAIReply(sessionId, '❌ اتصال به هوش مصنوعی برقرار نشد. اینترنت یا آدرس Edge Function رو بررسی کن.\n(' + err.message + ')');
     } finally {
         if(subtitle) subtitle.textContent = 'آماده کمک';
     }
