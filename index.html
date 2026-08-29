@@ -156,6 +156,59 @@ if (typeof window.faNum === 'undefined') {
             margin: 0 auto;
         }
 
+        /* ===================== دروازه‌ی اجباری ورود/ثبت‌نام ===================== */
+        body.app-locked {
+            overflow: hidden;
+        }
+        #app-auth-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 999995;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: var(--bg-solid);
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+                var(--bg-gradient);
+            background-size: 28px 28px, 28px 28px, 100% 100%;
+        }
+        body.app-locked #app-auth-gate {
+            display: flex;
+        }
+        #app-auth-gate-card {
+            width: 100%;
+            max-width: 380px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: var(--card-bg);
+            backdrop-filter: var(--glass);
+            -webkit-backdrop-filter: var(--glass);
+            border: var(--border);
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+        }
+        #app-auth-gate-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        #app-auth-gate-desc {
+            font-size: .8rem;
+            margin-bottom: 16px;
+        }
+        #gate-auth-box {
+            text-align: right;
+        }
+        #gate-status {
+            margin-top: 10px;
+            font-size: .74rem;
+            color: var(--text-secondary);
+        }
+
         /* ===================== پس‌زمینه‌ی متحرک ملایم ===================== */
         #ambient-bg {
             position: fixed;
@@ -3359,7 +3412,39 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <meta name="apple-mobile-web-app-title" content="سامانه تست‌زنی">
 <link rel="manifest" href="./manifest.json">
 </head>
-<body>
+<body class="app-locked">
+<div id="app-auth-gate">
+  <div id="app-auth-gate-card">
+    <div class="login-anim-stage" aria-hidden="true">
+      <div class="login-anim-character">
+        <div class="lac-head"></div>
+        <div class="lac-body"></div>
+        <div class="lac-arm lac-arm-l"></div>
+        <div class="lac-arm lac-arm-r"></div>
+        <div class="lac-leg lac-leg-l"></div>
+        <div class="lac-leg lac-leg-r"></div>
+      </div>
+      <div class="login-anim-door">🔐</div>
+    </div>
+    <h1 id="app-auth-gate-title">🔐 ورود به سامانه تست‌زنی</h1>
+    <p class="neo-muted" id="app-auth-gate-desc">برای استفاده از برنامه، ابتدا باید ثبت‌نام کنی یا وارد حساب کاربری‌ات شوی.</p>
+    <div id="gate-auth-box" class="neo-auth-box">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input id="gate-firstname" type="text" placeholder="نام" style="width:100%;margin-bottom:0;">
+        <input id="gate-lastname" type="text" placeholder="نام خانوادگی" style="width:100%;margin-bottom:0;">
+      </div>
+      <input id="gate-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
+      <input id="gate-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
+      <div class="neo-cloud-actions" style="margin-top:10px;">
+        <button class="btn btn-purple" style="flex:1;" onclick="gateSignUp()">✨ ساخت حساب</button>
+        <button class="btn btn-success" style="flex:1;" onclick="gateSignIn()">🔐 ورود</button>
+      </div>
+      <p style="text-align:center;margin-top:8px;margin-bottom:0;"><a href="javascript:void(0)" onclick="gateForgotPassword()" style="font-size:.72rem;color:var(--text-secondary);text-decoration:underline;">رمز عبور را فراموش کرده‌ام</a></p>
+      <p class="neo-muted" style="font-size:.66rem;margin-top:6px;margin-bottom:0;">نام و نام‌خانوادگی فقط برای «ساخت حساب» لازم است؛ برای ورود فقط ایمیل و رمز کافی است.</p>
+    </div>
+    <div id="gate-status" class="neo-cloud-status">در حال بررسی وضعیت ورود...</div>
+  </div>
+</div>
 <div id="ambient-bg" aria-hidden="true">
     <span class="ambient-blob b1"></span>
     <span class="ambient-blob b2"></span>
@@ -6851,9 +6936,29 @@ function getSupabaseClient(){
 
 function collectCloudData(){ return collectBackupData(); }
 
+/* ---------------------------------------------------------------------- */
+/* دروازه‌ی اجباری ورود/ثبت‌نام: تا وقتی session معتبر وجود ندارد، کاربر    */
+/* اجازه‌ی دیدن یا استفاده از بدنه‌ی برنامه را ندارد.                        */
+/* ---------------------------------------------------------------------- */
+function lockApp(){
+    document.body.classList.add('app-locked');
+}
+function unlockApp(){
+    document.body.classList.remove('app-locked');
+}
+function setGateStatus(text, ok){
+    const el = document.getElementById('gate-status');
+    if(el){ el.textContent = text; el.style.color = ok ? '#67e8f9' : ''; }
+}
+
 async function authRefreshUI(){
     const client = getSupabaseClient();
-    if(!client){ setCloudStatus('☁️ اتصال ابری در دسترس نیست؛ برنامه در حالت محلی است.'); return; }
+    if(!client){
+        setCloudStatus('☁️ اتصال ابری در دسترس نیست؛ برنامه در حالت محلی است.');
+        setGateStatus('❌ اتصال به سرور در دسترس نیست؛ لطفاً اتصال اینترنت را بررسی و صفحه را رفرش کن.');
+        lockApp();
+        return;
+    }
     const { data:{ session } } = await client.auth.getSession();
     const ub = document.getElementById('neo-user-box'), ab = document.getElementById('neo-auth-box'), em = document.getElementById('neo-auth-user-email');
     const dot = document.getElementById('cloud-account-dot');
@@ -6863,6 +6968,7 @@ async function authRefreshUI(){
         if(em) em.textContent = session.user.email || '';
         if(dot) dot.classList.add('on');
         setCloudStatus('☁️ وارد حساب هستی. در حال دریافت و ادغام اطلاعات...', true);
+        unlockApp();
         await pullAndMergeFromCloud();
         subscribeRealtime(session.user.id);
         if(localStorage.getItem('neo_auto_sync') !== '0') startAutoSync();
@@ -6871,9 +6977,58 @@ async function authRefreshUI(){
         if(ab) ab.style.display = 'grid';
         if(dot) dot.classList.remove('on');
         setCloudStatus('☁️ هنوز وارد حساب نشده‌ای؛ اطلاعات فقط روی همین دستگاه است.');
+        setGateStatus('برای استفاده از برنامه، ابتدا ثبت‌نام کن یا وارد شو.');
+        lockApp();
         stopAutoSync();
     }
 }
+
+window.gateSignUp = async function(){
+    const client = getSupabaseClient();
+    const firstName = document.getElementById('gate-firstname')?.value.trim();
+    const lastName = document.getElementById('gate-lastname')?.value.trim();
+    const email = document.getElementById('gate-email')?.value.trim();
+    const password = document.getElementById('gate-password')?.value;
+    if(!client){ setGateStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!firstName || !lastName){ setGateStatus('نام و نام‌خانوادگی را وارد کن.'); return; }
+    if(!email || !password || password.length < 6){ setGateStatus('ایمیل و رمز عبور معتبر (حداقل ۶ کاراکتر) وارد کن.'); return; }
+    setGateStatus('در حال ساخت حساب...');
+    const { data, error } = await client.auth.signUp({
+        email, password,
+        options: { data: { first_name: firstName, last_name: lastName } }
+    });
+    if(error){ setGateStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
+    try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
+    if(data.session && data.user){
+        try{ await client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }); }catch(e){}
+        setGateStatus('✅ حساب ساخته شد و وارد شدی.', true);
+    } else {
+        setGateStatus('📩 حساب ساخته شد؛ ایمیل تأیید را باز کن و سپس وارد شو.', true);
+    }
+    await authRefreshUI();
+};
+window.gateSignIn = async function(){
+    const client = getSupabaseClient();
+    const email = document.getElementById('gate-email')?.value.trim();
+    const password = document.getElementById('gate-password')?.value;
+    if(!client){ setGateStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!email || !password){ setGateStatus('ایمیل و رمز عبور را وارد کن.'); return; }
+    setGateStatus('در حال ورود...');
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if(error){ setGateStatus('ورود ناموفق بود: ' + error.message); return; }
+    setGateStatus('✅ ورود موفق بود...', true);
+    await authRefreshUI();
+};
+window.gateForgotPassword = async function(){
+    const client = getSupabaseClient();
+    const email = document.getElementById('gate-email')?.value.trim();
+    if(!client){ setGateStatus('اتصال ابری در دسترس نیست.'); return; }
+    if(!email){ setGateStatus('برای بازیابی رمز، ابتدا ایمیل را در فیلد بالا وارد کن.'); return; }
+    setGateStatus('در حال ارسال ایمیل بازیابی...');
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+    if(error){ setGateStatus('ارسال ایمیل بازیابی ناموفق بود: ' + error.message); return; }
+    setGateStatus('📩 لینک بازیابی رمز به ایمیلت ارسال شد؛ آن را باز کن.', true);
+};
 window.authSignUp = async function(){
     const client = getSupabaseClient();
     const firstName = document.getElementById('neo-auth-firstname')?.value.trim();
@@ -6936,6 +7091,7 @@ function initPasswordRecoveryListener(){
         if(event === 'PASSWORD_RECOVERY'){
             const box = document.getElementById('neo-reset-password-box');
             if(box) box.style.display = 'block';
+            toggleCloudAccountModal(true);
             setCloudStatus('🔑 حالا رمز عبور جدیدت را وارد کن.', true);
         }
     });
