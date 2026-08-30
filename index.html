@@ -3503,35 +3503,82 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             #timer-section-card.timer-focus-mode .timer-display{ width:min(84vw,300px) !important; height:min(84vw,300px) !important; }
         }
 
-        /* ===================== کتابخانه‌ی درسی (کارت‌های خفن برای باز کردن درس‌ها توی BR) ===================== */
+        /* ===================== کتابخانه‌ی درسی (طراحی شیشه‌ای پرمیوم + انتخاب رشته) ===================== */
         #subject-library-badge { background: linear-gradient(150deg, #6d28d9, #db2777) !important; color:#fff; border:none !important; box-shadow: 0 4px 14px rgba(190,24,190,0.45) !important; }
 
         #subject-library-modal .planner-modal-box{ width:min(1200px,98%); max-height:90vh; overflow-y:auto; }
+
+        /* --- صفحه‌ی انتخاب رشته --- */
+        .subj-lib-track-intro{ text-align:center; font-weight:800; font-size:1.08rem; margin:2px 0 20px; color:var(--text-primary,#fff); }
+        .subj-lib-track-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:560px; margin:0 auto 6px; }
+        .subj-lib-track-btn{
+            position:relative; border:none; border-radius:26px; padding:38px 16px 32px; cursor:pointer;
+            overflow:hidden; display:flex; flex-direction:column; align-items:center; gap:12px;
+            transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
+            font-family:inherit;
+        }
+        .subj-lib-track-btn::before{
+            content:""; position:absolute; inset:0; z-index:0;
+            background:radial-gradient(circle at 25% 15%, rgba(255,255,255,.45), transparent 55%);
+            opacity:.7; pointer-events:none; mix-blend-mode:overlay;
+        }
+        .subj-lib-track-btn::after{
+            content:""; position:absolute; width:180%; height:180%; left:-40%; top:-70%;
+            background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.28) 50%, transparent 60%);
+            transform:rotate(20deg) translateX(-60%); transition:transform .7s ease; pointer-events:none;
+        }
+        .subj-lib-track-btn:hover::after{ transform:rotate(20deg) translateX(60%); }
+        .subj-lib-track-btn .track-icon{ position:relative; z-index:2; font-size:56px; filter:drop-shadow(0 8px 14px rgba(0,0,0,.3)); transition:transform .35s ease; }
+        .subj-lib-track-btn:hover .track-icon{ transform:translateY(-4px) scale(1.08) rotate(-4deg); }
+        .subj-lib-track-btn .track-label{ position:relative; z-index:2; font-size:1.2rem; font-weight:900; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.25); letter-spacing:.3px; }
+        .subj-lib-track-btn .track-sub{ position:relative; z-index:2; font-size:.72rem; font-weight:700; color:rgba(255,255,255,.85); }
+        .subj-lib-track-btn.track-experimental{ background:linear-gradient(155deg,#059669 0%,#10b981 45%,#6ee7b7 100%); box-shadow:0 14px 34px rgba(16,185,129,.4); }
+        .subj-lib-track-btn.track-math{ background:linear-gradient(155deg,#4338ca 0%,#7c3aed 45%,#c4b5fd 100%); box-shadow:0 14px 34px rgba(124,58,237,.4); }
+        .subj-lib-track-btn:hover{ transform:translateY(-8px) scale(1.03); }
+        .subj-lib-track-btn.track-experimental:hover{ box-shadow:0 22px 46px rgba(16,185,129,.5); }
+        .subj-lib-track-btn.track-math:hover{ box-shadow:0 22px 46px rgba(124,58,237,.5); }
+
+        .subj-lib-back-btn{
+            display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.06);
+            border:1px solid rgba(255,255,255,.16); color:var(--text-secondary,#aaa); padding:9px 18px;
+            border-radius:12px; font-size:.8rem; font-weight:800; cursor:pointer; margin-bottom:18px;
+            transition:.2s; font-family:inherit;
+        }
+        .subj-lib-back-btn:hover{ background:rgba(255,255,255,.14); color:var(--text-primary,#fff); transform:translateX(-3px); }
+        #subject-library-modal .subj-lib-back-btn{ color:#555; background:rgba(0,0,0,.045); border-color:#e2e2e2; }
+        #subject-library-modal .subj-lib-back-btn:hover{ background:rgba(0,0,0,.08); color:#111; }
+
+        .subj-lib-track-title{ text-align:center; font-weight:900; font-size:1rem; margin:0 0 16px; color:var(--text-primary,#fff); }
+        #subject-library-modal .subj-lib-track-title{ color:#222; }
+
+        /* --- گرید کارت‌های درس --- */
         .subj-lib-grid{
             display:grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap:16px;
+            grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+            gap:18px;
             padding: 4px 2px 10px;
         }
         .subj-lib-card{
-            background:#fff;
-            border:1px solid #dfdfdf;
-            border-radius:17px;
+            position:relative;
+            background:linear-gradient(180deg,#ffffff 0%,#fbfbfe 100%);
+            border:1px solid rgba(0,0,0,.06);
+            border-radius:20px;
             overflow:hidden;
             cursor:pointer;
-            box-shadow:0 2px 7px rgba(0,0,0,.08);
-            transition:transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+            box-shadow:0 3px 10px rgba(20,20,40,.08);
+            transition:transform .32s cubic-bezier(.2,.8,.2,1), box-shadow .32s ease, border-color .32s ease;
+            display:block; text-decoration:none; color:inherit;
         }
         .subj-lib-card:hover{
-            transform:translateY(-6px);
-            box-shadow:0 12px 30px rgba(0,0,0,.18);
-            border-color:#d2d2d2;
+            transform:translateY(-9px) scale(1.015);
+            box-shadow:0 20px 42px rgba(20,20,50,.22);
+            border-color:rgba(0,0,0,.1);
         }
         .subj-lib-visual{
             position:relative;
-            height:120px;
-            margin:9px 9px 0;
-            border-radius:14px;
+            height:112px;
+            margin:10px 10px 0;
+            border-radius:16px;
             overflow:hidden;
             display:flex;
             align-items:center;
@@ -3540,45 +3587,65 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         }
         .subj-lib-visual::before{
             content:"";
-            position:absolute; inset:0; z-index:-2; opacity:.34;
+            position:absolute; inset:0; z-index:-2; opacity:.3;
             background-image:
-                linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px),
-                linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px);
-            background-size:32px 32px;
-            mask-image: linear-gradient(to bottom, black, rgba(0,0,0,.35));
+                linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px);
+            background-size:28px 28px;
+            mask-image: linear-gradient(to bottom, black, rgba(0,0,0,.3));
         }
-        .subj-lib-visual .shape{ position:absolute; border:1px solid rgba(255,255,255,.18); opacity:.65; pointer-events:none; }
+        .subj-lib-visual::after{
+            content:""; position:absolute; inset:0; z-index:-1;
+            background:radial-gradient(circle at 30% 20%, rgba(255,255,255,.5), transparent 60%);
+            opacity:.75; pointer-events:none;
+        }
+        .subj-lib-visual .shape{ position:absolute; border:1px solid rgba(255,255,255,.22); opacity:.6; pointer-events:none; }
         .subj-lib-visual .shape.s1{ width:80px; height:80px; right:-32px; top:-32px; transform:rotate(45deg); }
         .subj-lib-visual .shape.s2{ width:55px; height:55px; left:-22px; bottom:-22px; transform:rotate(25deg); }
-        .subj-lib-visual .light{ position:absolute; width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.82); filter:blur(.4px); box-shadow:0 0 9px rgba(255,255,255,.8); }
+        .subj-lib-visual .light{ position:absolute; width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.85); filter:blur(.4px); box-shadow:0 0 9px rgba(255,255,255,.85); }
         .subj-lib-visual .light.one{ top:20px; right:27%; }
         .subj-lib-visual .light.two{ top:44px; left:25%; width:4px; height:4px; opacity:.65; }
         .subj-lib-visual .light.three{ bottom:22px; right:19%; width:3px; height:3px; opacity:.7; }
-        .subj-lib-icon{
+        .subj-lib-icon-badge{
             position:relative; z-index:5;
-            font-size:46px;
-            filter:drop-shadow(0 8px 6px rgba(0,0,0,.18));
-            transition:transform .3s ease;
+            width:68px; height:68px; border-radius:50%;
+            background:rgba(255,255,255,.94);
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 8px 18px rgba(0,0,0,.22), inset 0 0 0 3px rgba(255,255,255,.5);
+            transition:transform .35s cubic-bezier(.2,.8,.2,1);
         }
-        .subj-lib-card:hover .subj-lib-icon{ transform:translateY(-3px) scale(1.05); }
-        .subj-lib-info{ padding:10px 12px 12px; text-align:center; }
-        .subj-lib-name{ font-size:14px; font-weight:800; color:#e5e7eb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .subj-lib-card:hover .subj-lib-icon-badge{ transform:translateY(-4px) scale(1.08) rotate(-3deg); }
+        .subj-lib-icon{ font-size:34px; line-height:1; filter:drop-shadow(0 3px 3px rgba(0,0,0,.12)); }
+        .subj-lib-info{ padding:12px 12px 14px; text-align:center; }
+        .subj-lib-name{ font-size:14.5px; font-weight:900; color:#1f2430; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         #subject-library-modal .subj-lib-name{ color: var(--text-primary, #222); }
-        .subj-lib-meta{ margin-top:2px; color:#999; font-size:11px; }
+        .subj-lib-meta{
+            display:inline-flex; align-items:center; gap:4px; margin-top:6px;
+            background:linear-gradient(135deg,#fee2e2,#fce7f3);
+            color:#be185d; font-weight:800; font-size:10.5px; padding:3px 10px; border-radius:999px;
+        }
 
-        .subj-pink{ background:linear-gradient(135deg,#c884a0 0%,#e7a8bd 100%); }
-        .subj-blue{ background:linear-gradient(135deg,#7894cf 0%,#a9c3ea 100%); }
-        .subj-orange{ background:linear-gradient(135deg,#efa847 0%,#ffd48f 100%); }
-        .subj-green{ background:linear-gradient(135deg,#61bd98 0%,#b8e5cb 100%); }
-        .subj-purple{ background:linear-gradient(135deg,#8871d8 0%,#c1b3ee 100%); }
-        .subj-cyan{ background:linear-gradient(135deg,#48bcc1 0%,#91dfdf 100%); }
-        .subj-sky{ background:linear-gradient(135deg,#54b7dd 0%,#a2dfef 100%); }
-        .subj-lime{ background:linear-gradient(135deg,#7ec894 0%,#c6ebc3 100%); }
-        .subj-gold{ background:linear-gradient(135deg,#d39a5c 0%,#edc28e 100%); }
-        .subj-indigo{ background:linear-gradient(135deg,#6863d5 0%,#a29df0 100%); }
-        .subj-peach{ background:linear-gradient(135deg,#efa16e 0%,#ffd0ae 100%); }
-        .subj-aqua{ background:linear-gradient(135deg,#52adcd 0%,#9bdbea 100%); }
-        .subj-gray{ background:linear-gradient(135deg,#9196a6 0%,#c5c9d3 100%); }
+        .subj-pink{ background:linear-gradient(135deg,#ec4899 0%,#f9a8d4 100%); }
+        .subj-blue{ background:linear-gradient(135deg,#3b82f6 0%,#93c5fd 100%); }
+        .subj-orange{ background:linear-gradient(135deg,#f59e0b 0%,#fcd34d 100%); }
+        .subj-green{ background:linear-gradient(135deg,#10b981 0%,#6ee7b7 100%); }
+        .subj-purple{ background:linear-gradient(135deg,#8b5cf6 0%,#c4b5fd 100%); }
+        .subj-cyan{ background:linear-gradient(135deg,#06b6d4 0%,#67e8f9 100%); }
+        .subj-sky{ background:linear-gradient(135deg,#0ea5e9 0%,#7dd3fc 100%); }
+        .subj-lime{ background:linear-gradient(135deg,#65a30d 0%,#bef264 100%); }
+        .subj-gold{ background:linear-gradient(135deg,#d97706 0%,#fbbf24 100%); }
+        .subj-indigo{ background:linear-gradient(135deg,#4f46e5 0%,#a5b4fc 100%); }
+        .subj-peach{ background:linear-gradient(135deg,#fb7185 0%,#fda4af 100%); }
+        .subj-aqua{ background:linear-gradient(135deg,#0891b2 0%,#5eead4 100%); }
+        .subj-gray{ background:linear-gradient(135deg,#64748b 0%,#cbd5e1 100%); }
+
+        @media (max-width:480px){
+            .subj-lib-track-grid{ grid-template-columns:1fr 1fr; gap:12px; }
+            .subj-lib-track-btn{ padding:26px 10px 22px; border-radius:20px; }
+            .subj-lib-track-btn .track-icon{ font-size:42px; }
+            .subj-lib-track-btn .track-label{ font-size:1rem; }
+            .subj-lib-grid{ grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:12px; }
+        }
     </style>
 
     <meta name="theme-color" content="#100c24">
@@ -4450,8 +4517,28 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
       <div class="planner-modal-title">📚 کتابخانه درسی</div>
       <button class="planner-close" onclick="toggleSubjectLibraryModal(false)" aria-label="بستن">✕</button>
     </div>
-    <p class="neo-muted" style="margin:0 0 12px;font-size:.82rem;">روی هر درس بزن تا دفترچه‌ی همون درس توی BR برات باز بشه.</p>
-    <div class="subj-lib-grid" id="subject-library-grid"></div>
+
+    <div id="subject-library-track-select">
+        <p class="subj-lib-track-intro">رشته‌ات رو انتخاب کن 👇</p>
+        <div class="subj-lib-track-grid">
+            <button type="button" class="subj-lib-track-btn track-experimental" onclick="selectSubjectLibraryTrack('experimental')">
+                <span class="track-icon">🧬</span>
+                <span class="track-label">تجربی</span>
+                <span class="track-sub">دروس مشترک + تخصصی</span>
+            </button>
+            <button type="button" class="subj-lib-track-btn track-math" onclick="selectSubjectLibraryTrack('math')">
+                <span class="track-icon">🧮</span>
+                <span class="track-label">ریاضی</span>
+                <span class="track-sub">دروس مشترک + تخصصی</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="subject-library-content" style="display:none;">
+        <button type="button" class="subj-lib-back-btn" onclick="backToSubjectLibraryTrackSelect()">→ بازگشت به انتخاب رشته</button>
+        <div class="subj-lib-track-title" id="subject-library-track-title"></div>
+        <div class="subj-lib-grid" id="subject-library-grid"></div>
+    </div>
   </div>
 </div>
 <div id="translator-modal" class="planner-modal" onclick="toggleTranslatorModal(false, event)">
@@ -4649,124 +4736,101 @@ function toggleCalculatorModal(show, ev){
     }
     modal.style.display = show ? 'flex' : 'none';
 }
-/* ===================== کتابخانه‌ی درسی — کارت‌های خفن که هر درس رو توی BR باز می‌کنن ===================== */
-/* هر درس یک فایل کتاب اختیاری (file) دارد؛ کتاب‌ها به‌صورت جدا در پوشه‌ی books/
-   کنار index.html آپلود می‌شوند (نه داخل خودِ HTML) تا حجم فایل اصلی پایین بماند.
-   درس‌هایی که هنوز file ندارند مثل قبل با کلیک، یک دفترچه‌ی خالی می‌سازند. */
-const SUBJECT_LIBRARY = [
-    { name: 'زبان انگلیسی',      icon: '🔤', color: 'subj-sky',    file: 'books/zaban.pdf' },
-    { name: 'کتاب کار زبان',     icon: '📗', color: 'subj-sky',    file: 'books/zaban-karbook.pdf' },
-    { name: 'دین و زندگی',       icon: '📖', color: 'subj-green',  file: 'books/dini.pdf' },
-    { name: 'عربی',              icon: 'ع',  color: 'subj-indigo', file: 'books/arabi.pdf' },
-    { name: 'فارسی',             icon: '📜', color: 'subj-pink',   file: 'books/farsi.pdf' },
-    { name: 'هویت اجتماعی',      icon: '🧑\u200d🤝\u200d🧑', color: 'subj-peach', file: 'books/hoviyat-ejtemaei.pdf' },
-    { name: 'سلامت و بهداشت',    icon: '💊', color: 'subj-lime',   file: 'books/salamat-behdasht.pdf' },
-    { name: 'مدیریت خانواده',    icon: '🏠', color: 'subj-gold',   file: 'books/modiriyat-khanevade.pdf' },
-    { name: 'زمین‌شناسی',        icon: '🌍', color: 'subj-gold'   },
-    { name: 'ریاضی',             icon: '🧮', color: 'subj-blue'   },
-    { name: 'شیمی',              icon: '🧪', color: 'subj-orange' },
-    { name: 'فیزیک',             icon: '⚛️', color: 'subj-purple' },
-    { name: 'انسان و محیط‌زیست', icon: '🌱', color: 'subj-lime'   },
-    { name: 'آمار و احتمال',     icon: '📊', color: 'subj-peach'  },
-    { name: 'هندسه',             icon: '📐', color: 'subj-cyan'   },
-    { name: 'حسابان',            icon: '📈', color: 'subj-aqua'   }
+/* ===================== کتابخانه‌ی درسی — لینک مستقیم به فایل‌های روی خودِ سیستم (باز شدن در تب جدید کروم) ===================== */
+/* هر بخش (مشترک/ریاضی/تجربی) یک آرایه از درس‌هاست؛ هر درس فقط یک لینک file:// به همون
+   PDF روی سیستم کاربر داره. کلیک روی کارت، همون لینک رو توی تب جدید مرورگر باز می‌کنه —
+   هیچ‌چیزی داخل BR یا حافظه‌ی برنامه لود/ذخیره نمی‌شه. */
+const SUBJECT_LIBRARY_SECTIONS = [
+    {
+        key: 'common', label: 'دروس مشترک بین دو رشته', icon: '🤝',
+        subjects: [
+            { name: 'دینی',            icon: '📖', color: 'subj-green',  url: 'file:///C:/Users/Admin/Downloads/C112204%20(1).pdf' },
+            { name: 'فارسی',           icon: '📜', color: 'subj-pink',   url: 'file:///C:/Users/Admin/Downloads/C112201%20(1).pdf' },
+            { name: 'عربی',            icon: 'ع',  color: 'subj-indigo', url: 'file:///C:/Users/Admin/Downloads/C112206.pdf' },
+            { name: 'زبان',            icon: '🔤', color: 'subj-sky',    url: 'file:///C:/Users/Admin/Downloads/C112230%20(1).pdf' },
+            { name: 'کتاب کار زبان',   icon: '📗', color: 'subj-sky',    url: 'file:///C:/Users/Admin/Downloads/C112231%20(1).pdf' },
+            { name: 'سلامت و بهداشت',  icon: '💊', color: 'subj-lime',   url: 'file:///C:/Users/Admin/Downloads/C112268%20(1).pdf' },
+            { name: 'هویت اجتماعی',    icon: '🧑\u200d🤝\u200d🧑', color: 'subj-peach', url: 'file:///C:/Users/Admin/Downloads/C112220%20(1).pdf' },
+            { name: 'مدیریت خانواده',  icon: '🏠', color: 'subj-gold',   url: 'file:///C:/Users/Admin/Downloads/C112245%20(2).pdf' },
+            { name: 'شیمی',            icon: '🧪', color: 'subj-orange', url: 'file:///C:/Users/Admin/Downloads/C112210.pdf' }
+        ]
+    },
+    {
+        key: 'math', label: 'مختص ریاضی', icon: '🧮',
+        subjects: [
+            { name: 'فیزیک',  icon: '⚛️', color: 'subj-purple', url: 'file:///C:/Users/Admin/Downloads/C112209%20(1).pdf' },
+            { name: 'هندسه',  icon: '📐', color: 'subj-cyan',   url: 'file:///C:/Users/Admin/Downloads/C112213%20(1).pdf' },
+            { name: 'گسسته',  icon: '🔢', color: 'subj-aqua',   url: 'file:///C:/Users/Admin/Downloads/C112215%20(1).pdf' },
+            { name: 'حسابان', icon: '📈', color: 'subj-blue',   url: 'file:///C:/Users/Admin/Downloads/C112214%20(1).pdf' }
+        ]
+    },
+    {
+        key: 'experimental', label: 'مختص تجربی', icon: '🧬',
+        subjects: [
+            { name: 'فیزیک', icon: '⚛️', color: 'subj-purple', url: 'file:///C:/Users/Admin/Downloads/C112244%20(2).pdf' },
+            { name: 'زیست',  icon: '🧬', color: 'subj-lime',   url: 'file:///C:/Users/Admin/Downloads/C112216%20(1).pdf' }
+        ]
+    }
 ];
 
-function renderSubjectLibrary(){
+let currentSubjectLibraryTrack = null; // 'math' | 'experimental'
+
+function selectSubjectLibraryTrack(track){
+    currentSubjectLibraryTrack = track;
+    const selectBox = document.getElementById('subject-library-track-select');
+    const contentBox = document.getElementById('subject-library-content');
+    if(selectBox) selectBox.style.display = 'none';
+    if(contentBox) contentBox.style.display = 'block';
+    renderSubjectLibraryGrid();
+}
+
+function backToSubjectLibraryTrackSelect(){
+    currentSubjectLibraryTrack = null;
+    const selectBox = document.getElementById('subject-library-track-select');
+    const contentBox = document.getElementById('subject-library-content');
+    if(contentBox) contentBox.style.display = 'none';
+    if(selectBox) selectBox.style.display = 'block';
+}
+
+function renderSubjectLibraryGrid(){
     const grid = document.getElementById('subject-library-grid');
     if(!grid) return;
-    grid.innerHTML = SUBJECT_LIBRARY.map(s => `
-        <div class="subj-lib-card" onclick="openSubjectInBR('${s.name.replace(/'/g, "\\'")}', '${s.icon}', ${s.file ? `'${s.file}'` : 'null'})">
+    const common = SUBJECT_LIBRARY_SECTIONS.find(s => s.key === 'common');
+    const trackSection = SUBJECT_LIBRARY_SECTIONS.find(s => s.key === currentSubjectLibraryTrack);
+    const subjects = [...(common ? common.subjects : []), ...(trackSection ? trackSection.subjects : [])];
+
+    const titleEl = document.getElementById('subject-library-track-title');
+    if(titleEl) titleEl.textContent = trackSection ? ('رشته‌ی ' + (currentSubjectLibraryTrack === 'math' ? 'ریاضی' : 'تجربی')) : '';
+
+    grid.innerHTML = subjects.map(s => `
+        <a class="subj-lib-card" href="${s.url}" target="_blank" rel="noopener">
             <div class="subj-lib-visual ${s.color}">
                 <div class="shape s1"></div>
                 <div class="shape s2"></div>
                 <div class="light one"></div>
                 <div class="light two"></div>
                 <div class="light three"></div>
-                <div class="subj-lib-icon">${s.icon}</div>
+                <div class="subj-lib-icon-badge"><span class="subj-lib-icon">${s.icon}</span></div>
             </div>
             <div class="subj-lib-info">
                 <div class="subj-lib-name">${s.name}</div>
-                <div class="subj-lib-meta">باز کردن در BR</div>
+                <div class="subj-lib-meta">📄 باز کردن در کروم</div>
             </div>
-        </div>
+        </a>
     `).join('');
 }
 
 function toggleSubjectLibraryModal(show, ev){
     if(ev && ev.target !== ev.currentTarget) return;
     const modal = document.getElementById('subject-library-modal'); if(!modal) return;
-    if(show) renderSubjectLibrary();
+    if(show){
+        currentSubjectLibraryTrack = null;
+        const selectBox = document.getElementById('subject-library-track-select');
+        const contentBox = document.getElementById('subject-library-content');
+        if(selectBox) selectBox.style.display = 'block';
+        if(contentBox) contentBox.style.display = 'none';
+    }
     modal.style.display = show ? 'flex' : 'none';
-}
-
-/* با کلیک روی هر درس:
-   - اگه درس یک فایل کتاب واقعی (file) داشته باشه، همون PDF از پوشه‌ی books/ (کنار index.html)
-     خونده و توی BR باز می‌شه (نه یک دفترچه‌ی خالی).
-   - وگرنه، مثل قبل: اگه قبلاً دفترچه‌ی همون درس باز شده بود همونو فعال می‌کنه، وگرنه یه
-     دفترچه‌ی جدید (خط‌دار، A4) با اسم همون درس می‌سازه. */
-function openSubjectInBR(subjectName, icon, filePath){
-    toggleSubjectLibraryModal(false);
-    openBRApp();
-
-    const docName = filePath ? (subjectName + '.pdf') : (subjectName + '.whiteboard');
-    const existing = brDocs.find(d => d.name === docName);
-    if(existing){
-        brRenderTabs();
-        brSetActive(existing.id);
-        toast((icon || '📖') + ' درس «' + subjectName + '» باز شد', '');
-        return;
-    }
-
-    if(filePath){
-        brOpenSubjectBook(subjectName, filePath, icon);
-        return;
-    }
-
-    const [w, h] = BR_PAGE_SIZES.A4;
-    const id = 'br' + Date.now() + Math.random().toString(36).slice(2, 7);
-    const doc = {
-        id, name: docName, kind: 'whiteboard', numPages: 20, page: 1, overlays: {},
-        zoom: 1, pageW: w, pageH: h, pageStyle: 'lines-narrow'
-    };
-    brDocs.push(doc);
-    brUndoStack[id] = []; brRedoStack[id] = [];
-    brRenderTabs();
-    brSetActive(id);
-    toast((icon || '📖') + ' دفترچه‌ی درس «' + subjectName + '» ساخته شد ✅', '');
-}
-
-/* دانلود واقعی کتاب درس از پوشه‌ی books/ (باید کنار index.html، توی همون هاست آپلود شده باشه)
-   و باز کردنش توی BR، دقیقاً مثل وقتی که کاربر خودش یک PDF رو با دکمه‌ی 📂 باز می‌کنه. */
-async function brOpenSubjectBook(subjectName, filePath, icon){
-    toast('در حال بارگذاری «' + subjectName + '»...', '');
-    try{
-        if(typeof pdfjsLib === 'undefined') throw new Error('pdfjs-not-loaded');
-        if(window.__pdfWorkerReady) await window.__pdfWorkerReady;
-
-        const response = await fetch(filePath);
-        if(!response.ok) throw new Error('HTTP ' + response.status);
-        const arrayBuffer = await response.arrayBuffer();
-
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const id = 'br' + Date.now() + Math.random().toString(36).slice(2, 7);
-        const doc = {
-            id, name: subjectName + '.pdf', kind: 'pdf', pdf, numPages: pdf.numPages, page: 1,
-            overlays: {}, zoom: 1, autoFit: true, fileBlobUrl: filePath
-        };
-        brDocs.push(doc);
-        brUndoStack[id] = []; brRedoStack[id] = [];
-        brRenderTabs();
-        brSetActive(id);
-        toast((icon || '📖') + ' کتاب «' + subjectName + '» باز شد ✅', '');
-    }catch(e){
-        console.error('Subject book load error:', e);
-        alert(
-            'باز کردن کتاب «' + subjectName + '» ناموفق بود.\n\n' +
-            'مطمئن شو فایل «' + filePath + '» رو کنار index.html، توی پوشه‌ی books آپلود کردی.' +
-            (e && e.message === 'pdfjs-not-loaded' ? '\n(کتابخانه‌ی PDF بارگذاری نشد، اتصال اینترنت را بررسی کن.)' : '')
-        );
-    }
 }
 /* ===================== دستیار هوشمند (پاندا) — فاز ظاهری ===================== */
 /* توجه: فعلاً پیام‌ها فقط نمایش داده می‌شن و به هیچ هوش مصنوعی وصل نیستن.
