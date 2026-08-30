@@ -3617,8 +3617,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         .subj-lib-card:hover .subj-lib-icon-badge{ transform:translateY(-4px) scale(1.08) rotate(-3deg); }
         .subj-lib-icon{ font-size:34px; line-height:1; filter:drop-shadow(0 3px 3px rgba(0,0,0,.12)); }
         .subj-lib-info{ padding:12px 12px 14px; text-align:center; }
-        .subj-lib-name{ font-size:14.5px; font-weight:900; color:#1f2430; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        #subject-library-modal .subj-lib-name{ color: var(--text-primary, #222); }
+        .subj-lib-name{ font-size:14.5px; font-weight:900; color:#0f1117; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #subject-library-modal .subj-lib-name{ color: var(--text-primary, #0f1117); }
         .subj-lib-meta{
             display:inline-flex; align-items:center; gap:4px; margin-top:6px;
             background:linear-gradient(135deg,#fee2e2,#fce7f3);
@@ -4740,35 +4740,40 @@ function toggleCalculatorModal(show, ev){
 /* هر بخش (مشترک/ریاضی/تجربی) یک آرایه از درس‌هاست؛ هر درس فقط یک لینک file:// به همون
    PDF روی سیستم کاربر داره. کلیک روی کارت، همون لینک رو توی تب جدید مرورگر باز می‌کنه —
    هیچ‌چیزی داخل BR یا حافظه‌ی برنامه لود/ذخیره نمی‌شه. */
+/* نکته‌ی مهم: چون این سایت رو روی هاست باز می‌کنی (نه با دابل‌کلیک روی فایل)، مرورگرها
+   (خصوصاً کروم) به‌خاطر امنیت اجازه نمی‌دن یک صفحه‌ی آنلاین (https/http) به یک فایل روی
+   کامپیوتر خودت (file:///C:/...) لینک بده — این لینک‌ها همیشه بی‌اثر می‌مونن.
+   راه‌حل: خودِ فایل‌های PDF باید کنار index.html، توی یه پوشه به اسم books آپلود بشن،
+   و لینک‌ها به‌جای file:///... به مسیر نسبی books/... اشاره کنن. */
 const SUBJECT_LIBRARY_SECTIONS = [
     {
         key: 'common', label: 'دروس مشترک بین دو رشته', icon: '🤝',
         subjects: [
-            { name: 'دینی',            icon: '📖', color: 'subj-green',  url: 'file:///C:/Users/Admin/Downloads/C112204%20(1).pdf' },
-            { name: 'فارسی',           icon: '📜', color: 'subj-pink',   url: 'file:///C:/Users/Admin/Downloads/C112201%20(1).pdf' },
-            { name: 'عربی',            icon: 'ع',  color: 'subj-indigo', url: 'file:///C:/Users/Admin/Downloads/C112206.pdf' },
-            { name: 'زبان',            icon: '🔤', color: 'subj-sky',    url: 'file:///C:/Users/Admin/Downloads/C112230%20(1).pdf' },
-            { name: 'کتاب کار زبان',   icon: '📗', color: 'subj-sky',    url: 'file:///C:/Users/Admin/Downloads/C112231%20(1).pdf' },
-            { name: 'سلامت و بهداشت',  icon: '💊', color: 'subj-lime',   url: 'file:///C:/Users/Admin/Downloads/C112268%20(1).pdf' },
-            { name: 'هویت اجتماعی',    icon: '🧑\u200d🤝\u200d🧑', color: 'subj-peach', url: 'file:///C:/Users/Admin/Downloads/C112220%20(1).pdf' },
-            { name: 'مدیریت خانواده',  icon: '🏠', color: 'subj-gold',   url: 'file:///C:/Users/Admin/Downloads/C112245%20(2).pdf' },
-            { name: 'شیمی',            icon: '🧪', color: 'subj-orange', url: 'file:///C:/Users/Admin/Downloads/C112210.pdf' }
+            { name: 'دینی',            icon: '📖', color: 'subj-green',  url: 'books/dini.pdf' },
+            { name: 'فارسی',           icon: '📜', color: 'subj-pink',   url: 'books/farsi.pdf' },
+            { name: 'عربی',            icon: 'ع',  color: 'subj-indigo', url: 'books/arabi.pdf' },
+            { name: 'زبان',            icon: '🔤', color: 'subj-sky',    url: 'books/zaban.pdf' },
+            { name: 'کتاب کار زبان',   icon: '📗', color: 'subj-sky',    url: 'books/zaban-karbook.pdf' },
+            { name: 'سلامت و بهداشت',  icon: '💊', color: 'subj-lime',   url: 'books/salamat-behdasht.pdf' },
+            { name: 'هویت اجتماعی',    icon: '🧑\u200d🤝\u200d🧑', color: 'subj-peach', url: 'books/hoviyat-ejtemaei.pdf' },
+            { name: 'مدیریت خانواده',  icon: '🏠', color: 'subj-gold',   url: 'books/modiriyat-khanevade.pdf' },
+            { name: 'شیمی',            icon: '🧪', color: 'subj-orange', url: 'books/shimi.pdf' }
         ]
     },
     {
         key: 'math', label: 'مختص ریاضی', icon: '🧮',
         subjects: [
-            { name: 'فیزیک',  icon: '⚛️', color: 'subj-purple', url: 'file:///C:/Users/Admin/Downloads/C112209%20(1).pdf' },
-            { name: 'هندسه',  icon: '📐', color: 'subj-cyan',   url: 'file:///C:/Users/Admin/Downloads/C112213%20(1).pdf' },
-            { name: 'گسسته',  icon: '🔢', color: 'subj-aqua',   url: 'file:///C:/Users/Admin/Downloads/C112215%20(1).pdf' },
-            { name: 'حسابان', icon: '📈', color: 'subj-blue',   url: 'file:///C:/Users/Admin/Downloads/C112214%20(1).pdf' }
+            { name: 'فیزیک',  icon: '⚛️', color: 'subj-purple', url: 'books/fizik-riazi.pdf' },
+            { name: 'هندسه',  icon: '📐', color: 'subj-cyan',   url: 'books/hendese.pdf' },
+            { name: 'گسسته',  icon: '🔢', color: 'subj-aqua',   url: 'books/gosaste.pdf' },
+            { name: 'حسابان', icon: '📈', color: 'subj-blue',   url: 'books/hesaban.pdf' }
         ]
     },
     {
         key: 'experimental', label: 'مختص تجربی', icon: '🧬',
         subjects: [
-            { name: 'فیزیک', icon: '⚛️', color: 'subj-purple', url: 'file:///C:/Users/Admin/Downloads/C112244%20(2).pdf' },
-            { name: 'زیست',  icon: '🧬', color: 'subj-lime',   url: 'file:///C:/Users/Admin/Downloads/C112216%20(1).pdf' }
+            { name: 'فیزیک', icon: '⚛️', color: 'subj-purple', url: 'books/fizik-tajrobi.pdf' },
+            { name: 'زیست',  icon: '🧬', color: 'subj-lime',   url: 'books/zist.pdf' }
         ]
     }
 ];
