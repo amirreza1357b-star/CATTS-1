@@ -1253,8 +1253,9 @@ input, select {
 .planner-save-tick.show { opacity: 1; }
 
 /* ===== شمارش معکوس گوشه صفحه ===== */
+/* توجه: position این دکمه دیگر اینجا ست نمی‌شود (باعث پنهان‌شدن دکمه پشت باکس حساب کاربری می‌شد)
+   موقعیت واقعی آن اکنون از قوانین .app-bar-icons (چیدمان فلکس عادی کنار بقیه‌ی آیکون‌ها) گرفته می‌شود. */
 #countdown-badge {
-    position: absolute; top: 0; left: 50px;
     width: 40px; height: 40px; border-radius: 50%;
     background: linear-gradient(135deg, var(--gold), var(--purple));
     display: flex; align-items: center; justify-content: center;
@@ -2673,6 +2674,9 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
+            flex-wrap: wrap;      /* اگر آیکون‌ها از عرض صفحه بیشتر شدند، به خط بعد بروند نه اینکه از دید خارج شوند */
+            row-gap: 10px;
+            max-width: 100%;
         }
         .app-bar-icons > * { position: relative; }
         #theme-toggle, #countdown-badge, #announcement-badge, #maz-badge, #guide-badge, #settings-badge, #calculator-badge, #subject-library-badge, #lab-badge, #eitaa-badge, #translate-badge, #sample-questions-badge, #chatgpt-badge {
