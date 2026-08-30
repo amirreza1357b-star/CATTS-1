@@ -1,4 +1,4 @@
-const CACHE_VERSION = "catts-v1";
+const CACHE_VERSION = "catts-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -30,17 +30,13 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(event.request).then((cached) => {
-        const networkFetch = fetch(event.request)
-          .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
-            return response;
-          })
-          .catch(() => cached);
-
-        return cached || networkFetch;
-      })
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
     );
   }
 });
