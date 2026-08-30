@@ -3617,8 +3617,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         .subj-lib-card:hover .subj-lib-icon-badge{ transform:translateY(-4px) scale(1.08) rotate(-3deg); }
         .subj-lib-icon{ font-size:34px; line-height:1; filter:drop-shadow(0 3px 3px rgba(0,0,0,.12)); }
         .subj-lib-info{ padding:12px 12px 14px; text-align:center; }
-        .subj-lib-name{ font-size:14.5px; font-weight:900; color:#0f1117; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        #subject-library-modal .subj-lib-name{ color: var(--text-primary, #0f1117); }
+        .subj-lib-name{ font-size:14.5px; font-weight:900; color:#0f1117 !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #subject-library-modal .subj-lib-name{ color:#0f1117 !important; }
         .subj-lib-meta{
             display:inline-flex; align-items:center; gap:4px; margin-top:6px;
             background:linear-gradient(135deg,#fee2e2,#fce7f3);
@@ -4756,14 +4756,14 @@ const SUBJECT_LIBRARY_SECTIONS = [
             { name: 'کتاب کار زبان',   icon: '📗', color: 'subj-sky',    url: 'books/zaban-karbook.pdf' },
             { name: 'سلامت و بهداشت',  icon: '💊', color: 'subj-lime',   url: 'books/salamat-behdasht.pdf' },
             { name: 'هویت اجتماعی',    icon: '🧑\u200d🤝\u200d🧑', color: 'subj-peach', url: 'books/hoviyat-ejtemaei.pdf' },
-            { name: 'مدیریت خانواده',  icon: '🏠', color: 'subj-gold',   url: 'books/modiriyat-khanevade.pdf' },
-            { name: 'شیمی',            icon: '🧪', color: 'subj-orange', url: 'books/shimi.pdf' }
+            { name: 'مدیریت خانواده',  icon: '🏠', color: 'subj-gold',   url: 'books/modiriyat-khanevade.pdf' }
         ]
     },
     {
         key: 'math', label: 'مختص ریاضی', icon: '🧮',
         subjects: [
             { name: 'فیزیک',  icon: '⚛️', color: 'subj-purple', url: 'books/fizik-riazi.pdf' },
+            { name: 'شیمی',   icon: '🧪', color: 'subj-orange', url: 'books/shimi-riazi.pdf' },
             { name: 'هندسه',  icon: '📐', color: 'subj-cyan',   url: 'books/hendese.pdf' },
             { name: 'گسسته',  icon: '🔢', color: 'subj-aqua',   url: 'books/gosaste.pdf' },
             { name: 'حسابان', icon: '📈', color: 'subj-blue',   url: 'books/hesaban.pdf' }
@@ -4772,8 +4772,10 @@ const SUBJECT_LIBRARY_SECTIONS = [
     {
         key: 'experimental', label: 'مختص تجربی', icon: '🧬',
         subjects: [
-            { name: 'فیزیک', icon: '⚛️', color: 'subj-purple', url: 'books/fizik-tajrobi.pdf' },
-            { name: 'زیست',  icon: '🧬', color: 'subj-lime',   url: 'books/zist.pdf' }
+            { name: 'فیزیک',  icon: '⚛️', color: 'subj-purple', url: 'books/fizik-tajrobi.pdf' },
+            { name: 'شیمی',   icon: '🧪', color: 'subj-orange', url: 'books/shimi-tajrobi.pdf' },
+            { name: 'زیست',   icon: '🧬', color: 'subj-lime',   url: 'books/zist.pdf' },
+            { name: 'ریاضی',  icon: '🧮', color: 'subj-gray',   url: 'books/riazi.pdf' }
         ]
     }
 ];
