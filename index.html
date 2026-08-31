@@ -3688,13 +3688,14 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
       <input id="gate-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
       <input id="gate-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
       <div class="neo-cloud-actions" style="margin-top:10px;">
-        <button class="btn btn-purple" style="flex:1;" onclick="gateSignUp()">✨ ساخت حساب</button>
-        <button class="btn btn-success" style="flex:1;" onclick="gateSignIn()">🔐 ورود</button>
+        <button id="gate-signup-btn" class="btn btn-purple" style="flex:1;" onclick="gateSignUp()">✨ ساخت حساب</button>
+        <button id="gate-signin-btn" class="btn btn-success" style="flex:1;" onclick="gateSignIn()">🔐 ورود</button>
       </div>
       <p style="text-align:center;margin-top:8px;margin-bottom:0;"><a href="javascript:void(0)" onclick="gateForgotPassword()" style="font-size:.72rem;color:var(--text-secondary);text-decoration:underline;">رمز عبور را فراموش کرده‌ام</a></p>
       <p class="neo-muted" style="font-size:.66rem;margin-top:6px;margin-bottom:0;">نام و نام‌خانوادگی فقط برای «ساخت حساب» لازم است؛ برای ورود فقط ایمیل و رمز کافی است.</p>
     </div>
     <div id="gate-status" class="neo-cloud-status">در حال بررسی وضعیت ورود...</div>
+    <button type="button" id="gate-retry-btn" class="btn btn-purple" style="display:none;width:100%;margin-top:10px;" onclick="retryCloudConnection()">🔄 تلاش مجدد برای اتصال</button>
   </div>
 </div>
 <div id="ambient-bg" aria-hidden="true">
@@ -3727,7 +3728,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
           </div>
           <input id="neo-auth-email" type="email" placeholder="ایمیل" style="width:100%;margin-bottom:8px;">
           <input id="neo-auth-password" type="password" placeholder="رمز عبور (حداقل ۶ کاراکتر)" style="width:100%;">
-          <div class="neo-cloud-actions" style="margin-top:10px;"><button class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
+          <div class="neo-cloud-actions" style="margin-top:10px;"><button id="neo-auth-signup-btn" class="btn btn-purple" style="flex:1;" onclick="authSignUp()">✨ ساخت حساب</button><button id="neo-auth-signin-btn" class="btn btn-success" style="flex:1;" onclick="authSignIn()">🔐 ورود</button></div>
           <p style="text-align:center;margin-top:8px;margin-bottom:0;"><a href="javascript:void(0)" onclick="authForgotPassword()" style="font-size:.72rem;color:var(--text-secondary);text-decoration:underline;">رمز عبور را فراموش کرده‌ام</a></p>
           <p class="neo-muted" style="font-size:.66rem;margin-top:6px;margin-bottom:0;">نام و نام‌خانوادگی فقط برای «ساخت حساب» لازم است؛ برای ورود فقط ایمیل و رمز کافی است.</p>
         </div>
@@ -7670,6 +7671,30 @@ function getSupabaseClient(){
 function collectCloudData(){ return collectBackupData(); }
 
 /* ---------------------------------------------------------------------- */
+/* Phase 5 — جلوگیری از «هنگ‌کردن بی‌پایان» درخواست‌های شبکه (بخش ثبت‌نام/  */
+/* ورود کند یا اصلاً کار نکردن): هر درخواست شبکه‌ای که به سرور می‌رود حداکثر */
+/* یک زمان مشخص فرصت دارد؛ اگر اینترنت ضعیف/قطع باشد، به‌جای اسپینر بی‌پایان */
+/* یک پیام خطای واضح نشان داده می‌شود و کاربر می‌تواند دوباره تلاش کند.       */
+/* ---------------------------------------------------------------------- */
+function withTimeout(promiseLike, ms, timeoutMsg){
+    const p = Promise.resolve(promiseLike);
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(timeoutMsg || 'اتصال به سرور طول کشید؛ اینترنتت را بررسی کن و دوباره تلاش کن.')), ms);
+    });
+    return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
+/* غیرفعال‌کردن موقت دکمه‌ها حین درخواست شبکه‌ای — هم از کلیک‌های تکراری     */
+/* (که خودشان باعث کندی/خطای «قبلاً ثبت‌نام شده» می‌شوند) جلوگیری می‌کند،    */
+/* هم به کاربر نشان می‌دهد که برنامه واقعاً در حال کار کردن است.             */
+function setButtonsBusy(ids, busy){
+    ids.forEach(id => {
+        const btn = document.getElementById(id);
+        if(btn) btn.disabled = !!busy;
+    });
+}
+
+/* ---------------------------------------------------------------------- */
 /* دروازه‌ی اجباری ورود/ثبت‌نام: تا وقتی session معتبر وجود ندارد، کاربر    */
 /* اجازه‌ی دیدن یا استفاده از بدنه‌ی برنامه را ندارد.                        */
 /* ---------------------------------------------------------------------- */
@@ -7683,15 +7708,38 @@ function setGateStatus(text, ok){
     const el = document.getElementById('gate-status');
     if(el){ el.textContent = text; el.style.color = ok ? '#67e8f9' : ''; }
 }
+/* اگر کتابخانه‌ی Supabase اصلاً از CDN لود نشده باشد (اینترنت ضعیف/قطعی      */
+/* لحظه‌ای)، قبلاً کاربر برای همیشه پشت دروازه گیر می‌کرد. حالا یک دکمه‌ی      */
+/* «تلاش مجدد» ظاهر می‌شود که هم اسکریپت را دوباره لود می‌کند هم دوباره       */
+/* وضعیت ورود را بررسی می‌کند.                                              */
+window.retryCloudConnection = function(){
+    const btn = document.getElementById('gate-retry-btn');
+    if(btn) btn.disabled = true;
+    setGateStatus('در حال تلاش مجدد برای اتصال...');
+    const finish = () => { if(btn) btn.disabled = false; };
+    if(!window.supabase){
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        s.onload = () => { authRefreshUI().finally(finish); };
+        s.onerror = () => { setGateStatus('❌ باز هم اتصال به سرور برقرار نشد؛ اتصال اینترنتت را بررسی کن.'); finish(); };
+        document.head.appendChild(s);
+    } else {
+        authRefreshUI().finally(finish);
+    }
+};
 
 async function authRefreshUI(){
     const client = getSupabaseClient();
     if(!client){
         setCloudStatus('☁️ اتصال ابری در دسترس نیست؛ برنامه در حالت محلی است.');
-        setGateStatus('❌ اتصال به سرور در دسترس نیست؛ لطفاً اتصال اینترنت را بررسی و صفحه را رفرش کن.');
+        setGateStatus('❌ اتصال به سرور در دسترس نیست؛ لطفاً اتصال اینترنت را بررسی کن.');
+        const retryBtn = document.getElementById('gate-retry-btn');
+        if(retryBtn) retryBtn.style.display = 'block';
         lockApp();
         return;
     }
+    const retryBtnOk = document.getElementById('gate-retry-btn');
+    if(retryBtnOk) retryBtnOk.style.display = 'none';
     const { data:{ session } } = await client.auth.getSession();
     const ub = document.getElementById('neo-user-box'), ab = document.getElementById('neo-auth-box'), em = document.getElementById('neo-auth-user-email');
     const dot = document.getElementById('cloud-account-dot');
@@ -7726,19 +7774,26 @@ window.gateSignUp = async function(){
     if(!firstName || !lastName){ setGateStatus('نام و نام‌خانوادگی را وارد کن.'); return; }
     if(!email || !password || password.length < 6){ setGateStatus('ایمیل و رمز عبور معتبر (حداقل ۶ کاراکتر) وارد کن.'); return; }
     setGateStatus('در حال ساخت حساب...');
-    const { data, error } = await client.auth.signUp({
-        email, password,
-        options: { data: { first_name: firstName, last_name: lastName } }
-    });
-    if(error){ setGateStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
-    try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
-    if(data.session && data.user){
-        try{ await client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }); }catch(e){}
-        setGateStatus('✅ حساب ساخته شد و وارد شدی.', true);
-    } else {
-        setGateStatus('📩 حساب ساخته شد؛ ایمیل تأیید را باز کن و سپس وارد شو.', true);
+    setButtonsBusy(['gate-signup-btn','gate-signin-btn'], true);
+    try{
+        const { data, error } = await withTimeout(
+            client.auth.signUp({ email, password, options: { data: { first_name: firstName, last_name: lastName } } }),
+            15000, 'ساخت حساب خیلی طول کشید؛ اینترنتت را بررسی کن و دوباره تلاش کن.'
+        );
+        if(error){ setGateStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
+        try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
+        if(data.session && data.user){
+            try{ await withTimeout(client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }), 10000); }catch(e){}
+            setGateStatus('✅ حساب ساخته شد و وارد شدی.', true);
+        } else {
+            setGateStatus('📩 حساب ساخته شد؛ ایمیل تأیید را باز کن (پوشه‌ی اسپم را هم چک کن) و سپس وارد شو.', true);
+        }
+        await authRefreshUI();
+    }catch(err){
+        setGateStatus('❌ ' + (err?.message || 'خطای نامشخص؛ دوباره تلاش کن.'));
+    }finally{
+        setButtonsBusy(['gate-signup-btn','gate-signin-btn'], false);
     }
-    await authRefreshUI();
 };
 window.gateSignIn = async function(){
     const client = getSupabaseClient();
@@ -7747,10 +7802,20 @@ window.gateSignIn = async function(){
     if(!client){ setGateStatus('اتصال ابری در دسترس نیست.'); return; }
     if(!email || !password){ setGateStatus('ایمیل و رمز عبور را وارد کن.'); return; }
     setGateStatus('در حال ورود...');
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if(error){ setGateStatus('ورود ناموفق بود: ' + error.message); return; }
-    setGateStatus('✅ ورود موفق بود...', true);
-    await authRefreshUI();
+    setButtonsBusy(['gate-signup-btn','gate-signin-btn'], true);
+    try{
+        const { data, error } = await withTimeout(
+            client.auth.signInWithPassword({ email, password }),
+            15000, 'ورود خیلی طول کشید؛ اینترنتت را بررسی کن و دوباره تلاش کن.'
+        );
+        if(error){ setGateStatus('ورود ناموفق بود: ' + error.message); return; }
+        setGateStatus('✅ ورود موفق بود...', true);
+        await authRefreshUI();
+    }catch(err){
+        setGateStatus('❌ ' + (err?.message || 'خطای نامشخص؛ دوباره تلاش کن.'));
+    }finally{
+        setButtonsBusy(['gate-signup-btn','gate-signin-btn'], false);
+    }
 };
 window.gateForgotPassword = async function(){
     const client = getSupabaseClient();
@@ -7772,22 +7837,29 @@ window.authSignUp = async function(){
     if(!firstName || !lastName){ setCloudStatus('نام و نام‌خانوادگی را وارد کن.'); return; }
     if(!email || !password || password.length < 6){ setCloudStatus('ایمیل و رمز عبور معتبر (حداقل ۶ کاراکتر) وارد کن.'); return; }
     setCloudStatus('در حال ساخت حساب...');
-    /* نام/فامیل به‌عنوان متادیتای کاربر هم فرستاده می‌شود تا تریگر سمت دیتابیس
-       بلافاصله (حتی قبل از تأیید ایمیل) پروفایل گفتگو را خودش بسازد؛ دیگر
-       نیازی نیست دفعه‌ی اول ورود به چت دوباره اسم پرسیده شود. */
-    const { data, error } = await client.auth.signUp({
-        email, password,
-        options: { data: { first_name: firstName, last_name: lastName } }
-    });
-    if(error){ setCloudStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
-    /* روش پشتیبان: اگر تریگر دیتابیس هنوز اجرا نشده باشد (اسکریپت SQL سوم)،
-       این هم به‌عنوان راه دوم نام را برای بعد از اولین ورود نگه می‌دارد. */
-    try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
-    if(data.session && data.user){
-        try{ await client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }); }catch(e){}
+    setButtonsBusy(['neo-auth-signup-btn','neo-auth-signin-btn'], true);
+    try{
+        /* نام/فامیل به‌عنوان متادیتای کاربر هم فرستاده می‌شود تا تریگر سمت دیتابیس
+           بلافاصله (حتی قبل از تأیید ایمیل) پروفایل گفتگو را خودش بسازد؛ دیگر
+           نیازی نیست دفعه‌ی اول ورود به چت دوباره اسم پرسیده شود. */
+        const { data, error } = await withTimeout(
+            client.auth.signUp({ email, password, options: { data: { first_name: firstName, last_name: lastName } } }),
+            15000, 'ساخت حساب خیلی طول کشید؛ اینترنتت را بررسی کن و دوباره تلاش کن.'
+        );
+        if(error){ setCloudStatus('ساخت حساب ناموفق بود: ' + error.message); return; }
+        /* روش پشتیبان: اگر تریگر دیتابیس هنوز اجرا نشده باشد (اسکریپت SQL سوم)،
+           این هم به‌عنوان راه دوم نام را برای بعد از اولین ورود نگه می‌دارد. */
+        try{ localStorage.setItem('chat_pending_profile_' + email, JSON.stringify({ firstName, lastName })); }catch(e){}
+        if(data.session && data.user){
+            try{ await withTimeout(client.from('profiles').upsert({ id: data.user.id, first_name: firstName, last_name: lastName, email }), 10000); }catch(e){}
+        }
+        setCloudStatus(data.session ? '✅ حساب ساخته شد و وارد شدی.' : '📩 حساب ساخته شد؛ ایمیل تأیید را باز کن (پوشه‌ی اسپم را هم چک کن) و سپس وارد شو.', true);
+        await authRefreshUI();
+    }catch(err){
+        setCloudStatus('❌ ' + (err?.message || 'خطای نامشخص؛ دوباره تلاش کن.'));
+    }finally{
+        setButtonsBusy(['neo-auth-signup-btn','neo-auth-signin-btn'], false);
     }
-    setCloudStatus(data.session ? '✅ حساب ساخته شد و وارد شدی.' : '📩 حساب ساخته شد؛ ایمیل تأیید را باز کن و سپس وارد شو.', true);
-    await authRefreshUI();
 };
 window.authSignIn = async function(){
     const client = getSupabaseClient();
@@ -7796,10 +7868,20 @@ window.authSignIn = async function(){
     if(!client){ setCloudStatus('اتصال ابری در دسترس نیست.'); return; }
     if(!email || !password){ setCloudStatus('ایمیل و رمز عبور را وارد کن.'); return; }
     setCloudStatus('در حال ورود...');
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if(error){ setCloudStatus('ورود ناموفق بود: ' + error.message); return; }
-    setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...', true);
-    await authRefreshUI();
+    setButtonsBusy(['neo-auth-signup-btn','neo-auth-signin-btn'], true);
+    try{
+        const { data, error } = await withTimeout(
+            client.auth.signInWithPassword({ email, password }),
+            15000, 'ورود خیلی طول کشید؛ اینترنتت را بررسی کن و دوباره تلاش کن.'
+        );
+        if(error){ setCloudStatus('ورود ناموفق بود: ' + error.message); return; }
+        setCloudStatus('✅ ورود موفق بود؛ در حال دریافت اطلاعات ابری...', true);
+        await authRefreshUI();
+    }catch(err){
+        setCloudStatus('❌ ' + (err?.message || 'خطای نامشخص؛ دوباره تلاش کن.'));
+    }finally{
+        setButtonsBusy(['neo-auth-signup-btn','neo-auth-signin-btn'], false);
+    }
 };
 /* ---------------------------------------------------------------------- */
 /* Phase 4 — Password Reset Flow (بخش ۱۳ پرامپت: «Password reset» ازقلم    */
@@ -7881,7 +7963,10 @@ async function pullAndMergeFromCloud(){
     const { data:{ session } } = await client.auth.getSession();
     if(!session?.user) return;
     try{
-        const { data: remote, error } = await client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle();
+        const { data: remote, error } = await withTimeout(
+            client.from('study_cloud').select('data,updated_at').eq('user_id', session.user.id).maybeSingle(),
+            20000, 'دریافت اطلاعات ابری خیلی طول کشید.'
+        );
         if(error) throw error;
         if(remote && remote.data){
             detectConflict(remote.updated_at);
@@ -7903,7 +7988,10 @@ async function pushToCloud(){
     if(!session?.user) return;
     const payload = collectCloudData();
     const nowIso = new Date().toISOString();
-    const { error } = await client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: nowIso }, { onConflict:'user_id' });
+    const { error } = await withTimeout(
+        client.from('study_cloud').upsert({ user_id: session.user.id, data: payload, updated_at: nowIso }, { onConflict:'user_id' }),
+        20000, 'ارسال اطلاعات به ابر خیلی طول کشید.'
+    );
     if(error) throw error;
     setLastKnownRemoteUpdatedAt(nowIso); // بعد از push موفق، این نسخه را به‌عنوان آخرین نسخه‌ی شناخته‌شده‌ی ابری ثبت کن
 }
@@ -11445,6 +11533,27 @@ loadSmartNotes();
     /* ---------------------------------------------------------------- */
     /* ۱) انیمیشن ورود کارت‌ها هنگام اسکرول                                */
     /* ---------------------------------------------------------------- */
+    // یک IntersectionObserver واحد و مشترک برای همیشه — قبلاً initCardReveal
+    // در هر بار فراخوانی یک نمونه‌ی تازه‌ی IntersectionObserver می‌ساخت که هرگز
+    // آزاد نمی‌شد. چون MutationObserver پایین این تابع را برای هر تغییر کوچک
+    // DOM در سراسر برنامه (چت، تاریخچه، یادداشت‌ها، برنامه هفتگی و...) صدا
+    // می‌زد، بعد از مدتی استفاده صدها observer زنده روی حافظه جمع می‌شد و
+    // برنامه رفته‌رفته کند/هنگ می‌کرد. الان فقط یک observer ساخته و همیشه
+    // دوباره استفاده می‌شود.
+    let cardRevealObserver = null;
+    function getCardRevealObserver(){
+        if(cardRevealObserver || reduceMotion || !('IntersectionObserver' in window)) return cardRevealObserver;
+        cardRevealObserver = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+                if(entry.isIntersecting){
+                    entry.target.classList.add('reveal-in');
+                    entry.target.classList.remove('reveal-ready');
+                    cardRevealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        return cardRevealObserver;
+    }
     function initCardReveal(){
         const cards = document.querySelectorAll('.glass-card:not(.reveal-in):not(.reveal-ready)');
         if(!cards.length) return;
@@ -11452,15 +11561,7 @@ loadSmartNotes();
             cards.forEach(c => { c.classList.remove('reveal-ready'); });
             return;
         }
-        const io = new IntersectionObserver(function(entries){
-            entries.forEach(function(entry){
-                if(entry.isIntersecting){
-                    entry.target.classList.add('reveal-in');
-                    entry.target.classList.remove('reveal-ready');
-                    io.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        const io = getCardRevealObserver();
         cards.forEach(function(c){
             // فقط کارت‌هایی که فعلاً روی صفحه دیده نمی‌شن رو انیمیت کن، بقیه همون‌طور ثابت بمونن
             const rect = c.getBoundingClientRect();
@@ -11472,16 +11573,27 @@ loadSmartNotes();
     }
     // چون خیلی از کارت‌ها داخل تب‌های مخفی (display:none) دیر ساخته/نمایش داده می‌شن،
     // با یه MutationObserver سبک، کارت‌های تازه‌اضافه‌شده رو هم پوشش می‌دیم.
+    // نکته‌ی مهم: چون تقریباً هر بخش برنامه مرتب innerHTML خودش را بازسازی
+    // می‌کند (هر ۱۲ ثانیه پیام‌های چت، هر ۲۰ ثانیه sync ابری و...) این
+    // observer می‌توانست خیلی زیاد فعال شود؛ با requestAnimationFrame محدود
+    // شده تا در هر فریم حداکثر یک‌بار initCardReveal را صدا بزند، نه به ازای
+    // تک‌تک جهش‌های کوچک DOM.
     function observeNewCards(){
         if(!('MutationObserver' in window)) return;
+        let scheduled = false;
         const mo = new MutationObserver(function(mutations){
+            if(scheduled) return;
             let found = false;
-            mutations.forEach(function(m){
-                m.addedNodes && m.addedNodes.forEach(function(n){
-                    if(n.nodeType === 1 && (n.classList?.contains('glass-card') || n.querySelector?.('.glass-card'))) found = true;
-                });
-            });
-            if(found) initCardReveal();
+            for(const m of mutations){
+                if(!m.addedNodes) continue;
+                for(const n of m.addedNodes){
+                    if(n.nodeType === 1 && (n.classList?.contains('glass-card') || n.querySelector?.('.glass-card'))){ found = true; break; }
+                }
+                if(found) break;
+            }
+            if(!found) return;
+            scheduled = true;
+            requestAnimationFrame(function(){ scheduled = false; initCardReveal(); });
         });
         mo.observe(document.body, { childList: true, subtree: true });
     }
