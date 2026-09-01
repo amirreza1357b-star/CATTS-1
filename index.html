@@ -4056,6 +4056,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <div class="tabs">
         <button class="tab-btn active" style="--tc:#a855f7" onclick="switchTab('tab-dashboard', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg></span><span class="tab-label">داشبورد</span></button>
         <button class="tab-btn" style="--tc:#ec4899" onclick="switchTab('tab-timer', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l3 2"></path><path d="M9 2h6"></path><path d="M12 2v2"></path></svg></span><span class="tab-label">زمان‌سنج</span></button>
+        <button class="tab-btn" style="--tc:#facc15" onclick="switchTab('tab-as', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8" cy="8.5" r="1.6" fill="currentColor" stroke="none"></circle><path d="M12 8.5h6"></path><circle cx="8" cy="13.5" r="1.6" fill="currentColor" stroke="none"></circle><path d="M12 13.5h6"></path><path d="M6.2 18.3l1.6 1.6 3-3"></path></svg></span><span class="tab-label">AS</span></button>
         <button class="tab-btn" style="--tc:#8b5cf6" onclick="switchTab('tab-stats', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M7 15l4-5 3 3 5-7"></path></svg></span><span class="tab-label">آمار دروس</span></button>
         <button class="tab-btn" style="--tc:#06b6d4" onclick="switchTab('tab-errors', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path><path d="M9.5 12.5l5 5M14.5 12.5l-5 5"></path></svg></span><span class="tab-label">دفتر خطاها</span></button>
         <button class="tab-btn" style="--tc:#10b981" onclick="switchTab('tab-notes-ve', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M9 7h7M9 11h5"></path></svg></span><span class="tab-label">نکات VE</span></button>
@@ -4205,6 +4206,236 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
                     <button class="btn btn-danger" style="margin-top: 10px; font-size: 0.85rem; padding: 8px; width:100%;" onclick="clearHistory()">حذف کل تاریخچه</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ==================== تب AS — پاسخ‌برگ دیجیتال ==================== -->
+    <style>
+        #tab-as .as-view{ display:none; }
+        #tab-as .as-view.active{ display:block; animation: fadeInUp .35s ease; }
+
+        .as-toggle-row{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+        .as-toggle-btn{
+            flex:1 1 auto; min-width:110px; padding:10px 8px; border-radius:12px; border:var(--border);
+            background:var(--card-bg); color:var(--text-secondary); font-weight:700; font-size:.82rem;
+            cursor:pointer; transition:.2s ease; text-align:center;
+        }
+        .as-toggle-btn.active{ background:linear-gradient(120deg, var(--gold), var(--accent)); color:#fff; border-color:transparent; box-shadow:0 6px 16px rgba(0,0,0,.25); }
+        .as-sub-box{ display:none; margin-top:6px; }
+        .as-sub-box.show{ display:block; }
+
+        .as-sticky-head{ position:sticky; top:52px; z-index:20; }
+        .as-head-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+        .as-exam-title{ font-weight:800; font-size:1.05rem; }
+        .as-exam-sub{ color:var(--text-secondary); font-size:.78rem; margin-top:3px; }
+        .as-timer-badge{
+            font-family:var(--font-mono); font-weight:800; font-size:1.3rem; padding:8px 16px;
+            border-radius:14px; background:rgba(139,92,246,.15); border:1px solid rgba(139,92,246,.4); color:var(--accent);
+            letter-spacing:1px;
+        }
+        .as-timer-badge.as-timer-low{ background:rgba(244,63,94,.18); border-color:rgba(244,63,94,.5); color:var(--danger); animation:asPulse 1s infinite; }
+        @keyframes asPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+
+        .as-legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:.74rem; color:var(--text-secondary); margin-bottom:12px; align-items:center; }
+        .as-legend span{ display:flex; align-items:center; gap:6px; }
+        .as-dot{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+        .as-dot-correct{ background:var(--success); }
+        .as-dot-wrong{ background:var(--danger); }
+        .as-dot-empty{ background:transparent; border:1px solid var(--text-secondary); }
+        .as-dot-removed{ background:transparent; border:1px dashed var(--text-secondary); }
+
+        .as-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:8px; }
+        .as-qrow{
+            display:flex; align-items:center; gap:6px; background:var(--card-bg); border:var(--border);
+            border-radius:12px; padding:6px 8px;
+        }
+        .as-qnum{ font-family:var(--font-mono); font-weight:800; font-size:.78rem; color:var(--text-secondary); min-width:22px; text-align:center; }
+        .as-opts{ display:flex; gap:5px; flex:1; justify-content:space-between; }
+        .as-bubble{
+            width:27px; height:27px; border-radius:50%; border:1.5px solid var(--text-secondary);
+            background:transparent; color:var(--text-secondary); font-size:.72rem; font-weight:800;
+            display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s ease; flex-shrink:0;
+        }
+        .as-bubble:hover{ border-color:var(--accent); color:var(--accent); }
+        .as-bubble.selected{ background:var(--accent); border-color:var(--accent); color:#fff; transform:scale(1.05); }
+        .as-qrow.st-correct{ border-color:rgba(52,211,153,.55); }
+        .as-qrow.st-correct .as-bubble.selected{ background:var(--success); border-color:var(--success); }
+        .as-qrow.st-correct .as-status-icon{ color:var(--success); }
+        .as-qrow.st-wrong{ border-color:rgba(244,63,94,.55); }
+        .as-qrow.st-wrong .as-bubble.user-mark{ background:var(--danger); border-color:var(--danger); color:#fff; }
+        .as-qrow.st-wrong .as-bubble.key-mark{ background:transparent; border-color:var(--success); color:var(--success); }
+        .as-qrow.st-wrong .as-status-icon{ color:var(--danger); }
+        .as-qrow.st-empty .as-bubble.key-mark{ background:transparent; border-color:var(--text-secondary); color:var(--text-secondary); }
+        .as-qrow.st-empty .as-status-icon{ color:var(--text-secondary); }
+        .as-qrow.st-removed{ opacity:.55; }
+        .as-qrow.st-removed .as-status-icon{ color:var(--text-secondary); }
+        .as-status-icon{ width:20px; text-align:center; font-size:.95rem; font-weight:900; flex-shrink:0; }
+
+        .as-fixed-submit{ width:100%; margin-top:14px; position:sticky; bottom:8px; z-index:15; }
+
+        .as-report-head{ text-align:center; }
+        .as-report-title{ font-size:1.15rem; font-weight:800; }
+        .as-report-date{ color:var(--text-secondary); font-size:.78rem; margin-top:2px; margin-bottom:14px; }
+        .as-report-percent-wrap{ display:flex; justify-content:center; margin-bottom:14px; }
+        .as-percent-circle{
+            width:130px; height:130px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+            background:conic-gradient(var(--gold) calc(var(--pct,0)*1%), rgba(255,255,255,.08) 0);
+            box-shadow:0 8px 26px rgba(0,0,0,.3);
+        }
+        .as-percent-circle::before{
+            content:''; position:absolute;
+        }
+        .as-percent-circle span{
+            width:104px; height:104px; border-radius:50%; background:var(--bg-solid); display:flex; align-items:center;
+            justify-content:center; font-size:1.4rem; font-weight:900; font-family:var(--font-mono);
+        }
+        .as-report-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+        .as-stat-chip{ background:var(--card-bg); border:var(--border); border-radius:12px; padding:10px 4px; }
+        .as-stat-chip b{ display:block; font-size:1.15rem; font-family:var(--font-mono); }
+        .as-stat-chip span{ display:block; font-size:.68rem; color:var(--text-secondary); margin-top:3px; }
+        .as-stat-chip.correct b{ color:var(--success); }
+        .as-stat-chip.wrong b{ color:var(--danger); }
+        .as-stat-chip.empty b{ color:var(--text-secondary); }
+        .as-stat-chip.raw b{ color:var(--gold); }
+
+        .as-note-item{ background:var(--card-bg); border:var(--border); border-radius:12px; padding:10px 12px; }
+        .as-note-item .as-note-title{ font-weight:800; font-size:.86rem; margin-bottom:4px; color:var(--gold); }
+        .as-note-item .as-note-text{ font-size:.8rem; color:var(--text-primary); line-height:1.9; white-space:pre-wrap; }
+        .as-note-item .as-note-del{ float:left; background:none; border:none; color:var(--danger); cursor:pointer; font-size:.75rem; }
+
+        .as-hist-item{
+            display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--card-bg);
+            border:var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:pointer; transition:.15s;
+        }
+        .as-hist-item:hover{ background:var(--card-bg-hover); }
+        .as-hist-name{ font-weight:700; font-size:.86rem; }
+        .as-hist-date{ font-size:.68rem; color:var(--text-secondary); margin-top:2px; }
+        .as-hist-percent{ font-weight:900; font-family:var(--font-mono); font-size:1rem; }
+        .as-hist-del{ background:none; border:none; color:var(--danger); font-size:1rem; cursor:pointer; padding:4px 8px; }
+        .as-empty-hint{ color:var(--text-secondary); font-size:.82rem; text-align:center; padding:14px 6px; }
+
+        @media (max-width:420px){
+            .as-grid{ grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); }
+            .as-bubble{ width:24px; height:24px; font-size:.66rem; }
+            .as-report-stats{ grid-template-columns:repeat(2,1fr); }
+        }
+    </style>
+    <div id="tab-as" class="tab-content">
+
+        <!-- ===== مرحله ۱: تنظیمات آزمون ===== -->
+        <div id="as-view-setup" class="as-view active">
+            <div class="glass-card">
+                <div class="section-title">🗒️ پاسخ‌برگ دیجیتال (AS)</div>
+                <input type="text" id="as-exam-name" placeholder="نام آزمون (مثلاً: آزمون جامع قلمچی ۱۲ شهریور)">
+                <input type="number" id="as-question-count" min="1" max="300" placeholder="تعداد سوالات (مثلاً ۴۰)" oninput="asCalcSmartTime()">
+
+                <div class="as-toggle-row">
+                    <button type="button" class="as-toggle-btn active" id="as-mode-btn-none" onclick="asSetTimerMode('none')">🚫 بدون تایمر</button>
+                    <button type="button" class="as-toggle-btn" id="as-mode-btn-manual" onclick="asSetTimerMode('manual')">🕐 تایمر دستی</button>
+                    <button type="button" class="as-toggle-btn" id="as-mode-btn-smart" onclick="asSetTimerMode('smart')">🧠 تایمر هوشمند</button>
+                </div>
+
+                <div id="as-timer-manual-box" class="as-sub-box">
+                    <div class="input-group">
+                        <input type="number" id="as-manual-minutes" placeholder="دقیقه" min="0" value="30">
+                        <input type="number" id="as-manual-seconds" placeholder="ثانیه" min="0" max="59" value="0">
+                    </div>
+                </div>
+
+                <div id="as-timer-smart-box" class="as-sub-box">
+                    <select id="as-track-select" onchange="asUpdateSubjects()">
+                        <option value="تجربی">🧬 رشته تجربی</option>
+                        <option value="ریاضی">📐 رشته ریاضی</option>
+                    </select>
+                    <select id="as-subject-select" onchange="asCalcSmartTime()"></select>
+                    <div class="rate-hint" id="as-rate-hint">تعداد سوالات را بالا وارد کن تا زمان پیشنهادی محاسبه شود.</div>
+                    <div class="timer-mode-badge" id="as-smart-badge">⏱️</div>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="asStartExam()">🚀 شروع آزمون و باز کردن پاسخ‌برگ</button>
+            </div>
+
+            <div class="glass-card">
+                <div class="section-title">📚 تاریخچه پاسخ‌برگ‌ها</div>
+                <div id="as-history-list"><div class="as-empty-hint">هنوز آزمونی با پاسخ‌برگ دیجیتال ثبت نکردی.</div></div>
+            </div>
+        </div>
+
+        <!-- ===== مرحله ۲: پاسخ‌برگ خودت ===== -->
+        <div id="as-view-sheet" class="as-view">
+            <div class="glass-card as-sticky-head">
+                <div class="as-head-row">
+                    <div>
+                        <div class="as-exam-title" id="as-sheet-exam-name">—</div>
+                        <div class="as-exam-sub" id="as-sheet-progress">۰ از ۰ پاسخ داده شده</div>
+                    </div>
+                    <div class="as-timer-badge" id="as-live-timer" style="display:none;">۳۰:۰۰</div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="as-legend">
+                    <span><i class="as-dot" style="background:var(--accent)"></i> انتخاب‌شده</span>
+                    <span><i class="as-dot" style="background:transparent;border:1px solid var(--text-secondary)"></i> بدون پاسخ</span>
+                </div>
+                <div id="as-sheet-grid" class="as-grid"></div>
+            </div>
+            <button class="btn btn-success as-fixed-submit" onclick="asSubmitSheet()">✅ ثبت پاسخ‌ها</button>
+        </div>
+
+        <!-- ===== مرحله ۳: کلید پاسخنامه ===== -->
+        <div id="as-view-key" class="as-view">
+            <div class="glass-card as-sticky-head">
+                <div class="as-head-row">
+                    <div>
+                        <div class="as-exam-title" id="as-key-exam-name">—</div>
+                        <div class="as-exam-sub">پاسخنامه رو باز کن و کلید صحیح هر سوال رو بزن. اگر سوالی حذف شده، بدون پاسخ رها کن.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div id="as-key-grid" class="as-grid"></div>
+            </div>
+            <button class="btn btn-primary as-fixed-submit" onclick="asFinalizeExam()">🏁 ثبت نهایی و مشاهده کارنامه</button>
+        </div>
+
+        <!-- ===== مرحله ۴: کارنامه ===== -->
+        <div id="as-view-report" class="as-view">
+            <div class="glass-card as-report-head">
+                <div class="as-report-title" id="as-report-exam-name">—</div>
+                <div class="as-report-date" id="as-report-date"></div>
+                <div class="as-report-percent-wrap">
+                    <div class="as-percent-circle" id="as-percent-circle" style="--pct:0;">
+                        <span id="as-percent-value">۰٪</span>
+                    </div>
+                </div>
+                <div class="as-report-stats">
+                    <div class="as-stat-chip correct"><b id="as-stat-correct">۰</b><span>صحیح</span></div>
+                    <div class="as-stat-chip wrong"><b id="as-stat-wrong">۰</b><span>غلط</span></div>
+                    <div class="as-stat-chip empty"><b id="as-stat-empty">۰</b><span>بدون پاسخ</span></div>
+                    <div class="as-stat-chip raw"><b id="as-stat-raw">۰٪</b><span>درصد خام</span></div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div class="section-title">🗂️ کارنامه سوالات</div>
+                <div class="as-legend">
+                    <span><i class="as-dot as-dot-correct"></i> پاسخ صحیح</span>
+                    <span><i class="as-dot as-dot-wrong"></i> پاسخ اشتباه</span>
+                    <span><i class="as-dot as-dot-empty"></i> بدون پاسخ</span>
+                    <span><i class="as-dot as-dot-removed"></i> سوال حذف‌شده</span>
+                </div>
+                <div id="as-report-grid" class="as-grid as-grid-report"></div>
+            </div>
+
+            <div class="glass-card">
+                <div class="section-title">🖋️ اطلاعات تکمیلی</div>
+                <input type="text" id="as-note-title" placeholder="عنوان یادداشت (مثلاً: علت غلط‌ها، جمع‌بندی، برنامه بعدی...)">
+                <textarea id="as-note-text" rows="3" placeholder="توضیحات..." style="width:100%;resize:vertical;"></textarea>
+                <button class="btn btn-purple" style="width:100%;margin-top:8px;" onclick="asAddNote()">➕ افزودن یادداشت</button>
+                <div id="as-notes-list" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;"></div>
+            </div>
+
+            <button class="btn btn-danger" style="width:100%;" onclick="asNewExam()">🔄 آزمون جدید</button>
         </div>
     </div>
 
@@ -6380,6 +6611,361 @@ function resetTimer(){
     renderTimerDisplay(timerTotal);
 }
 
+/* ========================================================================== */
+/* MODULE: AS — پاسخ‌برگ دیجیتال (آزمون‌گیر + کارنامه‌ساز)
+/* ========================================================================== */
+function safeRunAS(fn, label){ try{ fn(); }catch(e){ console.error('خطا در AS/' + label + ':', e); } }
+
+const AS_HISTORY_KEY = 'as_history_v1';
+let asState = {
+    examName: '', count: 0,
+    timerMode: 'none',       // none | manual | smart
+    timerSeconds: 0,
+    userAnswers: {},
+    correctAnswers: {},
+    notes: [],
+    lastResult: null,
+    viewingHistoryId: null   // اگر کارنامه از تاریخچه باز شده باشد
+};
+let asTimerId = null, asTimeLeft = 0, asTimerRunning = false;
+
+function asGetHistory(){ return safeParse(AS_HISTORY_KEY, []); }
+function asSetHistory(arr){ safeSet(AS_HISTORY_KEY, arr); }
+
+function asSwitchView(viewId){
+    document.querySelectorAll('#tab-as .as-view').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(viewId);
+    if(el) el.classList.add('active');
+    const tabAs = document.getElementById('tab-as');
+    if(tabAs) tabAs.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ---------- مرحله ۱: تنظیمات ---------- */
+function asSetTimerMode(mode){
+    asState.timerMode = mode;
+    ['none','manual','smart'].forEach(m => {
+        const btn = document.getElementById('as-mode-btn-' + m);
+        if(btn) btn.classList.toggle('active', m === mode);
+    });
+    const manualBox = document.getElementById('as-timer-manual-box');
+    const smartBox = document.getElementById('as-timer-smart-box');
+    if(manualBox) manualBox.classList.toggle('show', mode === 'manual');
+    if(smartBox) smartBox.classList.toggle('show', mode === 'smart');
+    if(mode === 'smart') asUpdateSubjects();
+}
+function asUpdateSubjects(){
+    const track = document.getElementById('as-track-select')?.value || 'تجربی';
+    const select = document.getElementById('as-subject-select'); if(!select) return;
+    const current = select.value;
+    const subjects = Object.keys(SUBJECT_RATES[track] || {});
+    select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+    if(subjects.includes(current)) select.value = current;
+    asCalcSmartTime();
+}
+function asCalcSmartTime(){
+    if(asState.timerMode !== 'smart') return;
+    const track = document.getElementById('as-track-select')?.value || 'تجربی';
+    const subject = document.getElementById('as-subject-select')?.value || '';
+    const q = Number(document.getElementById('as-question-count')?.value) || 0;
+    const hint = document.getElementById('as-rate-hint'), badge = document.getElementById('as-smart-badge');
+    const rate = (SUBJECT_RATES[track] || {})[subject];
+    if(!subject || !rate){ if(hint) hint.textContent = 'یک درس را انتخاب کن.'; if(badge) badge.textContent = '⏱️'; return; }
+    if(hint) hint.textContent = `در رشته ${track}، زمان پیشنهادی ${subject}: هر تست ${faNum(rate)} ثانیه`;
+    if(q > 0){
+        const total = q * rate, m = Math.floor(total/60), s = total % 60;
+        if(badge) badge.textContent = `✨ ${faNum(q)} تست × ${faNum(rate)} ثانیه = ${faNum(m)}:${String(s).padStart(2,'0')}`;
+    } else if(badge){
+        badge.textContent = `✨ زمان هر تست: ${faNum(rate)} ثانیه`;
+    }
+}
+function asStartExam(){
+    const name = (document.getElementById('as-exam-name')?.value || '').trim() || 'آزمون بدون‌نام';
+    const count = Number(document.getElementById('as-question-count')?.value) || 0;
+    if(count < 1){ alert('لطفاً تعداد سوالات را وارد کن.'); return; }
+    if(count > 300){ alert('حداکثر ۳۰۰ سوال پشتیبانی می‌شود.'); return; }
+
+    let seconds = 0;
+    if(asState.timerMode === 'manual'){
+        const m = Number(document.getElementById('as-manual-minutes')?.value) || 0;
+        const s = Number(document.getElementById('as-manual-seconds')?.value) || 0;
+        seconds = m * 60 + s;
+        if(seconds <= 0){ alert('برای تایمر دستی، دقیقه یا ثانیه معتبر وارد کن.'); return; }
+    } else if(asState.timerMode === 'smart'){
+        const track = document.getElementById('as-track-select')?.value || 'تجربی';
+        const subject = document.getElementById('as-subject-select')?.value || '';
+        const rate = (SUBJECT_RATES[track] || {})[subject];
+        if(!subject || !rate){ alert('برای تایمر هوشمند، یک درس انتخاب کن.'); return; }
+        seconds = count * rate;
+    }
+
+    asState = {
+        examName: name, count: count, timerMode: asState.timerMode, timerSeconds: seconds,
+        userAnswers: {}, correctAnswers: {}, notes: [], lastResult: null, viewingHistoryId: null
+    };
+
+    document.getElementById('as-sheet-exam-name').textContent = name;
+    document.getElementById('as-key-exam-name').textContent = name;
+    asRenderGrid('as-sheet-grid', 'answer');
+    asUpdateProgress();
+
+    const liveTimer = document.getElementById('as-live-timer');
+    if(seconds > 0){
+        liveTimer.style.display = 'inline-flex';
+        asTimeLeft = seconds;
+        asRenderLiveTimer();
+        asStartTimer();
+    } else {
+        liveTimer.style.display = 'none';
+        asStopTimer();
+    }
+    asSwitchView('as-view-sheet');
+}
+
+/* ---------- شبکه‌ی سوالات (رندر مشترک) ---------- */
+function asRenderGrid(containerId, mode){
+    const wrap = document.getElementById(containerId);
+    if(!wrap) return;
+    let html = '';
+    for(let q = 1; q <= asState.count; q++){
+        html += `<div class="as-qrow" data-q="${q}"><span class="as-qnum">${faNum(q)}</span><span class="as-opts">`;
+        for(let o = 1; o <= 4; o++){
+            html += `<button type="button" class="as-bubble" data-opt="${o}" onclick="asSelectAnswer('${mode}', ${q}, ${o}, this)">${faNum(o)}</button>`;
+        }
+        html += `</span></div>`;
+    }
+    wrap.innerHTML = html;
+}
+function asSelectAnswer(mode, q, opt, el){
+    const store = mode === 'answer' ? asState.userAnswers : asState.correctAnswers;
+    const row = el.closest('.as-qrow');
+    const already = store[q] === opt;
+    row.querySelectorAll('.as-bubble').forEach(b => b.classList.remove('selected'));
+    if(already){
+        store[q] = null;
+    } else {
+        store[q] = opt;
+        el.classList.add('selected');
+    }
+    if(mode === 'answer') asUpdateProgress();
+}
+function asUpdateProgress(){
+    const answered = Object.values(asState.userAnswers).filter(v => v).length;
+    const el = document.getElementById('as-sheet-progress');
+    if(el) el.textContent = `${faNum(answered)} از ${faNum(asState.count)} پاسخ داده شده`;
+}
+
+/* ---------- تایمر مستقل بخش AS ---------- */
+function asFormatTime(sec){
+    sec = Math.max(0, Math.floor(sec));
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return faNum(String(m).padStart(2,'0')) + ':' + faNum(String(s).padStart(2,'0'));
+}
+function asRenderLiveTimer(){
+    const el = document.getElementById('as-live-timer');
+    if(!el) return;
+    el.textContent = asFormatTime(asTimeLeft);
+    el.classList.toggle('as-timer-low', asTimeLeft <= 60 && asTimeLeft > 0);
+}
+function asStartTimer(){
+    if(asTimerId) clearInterval(asTimerId);
+    asTimerRunning = true;
+    asTimerId = setInterval(() => {
+        asTimeLeft--;
+        if(asTimeLeft <= 0){
+            asTimeLeft = 0;
+            asRenderLiveTimer();
+            asStopTimer();
+            safeRunAS(playBeep, 'playBeep');
+            alert('⏰ زمان آزمون تمام شد! پاسخ‌هایت ثبت می‌شود.');
+            asSubmitSheet();
+            return;
+        }
+        asRenderLiveTimer();
+    }, 1000);
+}
+function asStopTimer(){
+    if(asTimerId) clearInterval(asTimerId);
+    asTimerId = null; asTimerRunning = false;
+}
+
+/* ---------- مرحله ۲ → مرحله ۳ ---------- */
+function asSubmitSheet(){
+    asStopTimer();
+    asRenderGrid('as-key-grid', 'key');
+    asSwitchView('as-view-key');
+}
+
+/* ---------- مرحله ۳ → مرحله ۴ (کارنامه) ---------- */
+function asComputeStats(){
+    let correct = 0, wrong = 0, empty = 0, removed = 0;
+    const statuses = {};
+    for(let q = 1; q <= asState.count; q++){
+        const key = asState.correctAnswers[q] || null;
+        const user = asState.userAnswers[q] || null;
+        let status;
+        if(!key) status = 'removed';
+        else if(!user) status = 'empty';
+        else if(user === key) status = 'correct';
+        else status = 'wrong';
+        statuses[q] = status;
+        if(status === 'removed') removed++;
+        else if(status === 'correct') correct++;
+        else if(status === 'wrong') wrong++;
+        else empty++;
+    }
+    const considered = Math.max(1, asState.count - removed);
+    const rawPercent = Math.round((correct / considered) * 1000) / 10;
+    const negPercent = Math.round(((correct - (wrong / 3)) / considered) * 1000) / 10;
+    return { statuses, correct, wrong, empty, removed, considered, rawPercent, percent: negPercent };
+}
+function asFinalizeExam(){
+    const result = asComputeStats();
+    asState.lastResult = result;
+    asRenderReport(asState.examName, new Date().toLocaleDateString('fa-IR'), result, asState.notes);
+    asSaveToHistory(result);
+    asSwitchView('as-view-report');
+}
+function asRenderReport(examName, dateStr, result, notes){
+    document.getElementById('as-report-exam-name').textContent = examName;
+    document.getElementById('as-report-date').textContent = dateStr;
+    document.getElementById('as-stat-correct').textContent = faNum(result.correct);
+    document.getElementById('as-stat-wrong').textContent = faNum(result.wrong);
+    document.getElementById('as-stat-empty').textContent = faNum(result.empty);
+    document.getElementById('as-stat-raw').textContent = faNum(result.rawPercent) + '٪';
+    const pctVal = Math.max(0, result.percent);
+    const circle = document.getElementById('as-percent-circle');
+    circle.style.setProperty('--pct', pctVal);
+    document.getElementById('as-percent-value').textContent = faNum(result.percent) + '٪';
+
+    let grid = '';
+    for(let q = 1; q <= asState.count; q++){
+        const st = result.statuses[q];
+        const user = asState.userAnswers[q] || null;
+        const key = asState.correctAnswers[q] || null;
+        let icon = '', label = '';
+        if(st === 'correct'){ icon = '✓'; }
+        else if(st === 'wrong'){ icon = '✗'; }
+        else if(st === 'empty'){ icon = '○'; }
+        else { icon = '⊖'; }
+        grid += `<div class="as-qrow st-${st}"><span class="as-qnum">${faNum(q)}</span><span class="as-opts">`;
+        for(let o = 1; o <= 4; o++){
+            let cls = 'as-bubble';
+            if(st === 'correct' && o === key) cls += ' selected';
+            else if(st === 'wrong' && o === user) cls += ' user-mark';
+            else if(st === 'wrong' && o === key) cls += ' key-mark';
+            else if(st === 'empty' && o === key) cls += ' key-mark';
+            grid += `<span class="${cls}">${faNum(o)}</span>`;
+        }
+        grid += `</span><span class="as-status-icon">${icon}</span></div>`;
+    }
+    document.getElementById('as-report-grid').innerHTML = grid;
+    asRenderNotes(notes || []);
+}
+function asAddNote(){
+    const titleEl = document.getElementById('as-note-title');
+    const textEl = document.getElementById('as-note-text');
+    const title = (titleEl.value || '').trim();
+    const text = (textEl.value || '').trim();
+    if(!title && !text){ alert('یک عنوان یا توضیح برای یادداشت بنویس.'); return; }
+    asState.notes.push({ title: title || 'یادداشت', text, ts: Date.now() });
+    titleEl.value = ''; textEl.value = '';
+    asRenderNotes(asState.notes);
+    asUpdateHistoryNotes();
+}
+function asDeleteNote(idx){
+    asState.notes.splice(idx, 1);
+    asRenderNotes(asState.notes);
+    asUpdateHistoryNotes();
+}
+function asRenderNotes(notes){
+    const wrap = document.getElementById('as-notes-list');
+    if(!wrap) return;
+    if(!notes.length){ wrap.innerHTML = ''; return; }
+    wrap.innerHTML = notes.map((n, i) => `
+        <div class="as-note-item">
+            <button type="button" class="as-note-del" onclick="asDeleteNote(${i})">حذف ✕</button>
+            <div class="as-note-title">${(n.title || '').replace(/</g,'&lt;')}</div>
+            <div class="as-note-text">${(n.text || '').replace(/</g,'&lt;')}</div>
+        </div>`).join('');
+}
+function asUpdateHistoryNotes(){
+    if(!asState.viewingHistoryId) return;
+    const hist = asGetHistory();
+    const rec = hist.find(r => r.id === asState.viewingHistoryId);
+    if(rec){ rec.notes = asState.notes; asSetHistory(hist); }
+}
+
+/* ---------- تاریخچه ---------- */
+function asSaveToHistory(result){
+    const hist = asGetHistory();
+    const rec = {
+        id: String(Date.now()),
+        examName: asState.examName,
+        count: asState.count,
+        dateIso: new Date().toISOString(),
+        dateLabel: new Date().toLocaleDateString('fa-IR'),
+        userAnswers: asState.userAnswers,
+        correctAnswers: asState.correctAnswers,
+        result: result,
+        notes: asState.notes
+    };
+    asState.viewingHistoryId = rec.id;
+    hist.unshift(rec);
+    asSetHistory(hist.slice(0, 60));
+    asRenderHistory();
+}
+function asRenderHistory(){
+    const wrap = document.getElementById('as-history-list');
+    if(!wrap) return;
+    const hist = asGetHistory();
+    if(!hist.length){ wrap.innerHTML = '<div class="as-empty-hint">هنوز آزمونی با پاسخ‌برگ دیجیتال ثبت نکردی.</div>'; return; }
+    wrap.innerHTML = hist.map(r => `
+        <div class="as-hist-item" onclick="asOpenHistoryItem('${r.id}')">
+            <div>
+                <div class="as-hist-name">${(r.examName || '').replace(/</g,'&lt;')}</div>
+                <div class="as-hist-date">${r.dateLabel} · ${faNum(r.count)} سوال</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="as-hist-percent" style="color:${r.result.percent >= 0 ? 'var(--success)' : 'var(--danger)'}">${faNum(r.result.percent)}٪</div>
+                <button type="button" class="as-hist-del" onclick="event.stopPropagation(); asDeleteHistoryItem('${r.id}')" title="حذف">🗑️</button>
+            </div>
+        </div>`).join('');
+}
+function asOpenHistoryItem(id){
+    const hist = asGetHistory();
+    const rec = hist.find(r => r.id === id);
+    if(!rec) return;
+    asState.examName = rec.examName;
+    asState.count = rec.count;
+    asState.userAnswers = rec.userAnswers;
+    asState.correctAnswers = rec.correctAnswers;
+    asState.notes = rec.notes || [];
+    asState.lastResult = rec.result;
+    asState.viewingHistoryId = rec.id;
+    asRenderReport(rec.examName, rec.dateLabel, rec.result, rec.notes || []);
+    asSwitchView('as-view-report');
+}
+function asDeleteHistoryItem(id){
+    if(!confirm('این پاسخ‌برگ از تاریخچه حذف شود؟')) return;
+    let hist = asGetHistory();
+    hist = hist.filter(r => r.id !== id);
+    asSetHistory(hist);
+    asRenderHistory();
+}
+function asNewExam(){
+    asStopTimer();
+    asState = { examName:'', count:0, timerMode:'none', timerSeconds:0, userAnswers:{}, correctAnswers:{}, notes:[], lastResult:null, viewingHistoryId:null };
+    const nameEl = document.getElementById('as-exam-name'); if(nameEl) nameEl.value = '';
+    const countEl = document.getElementById('as-question-count'); if(countEl) countEl.value = '';
+    asSetTimerMode('none');
+    asRenderHistory();
+    asSwitchView('as-view-setup');
+}
+function asInit(){
+    asUpdateSubjects();
+    asRenderHistory();
+}
+
 /* ===================== حالت تمام‌صفحه تایمر (Focus Mode) ===================== */
 function toggleTimerFullscreen(){
     const card = document.getElementById('timer-section-card');
@@ -6676,6 +7262,7 @@ function switchTab(tabId, btn){
     btn.classList.add('active');
     if(tabId === 'tab-stats') updateChart();
     if(tabId === 'tab-trash') renderTrashUI();
+    if(tabId === 'tab-as') safeRunAS(asRenderHistory, 'asRenderHistory');
 }
 /* ---------------------------------------------------------------------- */
 /* 9) هدف‌گذاری تفکیکی دروس + ثبت تست روزانه                                */
@@ -8133,6 +8720,7 @@ window.onload = function(){
     safeRun(renderTrashUI, 'renderTrashUI');
     safeRun(initChat, 'initChat');
     safeRun(renderGlobalGallery, 'renderGlobalGallery');
+    safeRun(asInit, 'asInit');
 
     setInterval(() => { safeRun(renderSmartDate, 'renderSmartDate'); safeRun(updateDailyVitals, 'updateDailyVitals'); }, 60000);
     setInterval(() => safeRun(checkStudyNightWrapup, 'checkStudyNightWrapup'), 60000);
