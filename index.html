@@ -4060,6 +4060,9 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
         </div>
         <div class="app-bar-top">
             <div class="app-bar-icons">
+                <button id="qt-focus-btn" onclick="toggleFocusMode()" title="حالت تمرکز">🌗</button>
+                <button id="qt-notebook-btn" onclick="openQuickNotebook()" title="دفترچه لغت/فرمول سریع">📖</button>
+                <button id="qt-reminder-btn" onclick="openQuickReminder()" title="یادآور سریع">⏰<span id="qt-reminder-count" style="display:none;" class="qtb-count-dot"></span></button>
                 <button id="guide-badge" onclick="toggleAppGuideModal(true)" title="راهنمای استفاده">❓</button>
                 <button id="maz-badge" onclick="window.open('https://biomaze.ir/','_blank')" title="ماز | گروه آموزشی ماز">MAZ</button>
                 <button id="settings-badge" onclick="toggleAppSettingsModal(true)" title="تنظیمات">⚙️</button>
@@ -4091,9 +4094,6 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
                         <div id="announcement-popup-text"></div>
                     </div>
                 </span>
-                <button id="qt-focus-btn" onclick="toggleFocusMode()" title="حالت تمرکز">🌗</button>
-                <button id="qt-notebook-btn" onclick="openQuickNotebook()" title="دفترچه لغت/فرمول سریع">📖</button>
-                <button id="qt-reminder-btn" onclick="openQuickReminder()" title="یادآور سریع">⏰<span id="qt-reminder-count" style="display:none;" class="qtb-count-dot"></span></button>
             </div>
             <div class="app-bar-title">
                 <h1><span class="title-pro-badge">PRO MAX</span>سامانه جامع تحلیل و تست‌زنی</h1>
