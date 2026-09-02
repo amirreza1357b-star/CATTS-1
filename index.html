@@ -3666,6 +3666,118 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="سامانه تست‌زنی">
 <link rel="manifest" href="./manifest.json">
+<style>
+/* ==========================================================================
+   ابزارهای سریع: حالت تمرکز، دفترچه سریع، یادآور سریع
+   (این استایل‌ها به‌صورت افزودنی هستند و چیزی از قبل را جایگزین نمی‌کنند)
+   ========================================================================== */
+.quick-tools-bar{
+    display:flex; gap:10px; margin: -10px 0 20px; padding: 10px 8px;
+    overflow-x:auto;
+}
+.quick-tool-btn{
+    flex:1 1 0; min-width:120px; display:flex; align-items:center; justify-content:center;
+    gap:8px; padding:12px 14px; border-radius:16px; cursor:pointer; font-weight:800;
+    font-size:.82rem; color:var(--text-primary); background:var(--card-bg);
+    border:var(--border); backdrop-filter:var(--glass); transition: all .25s ease;
+    white-space:nowrap;
+}
+.quick-tool-btn:hover{ background:var(--card-bg-hover); transform:translateY(-2px); }
+.quick-tool-btn:active{ transform:translateY(0) scale(.97); }
+.quick-tool-btn .qtb-icon{ font-size:1.1rem; line-height:1; }
+.quick-tool-btn.active{
+    background: linear-gradient(120deg, var(--purple), #8b3ce0); color:#fff; border-color:transparent;
+    box-shadow: 0 6px 18px rgba(139,92,246,.35);
+}
+.quick-tool-btn .qtb-count{
+    display:inline-flex; align-items:center; justify-content:center; min-width:17px; height:17px;
+    padding:0 4px; border-radius:999px; background:var(--danger); color:#fff; font-size:.62rem;
+    font-weight:800;
+}
+@media(max-width:650px){ .quick-tool-btn{ min-width:96px; font-size:.72rem; padding:10px 8px; } }
+
+/* ---------- حالت تمرکز (Focus Mode) ---------- */
+body.focus-mode-active .app-bar-icons,
+body.focus-mode-active #chat-badge,
+body.focus-mode-active #ai-panda-fab,
+body.focus-mode-active #panda-mascot,
+body.focus-mode-active .top-left-stack #app-user-greeting,
+body.focus-mode-active .app-bar-title p,
+body.focus-mode-active .tabs .tab-btn:not(.active),
+body.focus-mode-active .quick-tool-btn:not(#qt-focus-btn){
+    display:none !important;
+}
+body.focus-mode-active .tabs{ justify-content:center; }
+body.focus-mode-active .quick-tools-bar{ justify-content:center; }
+body.focus-mode-active .main-container{ max-width: 720px; }
+
+.focus-mini-timer{
+    display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%);
+    z-index: 950; align-items:center; gap:8px; padding:8px 18px; border-radius:999px;
+    background: rgba(10,9,20,.85); border:1px solid rgba(139,92,246,.4); color:#fff;
+    font-family: var(--font-mono); font-weight:800; font-size:.95rem; letter-spacing:.04em;
+    box-shadow: 0 10px 26px rgba(0,0,0,.4); backdrop-filter: blur(10px); cursor:pointer;
+    direction:ltr;
+}
+body.focus-mode-active .focus-mini-timer{ display:flex; }
+.focus-mini-timer .fmt-exit{
+    font-family:'Vazirmatn',sans-serif; font-size:.68rem; font-weight:700; color:var(--text-secondary);
+    background: rgba(255,255,255,.08); border-radius:999px; padding:3px 10px; margin-inline-start:4px;
+}
+
+/* ---------- مودال‌های مشترک دفترچه سریع / یادآور سریع ---------- */
+.qt-modal-overlay{
+    position:fixed; inset:0; background:var(--bg-solid); z-index:1000050;
+    display:none; align-items:center; justify-content:center; padding:20px;
+}
+.qt-modal-overlay.open{ display:flex; }
+.qt-modal{
+    width:100%; max-width:440px; max-height:88vh; overflow:auto; animation:cloudModalIn .22s ease;
+    background:linear-gradient(145deg,rgba(20,17,42,.98),rgba(9,8,20,.98));
+    border:1px solid rgba(139,92,246,.28); border-radius:26px;
+    box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 60px rgba(139,92,246,.12);
+    padding:24px 20px; position:relative;
+}
+body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.98),rgba(246,236,219,.98)); }
+.qt-modal-close{
+    position:absolute; top:14px; left:14px; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12); color:var(--text-primary); border-radius:12px;
+    width:34px; height:34px; cursor:pointer; font-size:1rem; line-height:1;
+}
+.qt-modal-title{ font-size:1.05rem; font-weight:800; margin-bottom:4px; padding-inline-end:40px; }
+.qt-modal-sub{ font-size:.74rem; color:var(--text-secondary); margin-bottom:16px; }
+
+#quick-notebook-text{
+    width:100%; min-height:220px; resize:vertical; padding:14px; border-radius:16px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); color:var(--text-primary);
+    font-family: var(--font-mono); font-size:.9rem; line-height:1.8;
+}
+.qt-modal-actions{ display:flex; gap:10px; margin-top:14px; }
+.qt-modal-actions .btn{ flex:1; padding:10px; font-size:.82rem; }
+.qt-save-state{ font-size:.68rem; color:var(--text-secondary); margin-top:8px; text-align:center; min-height:14px; }
+
+.qr-form{ display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.qr-form input[type="text"], .qr-form input[type="datetime-local"]{ width:100%; margin:0; }
+.qr-perm-note{
+    font-size:.68rem; color:var(--warning); background:rgba(251,146,60,.1);
+    border:1px solid rgba(251,146,60,.25); border-radius:12px; padding:8px 10px; margin-bottom:12px;
+    display:flex; align-items:center; gap:6px;
+}
+.qr-list{ display:flex; flex-direction:column; gap:8px; max-height:260px; overflow:auto; }
+.qr-item{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+}
+.qr-item.done{ opacity:.5; }
+.qr-item-body{ flex:1; overflow:hidden; }
+.qr-item-text{ font-size:.85rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qr-item-time{ font-size:.68rem; color:var(--text-secondary); margin-top:2px; }
+.qr-item-del{
+    background:rgba(244,63,94,.12); color:var(--danger); border:none; border-radius:10px;
+    width:30px; height:30px; cursor:pointer; font-size:.9rem; flex-shrink:0;
+}
+.qr-empty{ text-align:center; color:var(--text-secondary); font-size:.8rem; padding:20px 0; }
+</style>
 </head>
 <body class="app-locked">
 <div id="app-auth-gate">
@@ -3747,7 +3859,45 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
   </div>
 </div>
 
+<!-- ==================== دفترچه لغت/فرمول سریع ==================== -->
+<div id="quick-notebook-overlay" class="qt-modal-overlay" onclick="if(event.target===this)closeQuickNotebook()">
+  <div class="qt-modal">
+    <button class="qt-modal-close" onclick="closeQuickNotebook()">✕</button>
+    <div class="qt-modal-title">📖 دفترچه لغت/فرمول سریع</div>
+    <div class="qt-modal-sub">هر نکته یا فرمولی که لحظه‌ای لازم داری همین‌جا بنویس؛ بدون رفتن به تب «نکات VE» ذخیره می‌شود.</div>
+    <textarea id="quick-notebook-text" placeholder="مثلاً: فرمول سرعت متوسط = مسافت ÷ زمان..." oninput="handleQuickNotebookInput()"></textarea>
+    <div class="qt-save-state" id="quick-notebook-save-state"></div>
+    <div class="qt-modal-actions">
+      <button class="btn btn-danger" onclick="clearQuickNotebook()">🗑️ پاک کردن</button>
+      <button class="btn btn-purple" onclick="closeQuickNotebook()">بستن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== یادآور سریع ==================== -->
+<div id="quick-reminder-overlay" class="qt-modal-overlay" onclick="if(event.target===this)closeQuickReminder()">
+  <div class="qt-modal">
+    <button class="qt-modal-close" onclick="closeQuickReminder()">✕</button>
+    <div class="qt-modal-title">⏰ یادآور سریع</div>
+    <div class="qt-modal-sub">یک یادآوری ست کن (مثلاً «فردا امتحان زیست») تا با نوتیفیکیشن مرورگر بهت خبر بدهم.</div>
+    <div id="qr-perm-note" class="qr-perm-note" style="display:none;">
+      ⚠️ اجازه‌ی نوتیفیکیشن داده نشده؛ برای اطلاع در پس‌زمینه باید اجازه بدهی. با ثبت اولین یادآور، اجازه درخواست می‌شود.
+    </div>
+    <div class="qr-form">
+      <input id="qr-text-input" type="text" placeholder="متن یادآوری (مثلاً فردا امتحان زیست)">
+      <input id="qr-time-input" type="datetime-local">
+      <button class="btn btn-success" style="width:100%;" onclick="addQuickReminder()">➕ افزودن یادآور</button>
+    </div>
+    <div id="qr-list" class="qr-list"></div>
+  </div>
+</div>
+
 <button id="chat-badge" class="chat-fab" onclick="openChatPanel()" title="گفتگو">💬<span id="chat-unread-dot" style="display:none;" class="announcement-unread-dot"></span></button>
+
+<!-- تایمر شناور حالت تمرکز: فقط وقتی «حالت تمرکز» فعال است دیده می‌شود، مستقل از تب فعال -->
+<div id="focus-mini-timer" class="focus-mini-timer" onclick="toggleFocusMode()" title="خروج از حالت تمرکز">
+    <span id="focus-mini-timer-digits">۰۰:۰۰</span><span class="fmt-exit">خروج</span>
+</div>
 
 <button id="ai-panda-fab" class="ai-panda-fab" onclick="toggleAIPanel(true)" title="دستیار هوشمند">🐼</button>
 
@@ -4069,6 +4219,19 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <button class="tab-btn" style="--tc:#34d399" onclick="switchTab('tab-planner', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18"></path><path d="M8 2v5M16 2v5"></path></svg></span><span class="tab-label">برنامه هفتگی</span></button>
         <button class="tab-btn" style="--tc:#22d3ee" onclick="switchTab('tab-gallery', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="9" r="1.6" fill="currentColor" stroke="none"></circle><path d="M21 15l-5.2-5.2a2 2 0 0 0-2.8 0L4 19"></path></svg></span><span class="tab-label">گالری</span></button>
         <button class="tab-btn" style="--tc:#f43f5e" onclick="switchTab('tab-trash', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"></path></svg><span id="trash-total-badge" class="trash-badge"></span></span><span class="tab-label">سطل زباله</span></button>
+    </div>
+
+    <!-- نوار ابزار سریع: حالت تمرکز / دفترچه سریع / یادآور سریع -->
+    <div class="quick-tools-bar">
+        <button id="qt-focus-btn" class="quick-tool-btn" onclick="toggleFocusMode()" title="حالت تمرکز">
+            <span class="qtb-icon">🌗</span><span>حالت تمرکز</span>
+        </button>
+        <button id="qt-notebook-btn" class="quick-tool-btn" onclick="openQuickNotebook()" title="دفترچه لغت/فرمول سریع">
+            <span class="qtb-icon">📖</span><span>دفترچه سریع</span>
+        </button>
+        <button id="qt-reminder-btn" class="quick-tool-btn" onclick="openQuickReminder()" title="یادآور سریع">
+            <span class="qtb-icon">⏰</span><span>یادآور سریع</span><span id="qt-reminder-count" class="qtb-count" style="display:none;"></span>
+        </button>
     </div>
 
     <!-- تب اول: تایمر و ثبت -->
@@ -8032,6 +8195,199 @@ function checkSmartReminder(manual){
     }
 }
 
+/* ========================================================================== */
+/* MODULE: FOCUS MODE — حالت تمرکز
+   حالت تمرکز چیزی حذف نمی‌کند، فقط با کلاس body.focus-mode-active بخش‌های
+   غیرضروری (چت، ایتا، گالری/بقیه‌ی تب‌ها، آیکون‌های هدر) را موقتاً پنهان می‌کند
+   و یک تایمر شناور مستقل از تب فعال نشان می‌دهد.
+   ========================================================================== */
+let focusMiniTimerInterval = null;
+function focusModeActive(){ return document.body.classList.contains('focus-mode-active'); }
+function toggleFocusMode(){
+    const willBeOn = !focusModeActive();
+    document.body.classList.toggle('focus-mode-active', willBeOn);
+    localStorage.setItem('focus_mode_active', willBeOn ? '1' : '0');
+    const btn = document.getElementById('qt-focus-btn');
+    if(btn) btn.classList.toggle('active', willBeOn);
+    if(willBeOn){
+        startFocusMiniTimer();
+        showReminderToast('حالت تمرکز فعال شد 🌗', 'فقط تایمر و تب فعلی نمایش داده می‌شود.');
+    } else {
+        stopFocusMiniTimer();
+        showReminderToast('حالت تمرکز خاموش شد', 'همه‌ی بخش‌ها دوباره نمایش داده می‌شوند.');
+    }
+}
+function restoreFocusMode(){
+    if(localStorage.getItem('focus_mode_active') === '1'){
+        document.body.classList.add('focus-mode-active');
+        const btn = document.getElementById('qt-focus-btn');
+        if(btn) btn.classList.add('active');
+        startFocusMiniTimer();
+    }
+}
+function startFocusMiniTimer(){
+    updateFocusMiniTimer();
+    clearInterval(focusMiniTimerInterval);
+    focusMiniTimerInterval = setInterval(updateFocusMiniTimer, 1000);
+}
+function stopFocusMiniTimer(){
+    clearInterval(focusMiniTimerInterval);
+    focusMiniTimerInterval = null;
+}
+function updateFocusMiniTimer(){
+    const el = document.getElementById('focus-mini-timer-digits');
+    if(!el) return;
+    let sec = 0;
+    const end = Number(localStorage.getItem('timer_end_time') || 0);
+    const pausedRaw = localStorage.getItem('timer_paused_left');
+    if(end){ sec = Math.max(0, Math.ceil((end - Date.now()) / 1000)); }
+    else if(pausedRaw != null){ sec = Number(pausedRaw) || 0; }
+    const m = Math.floor(sec/60), s = sec % 60;
+    el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+/* ========================================================================== */
+/* MODULE: QUICK NOTEBOOK — دفترچه لغت/فرمول سریع
+   یک دفترچه‌ی کوچک و مستقل برای نوشتن سریع نکته یا فرمول، بدون نیاز به رفتن
+   به تب «نکات VE». محتوا با ذخیره‌ی خودکار (debounce) در localStorage می‌ماند.
+   ========================================================================== */
+const QUICK_NOTEBOOK_KEY = 'quick_notebook_text';
+let quickNotebookSaveTimer = null;
+function openQuickNotebook(){
+    const overlay = document.getElementById('quick-notebook-overlay');
+    const ta = document.getElementById('quick-notebook-text');
+    if(ta) ta.value = localStorage.getItem(QUICK_NOTEBOOK_KEY) || '';
+    if(overlay) overlay.classList.add('open');
+    setTimeout(() => ta?.focus(), 60);
+}
+function closeQuickNotebook(){
+    document.getElementById('quick-notebook-overlay')?.classList.remove('open');
+}
+function handleQuickNotebookInput(){
+    const ta = document.getElementById('quick-notebook-text');
+    const stateEl = document.getElementById('quick-notebook-save-state');
+    if(stateEl) stateEl.textContent = 'در حال ذخیره...';
+    clearTimeout(quickNotebookSaveTimer);
+    quickNotebookSaveTimer = setTimeout(() => {
+        localStorage.setItem(QUICK_NOTEBOOK_KEY, ta?.value || '');
+        if(stateEl) stateEl.textContent = '✅ ذخیره شد';
+        setTimeout(() => { if(stateEl && stateEl.textContent === '✅ ذخیره شد') stateEl.textContent = ''; }, 1500);
+    }, 500);
+}
+function clearQuickNotebook(){
+    if(!confirm('محتوای دفترچه‌ی سریع پاک شود؟')) return;
+    const ta = document.getElementById('quick-notebook-text');
+    if(ta) ta.value = '';
+    localStorage.removeItem(QUICK_NOTEBOOK_KEY);
+    const stateEl = document.getElementById('quick-notebook-save-state');
+    if(stateEl) stateEl.textContent = '🗑️ پاک شد';
+}
+
+/* ========================================================================== */
+/* MODULE: QUICK REMINDER — یادآور سریع
+   لیست کوچکی از یادآوری‌های زمان‌دار که با نوتیفیکیشن مرورگر (در صورت اجازه)
+   و همچنین toast داخلی به کاربر خبر می‌دهند.
+   ========================================================================== */
+const QUICK_REMINDERS_KEY = 'quick_reminders_v1';
+let quickReminderCheckTimer = null;
+function getQuickReminders(){ return safeParse(QUICK_REMINDERS_KEY, []); }
+function setQuickReminders(arr){ safeSet(QUICK_REMINDERS_KEY, arr); renderQuickReminderBadge(); }
+function renderQuickReminderBadge(){
+    const badge = document.getElementById('qt-reminder-count');
+    if(!badge) return;
+    const pending = getQuickReminders().filter(r => !r.notified).length;
+    if(pending > 0){ badge.textContent = String(pending); badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
+}
+function openQuickReminder(){
+    const overlay = document.getElementById('quick-reminder-overlay');
+    const permNote = document.getElementById('qr-perm-note');
+    if(permNote) permNote.style.display = ('Notification' in window && Notification.permission !== 'granted') ? 'flex' : 'none';
+    const timeInput = document.getElementById('qr-time-input');
+    if(timeInput && !timeInput.value){
+        const d = new Date(Date.now() + 60*60*1000);
+        d.setSeconds(0,0);
+        const pad = n => String(n).padStart(2,'0');
+        timeInput.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    if(overlay) overlay.classList.add('open');
+    renderQuickReminderList();
+}
+function closeQuickReminder(){
+    document.getElementById('quick-reminder-overlay')?.classList.remove('open');
+}
+function requestQuickReminderPermission(){
+    if(!('Notification' in window)) return;
+    if(Notification.permission === 'default'){
+        Notification.requestPermission().then(() => {
+            const permNote = document.getElementById('qr-perm-note');
+            if(permNote) permNote.style.display = (Notification.permission !== 'granted') ? 'flex' : 'none';
+        });
+    }
+}
+function addQuickReminder(){
+    const textInput = document.getElementById('qr-text-input');
+    const timeInput = document.getElementById('qr-time-input');
+    const text = (textInput?.value || '').trim();
+    const timeVal = timeInput?.value || '';
+    if(!text){ alert('لطفاً متن یادآوری را وارد کن.'); return; }
+    if(!timeVal){ alert('لطفاً زمان یادآوری را انتخاب کن.'); return; }
+    const ts = new Date(timeVal).getTime();
+    if(!ts || isNaN(ts)){ alert('زمان انتخاب‌شده معتبر نیست.'); return; }
+    const list = getQuickReminders();
+    list.push({ id: 'qr-' + Date.now() + '-' + Math.random().toString(36).slice(2,7), text, time: ts, notified: false });
+    list.sort((a,b) => a.time - b.time);
+    setQuickReminders(list);
+    if(textInput) textInput.value = '';
+    renderQuickReminderList();
+    requestQuickReminderPermission();
+    showReminderToast('یادآور ثبت شد ⏰', text);
+}
+function deleteQuickReminder(id){
+    setQuickReminders(getQuickReminders().filter(r => r.id !== id));
+    renderQuickReminderList();
+}
+function renderQuickReminderList(){
+    const wrap = document.getElementById('qr-list');
+    if(!wrap) return;
+    const list = getQuickReminders();
+    if(!list.length){ wrap.innerHTML = '<div class="qr-empty">هنوز یادآوری‌ای ثبت نشده است.</div>'; return; }
+    wrap.innerHTML = list.map(r => {
+        const d = new Date(r.time);
+        const timeText = isNaN(d.getTime()) ? '' : d.toLocaleString('fa-IR');
+        return '<div class="qr-item' + (r.notified ? ' done' : '') + '">' +
+            '<div class="qr-item-body"><div class="qr-item-text">' + escapeHtml(r.text) + '</div>' +
+            '<div class="qr-item-time">' + (r.notified ? '✅ اعلام شده — ' : '⏳ ') + escapeHtml(timeText) + '</div></div>' +
+            '<button class="qr-item-del" onclick="deleteQuickReminder(\'' + r.id + '\')" title="حذف">🗑️</button></div>';
+    }).join('');
+}
+function checkQuickReminders(){
+    const list = getQuickReminders();
+    if(!list.length) return;
+    const now = Date.now();
+    let changed = false;
+    list.forEach(r => {
+        if(!r.notified && r.time <= now){
+            r.notified = true;
+            changed = true;
+            showReminderToast('یادآور سریع ⏰', r.text);
+            if('Notification' in window && Notification.permission === 'granted'){
+                try{ new Notification('یادآور سریع ⏰', { body: r.text, tag: 'quick-reminder-' + r.id }); }catch(e){}
+            }
+        }
+    });
+    if(changed){
+        setQuickReminders(list.filter(r => !r.notified || (now - r.time) < 24*60*60*1000));
+        renderQuickReminderList();
+    }
+}
+function initQuickReminders(){
+    renderQuickReminderBadge();
+    checkQuickReminders();
+    clearInterval(quickReminderCheckTimer);
+    quickReminderCheckTimer = setInterval(checkQuickReminders, 20000);
+}
+
 /* ---------------------------------------------------------------------- */
 /* 15) پشتیبان‌گیری محلی (Export / Import)                                  */
 /* ---------------------------------------------------------------------- */
@@ -8768,6 +9124,8 @@ window.onload = function(){
     safeRun(initChat, 'initChat');
     safeRun(renderGlobalGallery, 'renderGlobalGallery');
     safeRun(asInit, 'asInit');
+    safeRun(restoreFocusMode, 'restoreFocusMode');
+    safeRun(initQuickReminders, 'initQuickReminders');
 
     setInterval(() => { safeRun(renderSmartDate, 'renderSmartDate'); safeRun(updateDailyVitals, 'updateDailyVitals'); }, 60000);
     setInterval(() => safeRun(checkStudyNightWrapup, 'checkStudyNightWrapup'), 60000);
