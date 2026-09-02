@@ -1265,7 +1265,10 @@ input, select {
 }
 #countdown-badge:hover { transform: scale(1.08) rotate(-6deg); }
 #countdown-popup {
-    position: absolute; top: 46px; left: 50px; z-index: 50;
+    /* position:fixed تا از بریده‌شدن توسط overflow-y:hidden نوار آیکون‌های بالا (.app-bar-icons)
+       که دلیل اصلی «نمایش داده‌نشدنِ» این پاپ‌آپ بود، در امان بماند. مختصات دقیق top/right
+       هنگام باز شدن با تابع positionFixedPopup در جاوااسکریپت محاسبه و ست می‌شود. */
+    position: fixed; top: 60px; right: 10px; z-index: 3000;
     background: var(--card-bg); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
     border: var(--border-accent); border-radius: 14px; padding: 10px 14px;
     font-size: 0.78rem; color: var(--text-primary); white-space: nowrap;
@@ -1294,7 +1297,8 @@ input, select {
     animation: fadeInUp .3s ease;
 }
 #announcement-popup {
-    position: absolute; top: 46px; left: 96px; z-index: 50;
+    /* position:fixed به همان دلیل بالا (رفع باگ بریده‌شدن توسط .app-bar-icons) */
+    position: fixed; top: 60px; right: 10px; z-index: 3000;
     background: var(--card-bg); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
     border: var(--border-accent); border-radius: 14px; padding: 12px 14px;
     font-size: 0.8rem; color: var(--text-primary); line-height: 1.8;
@@ -2687,7 +2691,6 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         #theme-toggle, #countdown-badge, #announcement-badge, #maz-badge, #guide-badge, #settings-badge, #calculator-badge, #subject-library-badge, #lab-badge, #eitaa-badge, #translate-badge, #sample-questions-badge, #chatgpt-badge, #chatgpt-external-badge {
             position: relative !important;
         }
-        #countdown-popup, #announcement-popup { left: auto !important; right: 0; top: 48px !important; }
         #cloud-account-btn { position: fixed !important; top: 14px !important; left: 14px !important; right: auto !important; z-index: 1200 !important; }
         @media (max-width: 480px) { #cloud-account-btn span.label { display: none !important; } #cloud-account-btn { padding: 0 !important; width: 40px; height: 40px; justify-content: center; } }
 
@@ -4065,6 +4068,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         <button class="tab-btn" style="--tc:#34d399" onclick="switchTab('tab-planner', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18"></path><path d="M8 2v5M16 2v5"></path></svg></span><span class="tab-label">برنامه هفتگی</span></button>
         <button class="tab-btn" style="--tc:#22d3ee" onclick="switchTab('tab-gallery', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="9" r="1.6" fill="currentColor" stroke="none"></circle><path d="M21 15l-5.2-5.2a2 2 0 0 0-2.8 0L4 19"></path></svg></span><span class="tab-label">گالری</span></button>
         <button class="tab-btn" style="--tc:#f43f5e" onclick="switchTab('tab-trash', this)"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"></path></svg><span id="trash-total-badge" class="trash-badge"></span></span><span class="tab-label">سطل زباله</span></button>
+        <a class="tab-btn" style="--tc:#0ea5e9" href="https://www.kanoon.ir/Public/ExamQuestions" target="_blank" rel="noopener noreferrer" title="جزوه و برگه امتحانی کانون"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M9 13h6"></path><path d="M9 17h6"></path><path d="M9 9h1"></path></svg></span><span class="tab-label">برگه امتحان</span></a>
     </div>
 
     <!-- تب اول: تایمر و ثبت -->
@@ -5563,6 +5567,7 @@ function toggleAnnouncementPopup(){
         document.getElementById('countdown-popup')?.classList.remove('show');
     }
     pop.classList.toggle('show', willShow);
+    if(willShow) positionFixedPopup(pop, document.getElementById('announcement-badge'));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -7490,12 +7495,36 @@ function renderCountdownText(){
     else if(diffDays === 0) el.textContent = '🎯 امروز همون روزه!';
     else el.textContent = `${faNum(Math.abs(diffDays))} روز از این تاریخ گذشته`;
 }
+/* رفع باگ «موشک هیچ‌چیز نشون نمی‌ده»: پاپ‌آپ‌های روزشمار و اعلان اکنون position:fixed
+   هستند (تا داخل نوار اسکرول‌شونده‌ی آیکون‌ها overflow-y:hidden بریده نشوند) و موقعیت
+   دقیقشان زیر دکمه‌ی مربوطه، هر بار که باز می‌شوند، با همین تابع محاسبه می‌شود. */
+function positionFixedPopup(popup, btn){
+    if(!popup || !btn) return;
+    const rect = btn.getBoundingClientRect();
+    const margin = 8;
+    popup.style.top = Math.round(rect.bottom + margin) + 'px';
+    popup.style.left = 'auto';
+    let right = window.innerWidth - rect.right;
+    if(right < margin) right = margin;
+    popup.style.right = Math.round(right) + 'px';
+    /* اگر پاپ‌آپ از سمت چپ صفحه بیرون بزند، فاصله‌اش از راست را کم می‌کنیم */
+    requestAnimationFrame(() => {
+        const pRect = popup.getBoundingClientRect();
+        if(pRect.left < margin){
+            const overflowLeft = margin - pRect.left;
+            popup.style.right = Math.round(right - overflowLeft) + 'px';
+        }
+    });
+}
 function toggleCountdownPopup(){
     const pop = document.getElementById('countdown-popup'); if(!pop) return;
     const willShow = !pop.classList.contains('show');
     if(willShow){ renderCountdownText(); document.getElementById('announcement-popup')?.classList.remove('show'); }
     pop.classList.toggle('show', willShow);
-    if(willShow && !getCountdownDate()) setTimeout(setCountdownDate, 250);
+    if(willShow){
+        positionFixedPopup(pop, document.getElementById('countdown-badge'));
+        if(!getCountdownDate()) setTimeout(setCountdownDate, 250);
+    }
 }
 function initCountdown(){ renderCountdownText(); updateAnnouncementButton(); }
 document.addEventListener('click', (e) => {
@@ -7505,6 +7534,13 @@ document.addEventListener('click', (e) => {
     const apop = document.getElementById('announcement-popup');
     const abadge = document.getElementById('announcement-badge');
     if(apop && apop.classList.contains('show') && !apop.contains(e.target) && !abadge?.contains(e.target)) apop.classList.remove('show');
+});
+/* هنگام تغییر اندازه یا اسکرول صفحه، اگر پاپ‌آپ‌های موشک/اعلان باز باشند، موقعیتشان دوباره محاسبه شود */
+window.addEventListener('resize', () => {
+    const cpop = document.getElementById('countdown-popup');
+    if(cpop && cpop.classList.contains('show')) positionFixedPopup(cpop, document.getElementById('countdown-badge'));
+    const apop2 = document.getElementById('announcement-popup');
+    if(apop2 && apop2.classList.contains('show')) positionFixedPopup(apop2, document.getElementById('announcement-badge'));
 });
 
 /* ---------------------------------------------------------------------- */
