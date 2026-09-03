@@ -3385,8 +3385,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
 
     /* ===================== لیدربورد رقابتی گروه (شناور، لبه‌ی راست) ===================== */
     .lb-fab{
-        position: fixed; top: 50%; right: 14px; transform: translateY(-50%);
-        z-index: 850;
+        position: fixed; top: 16px; right: 16px;
+        z-index: 1200;
         width: 54px; height: 54px; border-radius: 50%;
         border: var(--border-accent);
         background: linear-gradient(150deg, #f59e0b, #ef4444);
@@ -3396,8 +3396,8 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         box-shadow: 0 8px 22px rgba(239,68,68,.4);
         transition: transform .2s ease, box-shadow .2s ease;
     }
-    .lb-fab:hover{ transform: translateY(-50%) translateX(-4px) scale(1.06); }
-    .lb-fab:active{ transform: translateY(-50%) scale(.94); }
+    .lb-fab:hover{ transform: translateX(-4px) scale(1.06); }
+    .lb-fab:active{ transform: scale(.94); }
     .lb-fab .lb-fab-dot{
         position: absolute; top: -3px; left: -3px;
         width: 14px; height: 14px; border-radius: 50%;
@@ -3405,7 +3405,7 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
         display: none;
     }
     .lb-fab.has-update .lb-fab-dot{ display: block; }
-    @media(max-width:480px){ .lb-fab{ width: 46px; height: 46px; font-size: 1.25rem; right: 10px; } }
+    @media(max-width:480px){ .lb-fab{ width: 46px; height: 46px; font-size: 1.25rem; top: 10px; right: 10px; } }
 
     #lb-overlay{
         position: fixed; inset: 0; z-index: 2100;
