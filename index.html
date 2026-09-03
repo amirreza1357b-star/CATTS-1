@@ -3383,6 +3383,94 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .ai-panda-fab:active{ transform: scale(.94); }
     @media(max-width:480px){ .ai-panda-fab{ width:50px; height:50px; font-size:1.4rem; bottom:16px; right:16px; } }
 
+    /* ===================== لیدربورد رقابتی گروه (شناور، لبه‌ی راست) ===================== */
+    .lb-fab{
+        position: fixed; top: 50%; right: 14px; transform: translateY(-50%);
+        z-index: 850;
+        width: 54px; height: 54px; border-radius: 50%;
+        border: var(--border-accent);
+        background: linear-gradient(150deg, #f59e0b, #ef4444);
+        color: #fff; font-size: 1.5rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 22px rgba(239,68,68,.4);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .lb-fab:hover{ transform: translateY(-50%) translateX(-4px) scale(1.06); }
+    .lb-fab:active{ transform: translateY(-50%) scale(.94); }
+    .lb-fab .lb-fab-dot{
+        position: absolute; top: -3px; left: -3px;
+        width: 14px; height: 14px; border-radius: 50%;
+        background: var(--danger); border: 2px solid var(--bg-solid);
+        display: none;
+    }
+    .lb-fab.has-update .lb-fab-dot{ display: block; }
+    @media(max-width:480px){ .lb-fab{ width: 46px; height: 46px; font-size: 1.25rem; right: 10px; } }
+
+    #lb-overlay{
+        position: fixed; inset: 0; z-index: 2100;
+        background: rgba(0,0,0,.45); backdrop-filter: blur(2px);
+        display: none; align-items: stretch; justify-content: flex-end;
+    }
+    #lb-overlay.open{ display: flex; animation: fadeInUp .18s ease; }
+    #lb-panel{
+        width: min(420px, 100%); height: 100%; height: 100dvh;
+        background: var(--bg-solid); border-inline-start: var(--border);
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+    .lb-header{
+        padding: 16px 18px 14px; border-bottom: var(--border);
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 18%, transparent), transparent);
+    }
+    .lb-header h3{ margin: 0; font-size: 1.05rem; display:flex; align-items:center; gap:8px; }
+    .lb-close-btn{
+        width: 32px; height: 32px; border-radius: 50%; border: var(--border);
+        background: var(--card-bg); color: var(--text-primary); font-size: 1rem; cursor: pointer;
+    }
+    .lb-group-tabs{ display: flex; gap: 6px; padding: 10px 14px; overflow-x: auto; border-bottom: var(--border); }
+    .lb-group-tab{
+        flex-shrink: 0; padding: 6px 14px; border-radius: 999px; border: var(--border);
+        background: var(--card-bg); color: var(--text-secondary); font-size: .82rem; cursor: pointer;
+        white-space: nowrap; transition: all .15s ease;
+    }
+    .lb-group-tab.active{ background: linear-gradient(135deg, var(--accent), var(--purple)); color: #fff; border-color: transparent; }
+    .lb-body{ flex: 1; overflow-y: auto; padding: 14px; }
+    .lb-me-card{
+        display: flex; align-items: center; gap: 12px;
+        background: var(--card-bg); border: var(--border-accent); border-radius: 16px;
+        padding: 12px 14px; margin-bottom: 14px;
+    }
+    .lb-me-streak{ font-size: 1.6rem; font-weight: 800; display:flex; align-items:center; gap:4px; }
+    .lb-row{
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 10px; border-radius: 14px; margin-bottom: 6px;
+        background: var(--card-bg); border: var(--border);
+        transition: background .15s ease;
+    }
+    .lb-row.me{ border: var(--border-accent); }
+    .lb-row:hover{ background: var(--card-bg-hover); }
+    .lb-rank{ width: 26px; text-align: center; font-weight: 800; font-size: .95rem; color: var(--text-secondary); flex-shrink:0; }
+    .lb-rank.top1, .lb-rank.top2, .lb-rank.top3{ font-size: 1.2rem; }
+    .lb-avatar{
+        width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--accent), var(--purple));
+        color: #fff; font-weight: 700; font-size: .85rem;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .lb-info{ flex: 1; min-width: 0; }
+    .lb-name{ font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-sub{ font-size: .72rem; color: var(--text-secondary); }
+    .lb-streak-badge{
+        display: flex; align-items: center; gap: 3px; font-size: .85rem; font-weight: 700;
+        padding: 4px 8px; border-radius: 10px; background: rgba(245,158,11,.15); color: var(--warning);
+        flex-shrink: 0;
+    }
+    .lb-streak-badge.milestone{ background: rgba(245,158,11,.28); box-shadow: 0 0 12px rgba(245,158,11,.35); }
+    .lb-empty{ text-align: center; padding: 40px 16px; color: var(--text-secondary); font-size: .88rem; }
+    .lb-feed-title{ font-size: .8rem; color: var(--text-secondary); margin: 18px 0 8px; padding-inline-start: 2px; }
+    .lb-feed-item{ font-size: .8rem; color: var(--text-secondary); padding: 6px 10px; border-inline-start: 2px solid var(--accent); margin-bottom: 6px; }
+
     #ai-panel-overlay{
         position: fixed; inset: 0; z-index: 2100;
         background: rgba(0,0,0,.45); backdrop-filter: blur(2px);
@@ -3988,6 +4076,23 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
 </div>
 
 <button id="ai-panda-fab" class="ai-panda-fab" onclick="toggleAIPanel(true)" title="دستیار هوشمند">🐼</button>
+
+<!-- ===================== لیدربورد رقابتی گروه ===================== -->
+<button id="lb-fab" class="lb-fab" onclick="toggleLeaderboardPanel(true)" title="لیدربورد گروه">
+    🏆<span class="lb-fab-dot"></span>
+</button>
+<div id="lb-overlay" onclick="if(event.target===this) toggleLeaderboardPanel(false)">
+    <div id="lb-panel">
+        <div class="lb-header">
+            <h3>🏆 لیدربورد گروه</h3>
+            <button class="lb-close-btn" onclick="toggleLeaderboardPanel(false)">✕</button>
+        </div>
+        <div id="lb-group-tabs" class="lb-group-tabs"></div>
+        <div id="lb-body" class="lb-body">
+            <div class="lb-empty">در حال بارگذاری…</div>
+        </div>
+    </div>
+</div>
 
 <div id="ai-panel-overlay" onclick="if(event.target===this) toggleAIPanel(false)">
   <div id="ai-panel">
@@ -14020,6 +14125,259 @@ loadSmartNotes();
         }
         chatOnAuthChange();
     };
+})();
+</script>
+
+<script>
+/* ============================================================================
+   ماژول: لیدربورد رقابتی گروه (استریک روزانه + تعداد تست هفتگی)
+   ----------------------------------------------------------------------------
+   مستقل از ماژول چت (IIFE بالا) نوشته شده تا ریسک خرابی کد موجود صفر باشه؛
+   فقط از توابع سراسری از‌قبل‌موجود استفاده می‌کنه: getSupabaseClient(),
+   getHistory(), calculateStreak(), escapeHtml(), faNum().
+
+   ⚠️ پیش‌نیاز دیتابیس (باید یک‌بار دستی توی Supabase SQL Editor اجرا بشه،
+   چون این محیط دسترسی مستقیم به دیتابیس شما رو نداره):
+
+   create table if not exists public.group_leaderboard_stats (
+     user_id       uuid not null references auth.users(id) on delete cascade,
+     group_id      uuid not null references public.chat_groups(id) on delete cascade,
+     streak        int  not null default 0,
+     best_streak   int  not null default 0,
+     weekly_tests  int  not null default 0,
+     week_key      text not null default '',
+     last_active_at timestamptz,
+     updated_at    timestamptz not null default now(),
+     primary key (user_id, group_id)
+   );
+   alter table public.group_leaderboard_stats enable row level security;
+
+   create policy "group members can view group stats"
+     on public.group_leaderboard_stats for select
+     using (exists (
+       select 1 from public.chat_group_members m
+       where m.group_id = group_leaderboard_stats.group_id and m.user_id = auth.uid()
+     ));
+   create policy "users can insert own stats"
+     on public.group_leaderboard_stats for insert
+     with check (user_id = auth.uid());
+   create policy "users can update own stats"
+     on public.group_leaderboard_stats for update
+     using (user_id = auth.uid());
+   ============================================================================ */
+(function(){
+    const LB_MILESTONES = [7, 14, 30, 60, 100, 200, 365];
+    const LB_STORAGE_KEY = 'lb_last_announced_streak';
+
+    let lbGroups = [];           // [{id, name}]
+    let lbActiveGroupId = null;
+    let lbUserId = null;
+    let lbProfileCache = {};     // id -> profile row
+
+    function lbClient(){ return (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null; }
+
+    function lbWeekKey(d){
+        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = (date.getUTCDay() + 6) % 7;
+        date.setUTCDate(date.getUTCDate() - dayNum + 3);
+        const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+        const week = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+        return date.getUTCFullYear() + '-W' + week;
+    }
+
+    function lbEsc(s){ return (typeof escapeHtml === 'function') ? escapeHtml(String(s ?? '')) : String(s ?? ''); }
+    function lbFa(n){ return (typeof faNum === 'function') ? faNum(n) : String(n); }
+
+    function lbComputeMyStats(){
+        const history = (typeof getHistory === 'function') ? getHistory() : [];
+        const streak = (typeof calculateStreak === 'function') ? calculateStreak(history) : 0;
+        const wk = lbWeekKey(new Date());
+        const weeklyTests = history.filter(item => {
+            const t = item.timestamp ? new Date(item.timestamp) : null;
+            return t && lbWeekKey(t) === wk;
+        }).length;
+        return { streak, weeklyTests, weekKey: wk };
+    }
+
+    async function lbGetUserId(){
+        if(lbUserId) return lbUserId;
+        const client = lbClient();
+        if(!client) return null;
+        const { data:{ session } } = await client.auth.getSession();
+        lbUserId = session?.user?.id || null;
+        return lbUserId;
+    }
+
+    async function lbFetchMyGroups(){
+        const client = lbClient();
+        const uid = await lbGetUserId();
+        if(!client || !uid) return [];
+        const { data, error } = await client.from('chat_group_members').select('group_id').eq('user_id', uid);
+        if(error || !data || !data.length) return [];
+        const groupIds = data.map(r => r.group_id);
+        const { data: groups } = await client.from('chat_groups').select('id,name').in('id', groupIds);
+        return groups || [];
+    }
+
+    async function lbGetProfile(id){
+        if(lbProfileCache[id]) return lbProfileCache[id];
+        const client = lbClient();
+        if(!client) return null;
+        const { data } = await client.from('profiles').select('id,first_name,last_name').eq('id', id).maybeSingle();
+        lbProfileCache[id] = data || { id, first_name: 'کاربر', last_name: '' };
+        return lbProfileCache[id];
+    }
+
+    function lbInitials(p){
+        const a = (p?.first_name || '').trim()[0] || '';
+        const b = (p?.last_name || '').trim()[0] || '';
+        return (a + b) || '👤';
+    }
+    function lbFullName(p){
+        const n = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+        return n || 'کاربر';
+    }
+
+    /* ---- همگام‌سازی آمار خودم به سمت همه‌ی گروه‌هایی که عضوشونم ---- */
+    async function lbSyncMyStats(){
+        const client = lbClient();
+        const uid = await lbGetUserId();
+        if(!client || !uid) return;
+        const stats = lbComputeMyStats();
+        const groups = lbGroups.length ? lbGroups : (lbGroups = await lbFetchMyGroups());
+        if(!groups.length) return;
+
+        const prevStreak = Number(localStorage.getItem(LB_STORAGE_KEY) || 0);
+        const crossedMilestone = LB_MILESTONES.find(m => stats.streak >= m && prevStreak < m);
+
+        for(const g of groups){
+            try{
+                const { data: existing } = await client.from('group_leaderboard_stats')
+                    .select('best_streak').eq('user_id', uid).eq('group_id', g.id).maybeSingle();
+                const bestStreak = Math.max(stats.streak, existing?.best_streak || 0);
+                await client.from('group_leaderboard_stats').upsert({
+                    user_id: uid, group_id: g.id,
+                    streak: stats.streak, best_streak: bestStreak,
+                    weekly_tests: stats.weeklyTests, week_key: stats.weekKey,
+                    last_active_at: new Date().toISOString(), updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id,group_id' });
+
+                if(crossedMilestone){
+                    const me = await lbGetProfile(uid);
+                    await client.from('chat_group_messages').insert({
+                        sender_id: uid, group_id: g.id,
+                        content: `🎉 ${lbFullName(me)} به استریک ${lbFa(crossedMilestone)} روزه رسید! 🔥`
+                    });
+                }
+            }catch(e){ console.warn('[Leaderboard] sync error for group', g.id, e); }
+        }
+        if(crossedMilestone) localStorage.setItem(LB_STORAGE_KEY, String(stats.streak));
+    }
+
+    /* ---- بارگذاری و نمایش رتبه‌بندی یک گروه ---- */
+    async function lbLoadGroup(groupId){
+        lbActiveGroupId = groupId;
+        document.querySelectorAll('.lb-group-tab').forEach(t => t.classList.toggle('active', t.dataset.gid === groupId));
+        const body = document.getElementById('lb-body');
+        if(!body) return;
+        body.innerHTML = '<div class="lb-empty">در حال بارگذاری…</div>';
+
+        const client = lbClient();
+        const uid = await lbGetUserId();
+        if(!client || !uid){
+            body.innerHTML = '<div class="lb-empty">برای دیدن لیدربورد باید وارد حساب ابری شوی.</div>';
+            return;
+        }
+        const { data: rows, error } = await client.from('group_leaderboard_stats')
+            .select('user_id,streak,best_streak,weekly_tests,last_active_at')
+            .eq('group_id', groupId)
+            .order('streak', { ascending: false });
+
+        if(error){
+            body.innerHTML = `<div class="lb-empty">جدول لیدربورد هنوز روی دیتابیس ساخته نشده.<br>راهنمای ساخت جدول بالای همین فایل (کامنت ماژول) هست.</div>`;
+            return;
+        }
+        if(!rows || !rows.length){
+            body.innerHTML = '<div class="lb-empty">هنوز کسی توی این گروه آمار ثبت نکرده. اولین نفر باش! 🚀</div>';
+            return;
+        }
+
+        const profiles = await Promise.all(rows.map(r => lbGetProfile(r.user_id)));
+        const myStats = rows.find(r => r.user_id === uid);
+
+        let html = '';
+        if(myStats){
+            html += `<div class="lb-me-card">
+                <div class="lb-avatar">${lbInitials(lbProfileCache[uid])}</div>
+                <div class="lb-info">
+                    <div class="lb-name">جایگاه من</div>
+                    <div class="lb-sub">${lbFa(myStats.weekly_tests)} تست این هفته · رکورد ${lbFa(myStats.best_streak)} روز</div>
+                </div>
+                <div class="lb-me-streak">🔥 ${lbFa(myStats.streak)}</div>
+            </div>`;
+        }
+
+        const medals = ['🥇','🥈','🥉'];
+        html += rows.map((r, i) => {
+            const p = profiles[i];
+            const isMe = r.user_id === uid;
+            const isMilestone = LB_MILESTONES.includes(r.streak);
+            const rankLabel = i < 3 ? medals[i] : lbFa(i + 1);
+            const rankCls = i < 3 ? `top${i+1}` : '';
+            return `<div class="lb-row ${isMe ? 'me' : ''}">
+                <div class="lb-rank ${rankCls}">${rankLabel}</div>
+                <div class="lb-avatar">${lbInitials(p)}</div>
+                <div class="lb-info">
+                    <div class="lb-name">${lbEsc(lbFullName(p))}${isMe ? ' (خودت)' : ''}</div>
+                    <div class="lb-sub">${lbFa(r.weekly_tests)} تست این هفته</div>
+                </div>
+                <div class="lb-streak-badge ${isMilestone ? 'milestone' : ''}">🔥 ${lbFa(r.streak)}</div>
+            </div>`;
+        }).join('');
+
+        body.innerHTML = html;
+    }
+
+    async function lbOpenPanel(){
+        const overlay = document.getElementById('lb-overlay');
+        const tabsEl = document.getElementById('lb-group-tabs');
+        if(!overlay) return;
+        overlay.classList.add('open');
+        document.getElementById('lb-fab')?.classList.remove('has-update');
+
+        if(!lbGroups.length) lbGroups = await lbFetchMyGroups();
+        if(!lbGroups.length){
+            tabsEl.innerHTML = '';
+            document.getElementById('lb-body').innerHTML = '<div class="lb-empty">اول باید عضو یک گروه گفتگو باشی تا لیدربورد فعال بشه.</div>';
+            return;
+        }
+        tabsEl.innerHTML = lbGroups.map(g =>
+            `<button class="lb-group-tab" data-gid="${g.id}" onclick="lbLoadGroupPublic('${g.id}')">${lbEsc(g.name || 'گروه')}</button>`
+        ).join('');
+
+        await lbSyncMyStats();
+        await lbLoadGroup(lbActiveGroupId || lbGroups[0].id);
+    }
+
+    window.toggleLeaderboardPanel = function(open){
+        const overlay = document.getElementById('lb-overlay');
+        if(!overlay) return;
+        if(open === false){ overlay.classList.remove('open'); return; }
+        lbOpenPanel();
+    };
+    window.lbLoadGroupPublic = function(groupId){ lbLoadGroup(groupId); };
+
+    /* هر بار که کاربر یک تست جدید ثبت می‌کنه، اگه پنل بسته باشه یه نقطه‌ی
+       قرمز روی دکمه نشون بده تا بدونه استریکش آپدیت شده. */
+    document.addEventListener('click', function(e){
+        if(e.target.closest('[onclick*="saveExam"], [onclick*="saveNewExam"], [onclick*="submitExam"]')){
+            setTimeout(() => document.getElementById('lb-fab')?.classList.add('has-update'), 300);
+        }
+    });
+
+    document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState === 'visible') lbSyncMyStats();
+    });
 })();
 </script>
 
