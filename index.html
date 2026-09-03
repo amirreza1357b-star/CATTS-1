@@ -3593,6 +3593,9 @@ body.light-mode #cloud-account-modal{background:linear-gradient(145deg,rgba(255,
     .chat-contact-check{ width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.25); flex-shrink:0; margin-right:auto; display:flex; align-items:center; justify-content:center; font-size:.7rem; color:transparent; transition:.15s ease; }
     .chat-contact-item.selected .chat-contact-check{ background:var(--accent); border-color:var(--accent); color:#fff; }
     .chat-conv-group-badge{ font-size:.62rem; background:rgba(92,149,246,.25); color:var(--accent); border-radius:6px; padding:1px 6px; margin-right:4px; }
+    .chat-member-badge{ font-size:.66rem; background:linear-gradient(135deg,#f59e0b,#ef4444); color:#fff; border-radius:6px; padding:1px 7px; display:inline-block; margin-top:2px; }
+    .chat-member-actions{ display:flex; gap:4px; flex-shrink:0; }
+    .chat-member-actions .chat-icon-btn{ width:32px; height:32px; font-size:.85rem; }
     .chat-search-input{ margin:10px 12px 0; padding:10px 14px; border-radius:14px; }
     .chat-messages{ flex:1; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px;
         background-image: radial-gradient(circle at 15% 20%, rgba(92,149,246,.10) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(72,188,236,.09) 0%, transparent 42%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.02) 1px, transparent 1px);
@@ -4199,7 +4202,7 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
       <div class="chat-top-bar">
         <button class="chat-icon-btn" onclick="showChatListView()">→</button>
         <div class="chat-top-title" id="chat-contacts-title">انتخاب عضو</div>
-        <button class="chat-icon-btn chat-confirm-btn" id="chat-contacts-next-btn" style="display:none;" onclick="goToGroupNameStep()" title="تایید اعضای انتخاب‌شده">
+        <button class="chat-icon-btn chat-confirm-btn" id="chat-contacts-next-btn" style="display:none;" onclick="chatContactsConfirm()" title="تایید اعضای انتخاب‌شده">
           <span>✓</span><span id="chat-contacts-next-count"></span>
         </button>
       </div>
@@ -4236,7 +4239,7 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
             <div class="chat-status-line" id="chat-window-status"><span class="chat-status-tiny-dot"></span><span id="chat-window-status-text">آفلاین</span></div>
           </div>
         </div>
-        <span style="width:38px;"></span>
+        <button class="chat-icon-btn" id="chat-window-info-btn" style="display:none;" onclick="openGroupInfoPanel(chatActiveGroupId)" title="اطلاعات گروه">ℹ️</button>
       </div>
       <div id="chat-messages" class="chat-messages"></div>
       <div id="chat-reply-banner" class="chat-forward-banner">
@@ -4255,6 +4258,25 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
         <button type="button" class="chat-attach-btn" title="انتخاب از گالری" onclick="attachChatFromGallery()">🖼️</button>
         <input id="chat-text-input" class="chat-text-input" type="text" placeholder="پیام بنویس..." onkeydown="if(event.key==='Enter'){sendChatMessage();}">
         <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+
+    <!-- اطلاعات و اعضای گروه (مثل تلگرام/واتساپ) -->
+    <div id="chat-view-group-info" class="chat-view">
+      <div class="chat-top-bar">
+        <button class="chat-icon-btn" onclick="showChatWindowView()">→</button>
+        <div class="chat-top-title">اطلاعات گروه</div>
+        <button class="chat-icon-btn" id="chat-group-info-add-btn" style="display:none;" onclick="openAddMemberPicker(chatCurrentGroupInfoId)" title="افزودن عضو">➕</button>
+      </div>
+      <div class="chat-setup-box" style="text-align:center;">
+        <div class="chat-avatar-picker group-avatar" style="pointer-events:none; margin:0 auto;"><span id="chat-group-info-avatar-inner">👥</span></div>
+        <div id="chat-group-info-name" style="font-weight:800;font-size:1.05rem;margin-top:8px;"></div>
+        <div id="chat-group-info-count" class="neo-muted" style="margin-bottom:4px;"></div>
+      </div>
+      <div id="chat-group-info-members" class="chat-contacts-list"></div>
+      <div style="padding:12px 16px 18px; display:flex; flex-direction:column; gap:8px;">
+        <button class="btn" style="width:100%; background:var(--danger); color:#fff;" onclick="leaveChatGroup()">🚪 ترک گروه</button>
+        <button class="btn" id="chat-group-delete-btn" style="width:100%; display:none; background:#7f1d1d; color:#fff;" onclick="deleteChatGroupConfirm()">🗑 حذف کامل گروه</button>
       </div>
     </div>
   </div>
@@ -12954,6 +12976,8 @@ loadSmartNotes();
     const chatGroupsCache = {};
     let chatPickerMode = 'dm';        /* 'dm' | 'group-select' | 'forward' */
     let chatSelectedMemberIds = [];
+    let chatAddToGroupId = null;
+    let chatCurrentGroupInfoId = null;
     let chatPollTimer = null;
     let chatLastConvItems = [];       /* برای جستجوی سریع بدون درخواست جدید */
     let chatForwardMessage = null;    /* پیامی که در حال فوروارد شدن است */
@@ -13469,7 +13493,7 @@ loadSmartNotes();
         const { data: group, error } = await client.from('chat_groups').insert({ name, created_by: chatCurrentUserId, avatar_url: avatarUrl }).select().maybeSingle();
         if(error){ toast('ساخت گروه ناموفق بود', error.message); return; }
         chatGroupsCache[group.id] = group;
-        const memberRows = [chatCurrentUserId, ...chatSelectedMemberIds].map(uid => ({ group_id: group.id, user_id: uid, last_read_at: uid === chatCurrentUserId ? new Date().toISOString() : null }));
+        const memberRows = [chatCurrentUserId, ...chatSelectedMemberIds].map(uid => ({ group_id: group.id, user_id: uid, role: uid === chatCurrentUserId ? 'admin' : 'member', last_read_at: uid === chatCurrentUserId ? new Date().toISOString() : null }));
         const { error: memErr } = await client.from('chat_group_members').insert(memberRows);
         if(memErr){ toast('افزودن اعضا با خطا مواجه شد', memErr.message); }
         if(!chatMyGroupIds.includes(group.id)) chatMyGroupIds.push(group.id);
@@ -13477,6 +13501,159 @@ loadSmartNotes();
         subscribeChatGroupRealtime(chatCurrentUserId);
         toast('گروه ساخته شد 🎉', name);
         openGroupConversation(group.id);
+    };
+
+    /* ===================== اطلاعات گروه، مدیریت اعضا، ترک/حذف گروه (مثل تلگرام) ===================== */
+    window.chatContactsConfirm = function(){
+        if(chatPickerMode === 'add-to-group') return confirmAddMembersToGroup();
+        return goToGroupNameStep();
+    };
+
+    window.openGroupInfoPanel = async function(groupId){
+        if(!groupId) return;
+        chatCurrentGroupInfoId = groupId;
+        showChatView('chat-view-group-info');
+        const membersEl = document.getElementById('chat-group-info-members');
+        if(membersEl) membersEl.innerHTML = '<div class="chat-empty-state">در حال بارگذاری...</div>';
+        const client = getSupabaseClient();
+        if(!client) return;
+        let group = chatGroupsCache[groupId];
+        if(!group){
+            const { data } = await client.from('chat_groups').select('*').eq('id', groupId).maybeSingle();
+            group = data; if(group) chatGroupsCache[groupId] = group;
+        }
+        const avEl = document.getElementById('chat-group-info-avatar-inner');
+        if(avEl) avEl.innerHTML = group ? chatAvatarInnerHtml(group) : '👥';
+        const nameEl = document.getElementById('chat-group-info-name');
+        if(nameEl) nameEl.textContent = group ? group.name : 'گروه';
+        const { data: members, error } = await client.from('chat_group_members').select('user_id,role').eq('group_id', groupId);
+        if(error){ if(membersEl) membersEl.innerHTML = '<div class="chat-empty-state">خطا در بارگذاری اعضا</div>'; return; }
+        const countEl = document.getElementById('chat-group-info-count');
+        if(countEl) countEl.textContent = fa((members || []).length) + ' عضو';
+        await fetchProfilesByIds((members || []).map(m => m.user_id));
+        const myRow = (members || []).find(m => m.user_id === chatCurrentUserId);
+        const amAdmin = myRow && myRow.role === 'admin';
+        document.getElementById('chat-group-info-add-btn').style.display = amAdmin ? 'flex' : 'none';
+        document.getElementById('chat-group-delete-btn').style.display = amAdmin ? 'block' : 'none';
+        chatCurrentGroupMembersCache = members || [];
+        renderGroupInfoMembers();
+    };
+
+    let chatCurrentGroupMembersCache = [];
+    function renderGroupInfoMembers(){
+        const membersEl = document.getElementById('chat-group-info-members');
+        if(!membersEl) return;
+        const myRow = chatCurrentGroupMembersCache.find(m => m.user_id === chatCurrentUserId);
+        const amAdmin = myRow && myRow.role === 'admin';
+        const sorted = [...chatCurrentGroupMembersCache].sort((a,b) => (b.role === 'admin') - (a.role === 'admin'));
+        membersEl.innerHTML = sorted.map(m => {
+            const p = chatProfilesCache[m.user_id];
+            const isSelf = m.user_id === chatCurrentUserId;
+            const isAdmin = m.role === 'admin';
+            const actions = (amAdmin && !isSelf) ? `<div class="chat-member-actions">
+                <button class="chat-icon-btn" title="${isAdmin ? 'عزل از مدیریت' : 'ارتقا به مدیر'}" onclick="event.stopPropagation(); toggleMemberAdmin('${m.user_id}', ${isAdmin})">${isAdmin ? '👑' : '⭐'}</button>
+                <button class="chat-icon-btn" title="حذف از گروه" onclick="event.stopPropagation(); kickGroupMember('${m.user_id}')">🚫</button>
+            </div>` : '';
+            return `<div class="chat-contact-item">
+                <div class="chat-avatar-wrap"><div class="chat-avatar">${p ? chatAvatarInnerHtml(p) : '👤'}</div></div>
+                <div style="flex:1;overflow:hidden;">
+                    <div class="chat-contact-name">${p ? esc(chatFullName(p)) : '...'}${isSelf ? ' (خودت)' : ''}</div>
+                    ${isAdmin ? '<span class="chat-member-badge">👑 مدیر</span>' : ''}
+                </div>
+                ${actions}
+            </div>`;
+        }).join('');
+    }
+
+    window.toggleMemberAdmin = async function(userId, currentlyAdmin){
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentGroupInfoId) return;
+        const { error } = await client.from('chat_group_members')
+            .update({ role: currentlyAdmin ? 'member' : 'admin' })
+            .eq('group_id', chatCurrentGroupInfoId).eq('user_id', userId);
+        if(error){ toast('تغییر نقش ناموفق بود', error.message); return; }
+        const row = chatCurrentGroupMembersCache.find(m => m.user_id === userId);
+        if(row) row.role = currentlyAdmin ? 'member' : 'admin';
+        renderGroupInfoMembers();
+        toast(currentlyAdmin ? 'از مدیریت عزل شد' : 'به مدیر گروه ارتقا یافت 🎉', '');
+    };
+
+    window.kickGroupMember = async function(userId){
+        if(!confirm('این عضو از گروه حذف بشه؟')) return;
+        const client = getSupabaseClient();
+        if(!client || !chatCurrentGroupInfoId) return;
+        const { error } = await client.from('chat_group_members')
+            .delete().eq('group_id', chatCurrentGroupInfoId).eq('user_id', userId);
+        if(error){ toast('حذف عضو ناموفق بود', error.message); return; }
+        chatCurrentGroupMembersCache = chatCurrentGroupMembersCache.filter(m => m.user_id !== userId);
+        const countEl = document.getElementById('chat-group-info-count');
+        if(countEl) countEl.textContent = fa(chatCurrentGroupMembersCache.length) + ' عضو';
+        renderGroupInfoMembers();
+        toast('عضو از گروه حذف شد', '');
+    };
+
+    window.leaveChatGroup = async function(){
+        if(!chatCurrentGroupInfoId) return;
+        if(!confirm('مطمئنی می‌خوای از این گروه بری بیرون؟')) return;
+        const client = getSupabaseClient();
+        if(!client) return;
+        const groupId = chatCurrentGroupInfoId;
+        const myRow = chatCurrentGroupMembersCache.find(m => m.user_id === chatCurrentUserId);
+        const otherMembers = chatCurrentGroupMembersCache.filter(m => m.user_id !== chatCurrentUserId);
+        const amOnlyAdmin = myRow && myRow.role === 'admin' && !otherMembers.some(m => m.role === 'admin');
+        if(amOnlyAdmin && otherMembers.length){
+            await client.from('chat_group_members').update({ role: 'admin' })
+                .eq('group_id', groupId).eq('user_id', otherMembers[0].user_id);
+        }
+        const { error } = await client.from('chat_group_members').delete()
+            .eq('group_id', groupId).eq('user_id', chatCurrentUserId);
+        if(error){ toast('خروج از گروه ناموفق بود', error.message); return; }
+        chatMyGroupIds = chatMyGroupIds.filter(id => id !== groupId);
+        delete chatGroupsCache[groupId];
+        toast('از گروه خارج شدی', '');
+        showChatListView();
+    };
+
+    window.deleteChatGroupConfirm = async function(){
+        if(!chatCurrentGroupInfoId) return;
+        if(!confirm('کل گروه با همه‌ی پیام‌هاش برای همیشه حذف بشه؟ این کار قابل بازگشت نیست.')) return;
+        const client = getSupabaseClient();
+        if(!client) return;
+        const groupId = chatCurrentGroupInfoId;
+        const { error } = await client.from('chat_groups').delete().eq('id', groupId);
+        if(error){ toast('حذف گروه ناموفق بود', error.message); return; }
+        chatMyGroupIds = chatMyGroupIds.filter(id => id !== groupId);
+        delete chatGroupsCache[groupId];
+        toast('گروه حذف شد', '');
+        showChatListView();
+    };
+
+    window.openAddMemberPicker = async function(groupId){
+        if(!groupId) return;
+        chatAddToGroupId = groupId;
+        chatPickerMode = 'add-to-group';
+        chatSelectedMemberIds = [];
+        document.getElementById('chat-contacts-title').textContent = 'افزودن عضو';
+        document.getElementById('chat-contacts-next-btn').style.display = 'flex';
+        updateChatConfirmBtnCount();
+        showChatContactsView();
+        await loadAllContacts();
+        const existingIds = new Set(chatCurrentGroupMembersCache.map(m => m.user_id));
+        chatAllContacts = chatAllContacts.filter(p => !existingIds.has(p.id));
+        renderContactsList();
+    };
+
+    window.confirmAddMembersToGroup = async function(){
+        if(!chatSelectedMemberIds.length){ toast('حداقل یک نفر رو انتخاب کن', ''); return; }
+        const client = getSupabaseClient();
+        if(!client || !chatAddToGroupId) return;
+        const groupId = chatAddToGroupId;
+        const rows = chatSelectedMemberIds.map(uid => ({ group_id: groupId, user_id: uid, role: 'member' }));
+        const { error } = await client.from('chat_group_members').insert(rows);
+        if(error){ toast('افزودن عضو ناموفق بود', error.message); return; }
+        toast('عضو(ها) اضافه شدند 🎉', '');
+        chatAddToGroupId = null;
+        openGroupInfoPanel(groupId);
     };
 
     function chatStatusHtml(peerId){
@@ -13588,6 +13765,8 @@ loadSmartNotes();
         chatActivePeerId = peerId;
         chatActiveGroupId = null;
         showChatWindowView();
+        const infoBtnDm = document.getElementById('chat-window-info-btn');
+        if(infoBtnDm) infoBtnDm.style.display = 'none';
         cancelChatUpload();
         cancelChatReply();
         const msgsEl = document.getElementById('chat-messages');
@@ -13630,6 +13809,8 @@ loadSmartNotes();
         chatActiveGroupId = groupId;
         chatActivePeerId = null;
         showChatWindowView();
+        const infoBtnGrp = document.getElementById('chat-window-info-btn');
+        if(infoBtnGrp) infoBtnGrp.style.display = 'flex';
         cancelChatUpload();
         cancelChatReply();
         const msgsEl = document.getElementById('chat-messages');
