@@ -3976,6 +3976,10 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
     align-items:center; justify-content:center; padding:16px;
 }
 #admin-login-overlay.show, #admin-panel-overlay.show, #maintenance-overlay.show, #banned-overlay.show{ display:flex; }
+/* پنل و ورود مدیر باید همیشه بالاتر از دروازه‌ی اجباری ورود/ثبت‌نام (که در
+   حالت تعمیر هم همین دروازه نمایش داده می‌شود) دیده شوند، وگرنه با ۵ کلیک
+   پنجره‌ی رمز باز می‌شود ولی پشت دروازه پنهان می‌ماند. */
+#admin-login-overlay, #admin-panel-overlay{ z-index: 999996; }
 #admin-login-box{
     width:min(360px,92vw); background:var(--adm-login-panel);
     border:1px solid var(--adm-login-border); border-radius:14px; padding:26px 22px;
@@ -4084,6 +4088,24 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
 body.adm-drag-mode [data-adm-floatable]{
     outline:2px dashed var(--adm-blue) !important; outline-offset:3px; cursor:move !important; z-index:999985 !important;
 }
+/* نوار شناور تاییدِ جابه‌جایی: چون هنگام جابه‌جایی، خودِ پنل مدیر کنار می‌رود
+   (تا دیده نشود و مزاحم کشیدن نباشد)، باید یک دکمه‌ی تایید کوچک همیشه روی صفحه
+   بماند تا بعد از رساندنِ هر دکمه به جای دلخواه، همان‌جا (بدون بازکردن دوباره‌ی
+   کل پنل) بشود تغییر را دید و تایید/ذخیره کرد. */
+#adm-drag-confirm-bar{
+    display:none; position:fixed; top:14px; left:50%; transform:translateX(-50%);
+    z-index:999997; background:#181c26; border:1px solid var(--adm-blue,#3b82f6);
+    border-radius:14px; padding:8px 10px; box-shadow:0 10px 30px rgba(0,0,0,.4);
+    align-items:center; gap:8px; font-family:'Vazirmatn',Tahoma,sans-serif; direction:rtl;
+}
+body.adm-drag-mode #adm-drag-confirm-bar{ display:flex; }
+#adm-drag-confirm-bar span{ color:#c7cbe0; font-size:.72rem; white-space:nowrap; }
+#adm-drag-confirm-bar button{
+    border:none; border-radius:10px; padding:7px 14px; font-size:.76rem; font-weight:700;
+    cursor:pointer; font-family:inherit; white-space:nowrap;
+}
+#adm-drag-confirm-bar .adm-drag-confirm-ok{ background:var(--adm-green,#22c55e); color:#06210f; }
+#adm-drag-confirm-bar .adm-drag-confirm-cancel{ background:transparent; color:#f2f3f8; border:1px solid #323952 !important; }
 
 /* اورلی تعمیر و مسدودی — با ظاهر جدی و واضح */
 #maintenance-overlay .adm-overlay-box, #banned-overlay .adm-overlay-box{
@@ -5498,7 +5520,15 @@ body.adm-drag-mode [data-adm-floatable]{
     <input type="password" id="admin-login-password" placeholder="رمز عبور" onkeydown="if(event.key==='Enter')adminTryLogin()">
     <div id="admin-login-error"></div>
     <button class="adm-btn adm-btn-primary" onclick="adminTryLogin()">ورود به پنل</button>
+    <button id="admin-login-fingerprint-btn" class="adm-btn adm-btn-ghost2" style="display:none;margin-top:8px;width:100%;" onclick="adminTryFingerprintLogin()">👆 ورود با اثر انگشت این دستگاه</button>
   </div>
+</div>
+
+<!-- نوار شناور تایید جابه‌جایی دکمه‌های شناور؛ فقط وقتی body.adm-drag-mode فعال باشد دیده می‌شود -->
+<div id="adm-drag-confirm-bar">
+  <span>🖱️ هر دکمه را بکش و رها کن</span>
+  <button class="adm-drag-confirm-ok" onclick="admEndDragMode()">✅ تایید و ذخیره</button>
+  <button class="adm-drag-confirm-cancel" onclick="admCancelDragMode()">✕ انصراف</button>
 </div>
 
 <div id="admin-panel-overlay" onclick="if(event.target===this) toggleAdminPanel(false)">
@@ -5660,6 +5690,16 @@ body.adm-drag-mode [data-adm-floatable]{
           <div id="admin-save-status-maint"></div>
           <div class="adm-inline-actions">
             <button class="adm-btn adm-btn-block" onclick="adminSaveSettings()">💾 ذخیره و اعمال برای همه</button>
+          </div>
+          <div class="adm-card" style="margin-top:14px;">
+            <p class="adm-card-title">🔐 ورود سریع با اثر انگشت (فقط همین دستگاه)</p>
+            <p style="font-size:.76rem;color:var(--adm-text-dim);line-height:1.9;margin-bottom:10px;">
+              وقتی برنامه قفل است (مثلاً همین حالت تعمیر) برای ورود دوباره به این پنل، به‌جای تایپ رمز روی لپ‌تاپت (مثلاً حسگر اثر انگشت ThinkPad) اثر انگشت بزن. این ثبت فقط روی همین مرورگر/دستگاه ذخیره می‌شود؛ در دستگاه دیگر باز باید با رمز وارد شوی.
+            </p>
+            <div class="adm-inline-actions">
+              <button id="adm-security-register-btn" class="adm-btn adm-btn-block" style="display:none;" onclick="admRegisterFingerprint()">👆 ثبت اثر انگشت این دستگاه</button>
+            </div>
+            <p id="adm-security-fp-status" style="font-size:.74rem;color:var(--adm-text-dim);margin-top:8px;"></p>
           </div>
         </div>
 
@@ -9389,6 +9429,16 @@ function lockApp(){
     document.body.classList.add('app-locked');
 }
 function unlockApp(){
+    // اگر حالت تعمیر (قفل کلی) روشن است و این جلسه، جلسه‌ی باز شده توسط
+    // مدیر (با رمز یا اثر انگشت) نیست، حتی با ورود موفق کاربر عادی هم
+    // دوباره فقط همان صفحه‌ی ورود/ثبت‌نام نمایش داده می‌شود.
+    const maint = window.__admMaintenance;
+    const adminUnlocked = sessionStorage.getItem('adm_unlocked') === '1';
+    if(maint && maint.enabled && !adminUnlocked){
+        lockApp();
+        setGateStatus(maint.message || 'برنامه در حال به‌روزرسانی است، لطفاً چند دقیقه دیگر مراجعه کن.');
+        return;
+    }
     document.body.classList.remove('app-locked');
 }
 function setGateStatus(text, ok){
@@ -15020,20 +15070,31 @@ let admPendingFloatPositions = {};
 const DEFAULT_TAB_ORDER = ['tab-dashboard','tab-timer','tab-as','tab-stats','tab-errors','tab-notes-ve','tab-br','tab-settings','tab-planner','tab-gallery','tab-trash'];
 const TAB_LABELS = { 'tab-dashboard':'داشبورد','tab-timer':'زمان‌سنج','tab-as':'AS (پاسخ‌برگ)','tab-stats':'آمار دروس','tab-errors':'دفتر خطاها','tab-notes-ve':'نکات VE','tab-br':'BR','tab-settings':'اهداف','tab-planner':'برنامه هفتگی','tab-gallery':'گالری','tab-trash':'سطل زباله' };
 
-/* ---------------- دسترسی مخفی: ۵ کلیک روی عنوان برنامه ---------------- */
-document.addEventListener('DOMContentLoaded', function(){
-    const titleEl = document.getElementById('app-main-title');
-    if(!titleEl) return;
-    titleEl.style.cursor = 'default';
-    titleEl.addEventListener('click', function(){
-        admClickCount++;
-        clearTimeout(admClickTimer);
-        admClickTimer = setTimeout(() => { admClickCount = 0; }, 1500);
-        if(admClickCount >= 5){
-            admClickCount = 0;
+/* ---------------- دسترسی مخفی: ۵ کلیک روی عنوان برنامه یا روی متن دروازه‌ی ورود ----------------
+   دو نقطه‌ی ورود مستقل به پنل مدیر داریم تا حتی وقتی «حالت تعمیر» روشن است و
+   کاربر فقط صفحه‌ی ورود/ثبت‌نام را می‌بیند (و عنوان برنامه اصلاً دیده نمی‌شود)،
+   باز هم راهی برای رسیدن به پنل وجود داشته باشد: ۵ کلیک روی همان جمله‌ی
+   «برای استفاده از برنامه، ابتدا ثبت‌نام کن یا وارد شو.» (که آی‌دی‌اش gate-status
+   است، حتی اگر با پیام تعمیر عوض شده باشد). هر دو از یک تابع کمکی مشترک با
+   شمارنده‌ی جدا استفاده می‌کنند تا کلیک‌های یکی روی دیگری اثر نگذارد. */
+function admBindSecretTap(elId){
+    const el = document.getElementById(elId);
+    if(!el) return;
+    let count = 0, timer = null;
+    el.style.cursor = 'default';
+    el.addEventListener('click', function(){
+        count++;
+        clearTimeout(timer);
+        timer = setTimeout(() => { count = 0; }, 1500);
+        if(count >= 5){
+            count = 0;
             adminOpenLogin();
         }
     });
+}
+document.addEventListener('DOMContentLoaded', function(){
+    admBindSecretTap('app-main-title');
+    admBindSecretTap('gate-status');
 });
 
 function adminOpenLogin(){
@@ -15041,6 +15102,7 @@ function adminOpenLogin(){
     document.getElementById('admin-login-error').textContent = '';
     document.getElementById('admin-login-password').value = '';
     ov.classList.add('show');
+    try{ admUpdateFingerprintButtons(); }catch(e){}
     setTimeout(() => document.getElementById('admin-login-password')?.focus(), 50);
 }
 function adminCloseLogin(){ document.getElementById('admin-login-overlay').classList.remove('show'); }
@@ -15051,6 +15113,7 @@ function adminTryLogin(){
     if(val === ADMIN_PASSWORD){
         adminCloseLogin();
         sessionStorage.setItem('adm_unlocked', '1');
+        try{ applyMaintenanceLock(); }catch(e){} // اگر حالت تعمیر روشن است، خود مدیر رد شود
         toggleAdminPanel(true);
     } else {
         document.getElementById('admin-login-error').textContent = 'رمز عبور اشتباه است.';
@@ -15058,12 +15121,100 @@ function adminTryLogin(){
 }
 window.adminTryLogin = adminTryLogin;
 
+/* ---------------------------- ورود به پنل با اثر انگشت (WebAuthn) ----------------------------
+   این یک ورود «محلی» است: اثر انگشت/چهره‌ی خودِ دستگاه (مثلاً حسگر روی
+   ThinkPad) را به مرورگر همین دستگاه گره می‌زند. رمز عبور همچنان لازم است
+   تا اولین‌بار اثر انگشت را ثبت کنی؛ بعد از آن، هم رمز و هم اثر انگشت کار
+   می‌کنند. چون کلید فقط در حافظه‌ی همین مرورگر/دستگاه ذخیره می‌شود، در
+   دستگاه یا مرورگر دیگری اثری از آن نیست و باز باید با رمز وارد شوی. */
+const ADM_WEBAUTHN_KEY = 'adm_webauthn_cred_id';
+function admWebAuthnSupported(){
+    return !!(window.PublicKeyCredential && navigator.credentials);
+}
+function admHasFingerprintRegistered(){
+    return !!localStorage.getItem(ADM_WEBAUTHN_KEY);
+}
+function admUpdateFingerprintButtons(){
+    const loginBtn = document.getElementById('admin-login-fingerprint-btn');
+    if(loginBtn) loginBtn.style.display = (admWebAuthnSupported() && admHasFingerprintRegistered()) ? 'block' : 'none';
+    const regBtn = document.getElementById('adm-security-register-btn');
+    const regStatus = document.getElementById('adm-security-fp-status');
+    if(regBtn) regBtn.style.display = admWebAuthnSupported() ? 'inline-block' : 'none';
+    if(regStatus) regStatus.textContent = admHasFingerprintRegistered()
+        ? '✅ اثر انگشت برای این دستگاه/مرورگر ثبت شده.'
+        : 'هنوز برای این دستگاه ثبت نشده.';
+}
+window.admUpdateFingerprintButtons = admUpdateFingerprintButtons;
+
+async function admRegisterFingerprint(){
+    if(!admWebAuthnSupported()){ alert('مرورگر یا دستگاهت از ورود با اثر انگشت پشتیبانی نمی‌کند.'); return; }
+    try{
+        if(window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if(!available){ alert('حسگر اثر انگشت/تشخیص چهره‌ای روی این دستگاه پیدا نشد.'); return; }
+        }
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const userId = crypto.getRandomValues(new Uint8Array(16));
+        const cred = await navigator.credentials.create({
+            publicKey: {
+                challenge,
+                rp: { name: 'پنل مدیریت سامانه تحلیل' },
+                user: { id: userId, name: 'admin', displayName: 'مدیر برنامه' },
+                pubKeyCredParams: [ { type:'public-key', alg:-7 }, { type:'public-key', alg:-257 } ],
+                authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required' },
+                timeout: 60000
+            }
+        });
+        if(cred && cred.rawId){
+            const idB64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+            localStorage.setItem(ADM_WEBAUTHN_KEY, idB64);
+            admUpdateFingerprintButtons();
+            alert('✅ ثبت شد. از این به بعد در همین دستگاه/مرورگر می‌توانی با اثر انگشت هم وارد پنل شوی.');
+        }
+    }catch(e){
+        console.error(e);
+        alert('ثبت اثر انگشت انجام نشد: ' + (e.message || 'لغو شد یا خطایی رخ داد.'));
+    }
+}
+window.admRegisterFingerprint = admRegisterFingerprint;
+
+async function adminTryFingerprintLogin(){
+    if(!admHasFingerprintRegistered()){
+        document.getElementById('admin-login-error').textContent = 'هنوز اثر انگشتی برای این دستگاه ثبت نشده؛ اول با رمز وارد شو.';
+        return;
+    }
+    try{
+        const idB64 = localStorage.getItem(ADM_WEBAUTHN_KEY);
+        const rawId = Uint8Array.from(atob(idB64), c => c.charCodeAt(0));
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const assertion = await navigator.credentials.get({
+            publicKey: {
+                challenge,
+                allowCredentials: [ { id: rawId, type:'public-key', transports:['internal'] } ],
+                userVerification: 'required',
+                timeout: 60000
+            }
+        });
+        if(assertion){
+            adminCloseLogin();
+            sessionStorage.setItem('adm_unlocked', '1');
+            try{ applyMaintenanceLock(); }catch(e){}
+            toggleAdminPanel(true);
+        }
+    }catch(e){
+        console.error(e);
+        document.getElementById('admin-login-error').textContent = 'ورود با اثر انگشت ناموفق بود یا لغو شد.';
+    }
+}
+window.adminTryFingerprintLogin = adminTryFingerprintLogin;
+
 /* ---------------------------- باز/بسته کردن پنل ---------------------------- */
 function toggleAdminPanel(show){
     const ov = document.getElementById('admin-panel-overlay');
     if(show){
         admFillPanelFromCurrent();
         admBuildTabsList();
+        try{ admUpdateFingerprintButtons(); }catch(e){}
         ov.classList.add('show');
     } else {
         ov.classList.remove('show');
@@ -15251,6 +15402,32 @@ async function admEndDragMode(){
 }
 window.admEndDragMode = admEndDragMode;
 
+/* انصراف از جابه‌جایی: موقعیت‌ها را به همان چیزی که قبلاً ذخیره شده بود
+   برمی‌گرداند (بدون ذخیره‌ی دوباره در سرور) و از حالت جابه‌جایی خارج می‌شود. */
+function admCancelDragMode(){
+    document.body.classList.remove('adm-drag-mode');
+    document.querySelectorAll('[data-adm-floatable]').forEach(el => {
+        el.removeEventListener('mousedown', admFloatDragStart);
+        el.removeEventListener('touchstart', admFloatDragStart);
+    });
+    const saved = (admCurrentSettings.layout && admCurrentSettings.layout.floatingPositions) || {};
+    admPendingFloatPositions = Object.assign({}, saved);
+    document.querySelectorAll('[data-adm-floatable]').forEach(el => {
+        const key = el.getAttribute('data-adm-floatable');
+        const pos = saved[key];
+        el.style.removeProperty('right'); el.style.removeProperty('bottom');
+        el.style.removeProperty('top'); el.style.removeProperty('left');
+        if(pos){
+            if(pos.right) el.style.setProperty('right', pos.right, 'important');
+            if(pos.bottom) el.style.setProperty('bottom', pos.bottom, 'important');
+        }
+    });
+    document.getElementById('admin-panel-overlay').classList.add('show');
+    const btn = document.getElementById('adm-drag-start-btn');
+    if(btn){ btn.textContent = '🖱️ شروع جابه‌جایی'; btn.setAttribute('onclick','admStartDragMode()'); }
+}
+window.admCancelDragMode = admCancelDragMode;
+
 function admResetFloatPositions(){
     admPendingFloatPositions = {};
     document.querySelectorAll('[data-adm-floatable]').forEach(el => {
@@ -15384,16 +15561,24 @@ function admApplySettings(s){
         });
     }
 
-    // حالت تعمیر
-    const maint = l.maintenance || {};
-    const unlocked = sessionStorage.getItem('adm_unlocked') === '1';
-    if(maint.enabled && !unlocked){
-        document.getElementById('maintenance-overlay-text').textContent = maint.message || 'برنامه در حال به‌روزرسانی است، لطفاً چند دقیقه دیگر مراجعه کن.';
-        document.getElementById('maintenance-overlay').classList.add('show');
+    // حالت تعمیر: به‌جای باکس جداگانه، همان دروازه‌ی ورود/ثبت‌نام (تک صفحه‌ای)
+    // برای همه نمایش داده می‌شود؛ فقط مدیر (با رمز یا اثر انگشت) رد می‌شود.
+    window.__admMaintenance = l.maintenance || { enabled:false, message:'' };
+    applyMaintenanceLock();
+}
+
+function applyMaintenanceLock(){
+    const maint = window.__admMaintenance || {};
+    const adminUnlocked = sessionStorage.getItem('adm_unlocked') === '1';
+    if(maint.enabled && !adminUnlocked){
+        lockApp();
+        setGateStatus(maint.message || 'برنامه در حال به‌روزرسانی است، لطفاً چند دقیقه دیگر مراجعه کن.');
     } else {
-        document.getElementById('maintenance-overlay')?.classList.remove('show');
+        // بگذار روال عادی ورود، وضعیت واقعی قفل/باز بودن را دوباره تعیین کند
+        try{ authRefreshUI(); }catch(e){}
     }
 }
+window.applyMaintenanceLock = applyMaintenanceLock;
 
 /* بازنویسی توابع اعلان تا از متن پشتیبان (در صورت وجود) استفاده کنند */
 window.updateAnnouncementButton = function(){
