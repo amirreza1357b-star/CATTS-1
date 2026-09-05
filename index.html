@@ -3959,6 +3959,92 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
     width:30px; height:30px; cursor:pointer; font-size:.9rem; flex-shrink:0;
 }
 .qr-empty{ text-align:center; color:var(--text-secondary); font-size:.8rem; padding:20px 0; }
+
+/* ==========================================================================
+   پنل پشتیبان (Admin/Support Panel) — ظاهر عمداً متفاوت از بقیه برنامه
+   تا کاملاً قابل تشخیص باشه که این بخش مخصوص پشتیبانه، نه کاربر عادی.
+   ========================================================================== */
+:root{
+    --adm-bg:#0a0705; --adm-panel:#161009; --adm-panel2:#1e150c;
+    --adm-border:#3a2a16; --adm-amber:#f59e0b; --adm-amber-dim:#b45309;
+    --adm-red:#ef4444; --adm-text:#fde8c9; --adm-text-dim:#a8926f;
+    --adm-mono:'Courier New', ui-monospace, monospace;
+}
+#admin-login-overlay, #admin-panel-overlay{
+    position:fixed; inset:0; z-index:999990; display:none;
+    background:rgba(5,3,1,.82); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center; padding:16px;
+}
+#admin-login-overlay.show, #admin-panel-overlay.show{ display:flex; }
+#admin-login-box{
+    width:min(360px,92vw); background:var(--adm-panel);
+    border:1px solid var(--adm-border); border-radius:14px; padding:26px 22px;
+    font-family:var(--adm-mono); color:var(--adm-text); text-align:center;
+    box-shadow:0 0 0 1px rgba(245,158,11,.08), 0 20px 60px rgba(0,0,0,.6);
+    direction:rtl;
+}
+#admin-login-box h2{ margin:0 0 6px; font-size:1.05rem; color:var(--adm-amber); letter-spacing:.5px; }
+#admin-login-box p{ margin:0 0 16px; font-size:.75rem; color:var(--adm-text-dim); line-height:1.8; }
+#admin-login-box input{
+    width:100%; box-sizing:border-box; padding:11px 14px; border-radius:9px;
+    border:1px solid var(--adm-border); background:var(--adm-panel2); color:var(--adm-text);
+    font-family:var(--adm-mono); font-size:.95rem; text-align:center; outline:none; margin-bottom:12px;
+}
+#admin-login-box input:focus{ border-color:var(--adm-amber); }
+.adm-btn{
+    font-family:var(--adm-mono); border:none; border-radius:9px; padding:10px 16px;
+    cursor:pointer; font-size:.82rem; font-weight:700; transition:.15s;
+}
+.adm-btn-primary{ background:linear-gradient(135deg,var(--adm-amber),var(--adm-amber-dim)); color:#1a0f00; width:100%; }
+.adm-btn-primary:hover{ filter:brightness(1.1); }
+.adm-btn-ghost{ background:transparent; border:1px solid var(--adm-border); color:var(--adm-text-dim); }
+.adm-btn-ghost:hover{ color:var(--adm-text); border-color:var(--adm-amber-dim); }
+.adm-btn-danger{ background:rgba(239,68,68,.14); color:var(--adm-red); border:1px solid rgba(239,68,68,.35); }
+#admin-login-error{ color:var(--adm-red); font-size:.75rem; min-height:16px; margin-bottom:8px; }
+#admin-login-close{
+    position:absolute; top:14px; left:14px; background:none; border:none; color:var(--adm-text-dim);
+    font-size:1.1rem; cursor:pointer;
+}
+#admin-panel-box{
+    position:relative; width:min(640px,94vw); max-height:88vh; overflow:auto;
+    background:var(--adm-panel); border:1px solid var(--adm-border); border-radius:16px;
+    padding:0; font-family:var(--adm-mono); color:var(--adm-text); direction:rtl;
+    box-shadow:0 0 0 1px rgba(245,158,11,.08), 0 25px 70px rgba(0,0,0,.65);
+}
+#admin-panel-header{
+    position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; background:linear-gradient(135deg,#231607,#160d04);
+    border-bottom:1px solid var(--adm-border);
+}
+#admin-panel-header h2{ margin:0; font-size:1rem; color:var(--adm-amber); display:flex; align-items:center; gap:8px; }
+#admin-panel-header .adm-dot{ width:8px; height:8px; border-radius:50%; background:var(--adm-red); box-shadow:0 0 8px var(--adm-red); }
+#admin-panel-close{ background:none; border:none; color:var(--adm-text-dim); font-size:1.2rem; cursor:pointer; }
+.adm-section{ padding:18px 20px; border-bottom:1px dashed var(--adm-border); }
+.adm-section:last-of-type{ border-bottom:none; }
+.adm-section-title{ font-size:.78rem; color:var(--adm-amber); margin:0 0 12px; letter-spacing:.5px; }
+.adm-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.adm-row label{ font-size:.72rem; color:var(--adm-text-dim); flex-shrink:0; }
+.adm-row input[type=color]{ width:44px; height:30px; border:1px solid var(--adm-border); border-radius:6px; background:none; cursor:pointer; padding:0; }
+.adm-row input[type=text], .adm-row textarea, .adm-row select{
+    flex:1; background:var(--adm-panel2); border:1px solid var(--adm-border); color:var(--adm-text);
+    border-radius:7px; padding:7px 10px; font-family:var(--adm-mono); font-size:.78rem; outline:none;
+}
+.adm-row textarea{ resize:vertical; min-height:50px; }
+.adm-row input[type=text]:focus, .adm-row textarea:focus, .adm-row select:focus{ border-color:var(--adm-amber-dim); }
+.adm-grid2{ display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+.adm-radios{ display:flex; gap:6px; flex-wrap:wrap; }
+.adm-radios label{
+    display:flex; align-items:center; gap:5px; background:var(--adm-panel2); border:1px solid var(--adm-border);
+    border-radius:7px; padding:6px 10px; font-size:.72rem; cursor:pointer; color:var(--adm-text-dim);
+}
+.adm-radios input:checked + span{ color:var(--adm-amber); }
+.adm-radios label:has(input:checked){ border-color:var(--adm-amber-dim); }
+#admin-panel-footer{
+    position:sticky; bottom:0; display:flex; gap:10px; padding:16px 20px;
+    background:linear-gradient(0deg,#160d04,transparent); border-top:1px solid var(--adm-border);
+}
+#admin-panel-footer .adm-btn{ flex:1; }
+#admin-save-status{ font-size:.68rem; color:var(--adm-text-dim); text-align:center; padding:0 20px 14px; min-height:14px; }
 </style>
 </head>
 <body class="app-locked">
@@ -4338,8 +4424,8 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
                 </span>
             </div>
             <div class="app-bar-title">
-                <h1><span class="title-pro-badge">PRO MAX</span>سامانه جامع تحلیل و تست‌زنی</h1>
-                <p>ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی</p>
+                <h1 id="app-main-title" title=""><span class="title-pro-badge" id="atxt-app-badge">PRO MAX</span><span id="atxt-app-title">سامانه جامع تحلیل و تست‌زنی</span></h1>
+                <p id="atxt-app-subtitle">ابزار حرفه‌ای رصد پیشرفت تحصیلی ویژه رشته ریاضی و تجربی</p>
             </div>
             <div id="panda-mascot" title="پاندای همراه">
                 <div id="panda-controls">
@@ -5343,6 +5429,105 @@ body.light-mode .qt-modal{ background:linear-gradient(145deg,rgba(255,252,245,.9
 </div>
 
 <div id="reminder-toast" class="reminder-toast"></div>
+
+<!-- ========================================================================
+     پنل پشتیبان (Admin Panel) — دسترسی مخفی: ۵ کلیک سریع روی عنوان برنامه
+     ======================================================================== -->
+<div id="admin-login-overlay" onclick="if(event.target===this) adminCloseLogin()">
+  <div id="admin-login-box" style="position:relative;">
+    <button id="admin-login-close" onclick="adminCloseLogin()">✕</button>
+    <h2>🛠 ورود پشتیبان</h2>
+    <p>این بخش فقط برای مدیر سیستم است.<br>رمز عبور را وارد کن.</p>
+    <input type="password" id="admin-login-password" placeholder="رمز عبور" onkeydown="if(event.key==='Enter')adminTryLogin()">
+    <div id="admin-login-error"></div>
+    <button class="adm-btn adm-btn-primary" onclick="adminTryLogin()">ورود به پنل</button>
+  </div>
+</div>
+
+<div id="admin-panel-overlay" onclick="if(event.target===this) toggleAdminPanel(false)">
+  <div id="admin-panel-box">
+    <div id="admin-panel-header">
+      <h2><span class="adm-dot"></span>پنل پشتیبان</h2>
+      <button id="admin-panel-close" onclick="toggleAdminPanel(false)">✕</button>
+    </div>
+
+    <div class="adm-section">
+      <p class="adm-section-title">🎨 رنگ‌های برنامه (سراسری — روی همه کاربران اعمال می‌شود)</p>
+      <div class="adm-grid2">
+        <div class="adm-row"><label>رنگ اصلی (accent)</label><input type="color" id="adm-c-accent"></div>
+        <div class="adm-row"><label>رنگ طلایی (gold)</label><input type="color" id="adm-c-gold"></div>
+        <div class="adm-row"><label>رنگ طلایی تیره</label><input type="color" id="adm-c-goldDim"></div>
+        <div class="adm-row"><label>بنفش (purple)</label><input type="color" id="adm-c-purple"></div>
+        <div class="adm-row"><label>خطر (danger)</label><input type="color" id="adm-c-danger"></div>
+        <div class="adm-row"><label>موفقیت (success)</label><input type="color" id="adm-c-success"></div>
+        <div class="adm-row"><label>هشدار (warning)</label><input type="color" id="adm-c-warning"></div>
+        <div class="adm-row"><label>پس‌زمینه (حالت شب)</label><input type="color" id="adm-c-bgSolid"></div>
+        <div class="adm-row"><label>متن اصلی</label><input type="color" id="adm-c-textPrimary"></div>
+        <div class="adm-row"><label>متن فرعی</label><input type="color" id="adm-c-textSecondary"></div>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <p class="adm-section-title">🔤 فونت برنامه</p>
+      <div class="adm-row">
+        <label>فونت</label>
+        <select id="adm-font">
+          <option value="">Vazirmatn (پیش‌فرض)</option>
+          <option value="Estedad">Estedad</option>
+          <option value="Lalezar">Lalezar</option>
+          <option value="Markazi Text">Markazi Text</option>
+          <option value="Rubik">Rubik</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <p class="adm-section-title">📝 متن‌های اصلی برنامه</p>
+      <div class="adm-row"><label>برچسب کنار عنوان</label><input type="text" id="adm-t-badge" placeholder="PRO MAX"></div>
+      <div class="adm-row"><label>عنوان اصلی</label><input type="text" id="adm-t-title" placeholder="سامانه جامع تحلیل و تست‌زنی"></div>
+      <div class="adm-row"><label>زیرعنوان</label><input type="text" id="adm-t-subtitle" placeholder="ابزار حرفه‌ای..."></div>
+      <div class="adm-row"><label>عنوان صفحه ورود</label><input type="text" id="adm-t-authTitle" placeholder="🔐 ورود به سامانه تست‌زنی"></div>
+      <div class="adm-row"><label>توضیح صفحه ورود</label><input type="text" id="adm-t-authDesc" placeholder="برای استفاده از برنامه..."></div>
+      <div class="adm-row" style="align-items:flex-start;"><label style="margin-top:8px;">پیام اعلان 📣</label><textarea id="adm-t-announcement" placeholder="خالی بگذار تا اعلان پیش‌فرض کد نمایش داده شود"></textarea></div>
+    </div>
+
+    <div class="adm-section">
+      <p class="adm-section-title">🖼️ ظاهر کلی</p>
+      <div class="adm-row"><label>تم پیش‌فرض</label>
+        <div class="adm-radios" id="adm-l-theme">
+          <label><input type="radio" name="adm-theme" value="theme-sky" checked><span>Sky</span></label>
+          <label><input type="radio" name="adm-theme" value="theme-ocean"><span>Ocean</span></label>
+          <label><input type="radio" name="adm-theme" value="theme-royal"><span>Royal</span></label>
+          <label><input type="radio" name="adm-theme" value="theme-ice"><span>Ice</span></label>
+        </div>
+      </div>
+      <div class="adm-row"><label>حالت پیش‌فرض</label>
+        <div class="adm-radios" id="adm-l-mode">
+          <label><input type="radio" name="adm-mode" value="dark" checked><span>شب</span></label>
+          <label><input type="radio" name="adm-mode" value="light"><span>روز</span></label>
+        </div>
+      </div>
+      <div class="adm-row"><label>گردی گوشه‌ها (کارت‌ها و دکمه‌ها)</label>
+        <div class="adm-radios" id="adm-l-radius">
+          <label><input type="radio" name="adm-radius" value="sharp"><span>تیز</span></label>
+          <label><input type="radio" name="adm-radius" value="" checked><span>پیش‌فرض</span></label>
+          <label><input type="radio" name="adm-radius" value="round"><span>خیلی گرد</span></label>
+        </div>
+      </div>
+      <p style="font-size:.68rem;color:var(--adm-text-dim);line-height:1.8;margin:10px 0 0;">
+        نکته: «تم پیش‌فرض» و «حالت پیش‌فرض» فقط برای کاربرانی اعمال می‌شود که خودشان قبلاً از تنظیمات برنامه، تم دیگری انتخاب نکرده باشند.
+      </p>
+    </div>
+
+    <div id="admin-save-status"></div>
+    <div id="admin-panel-footer">
+      <button class="adm-btn adm-btn-danger" onclick="adminResetDefaults()">♻️ بازنشانی همه</button>
+      <button class="adm-btn adm-btn-ghost" onclick="toggleAdminPanel(false)">بستن</button>
+      <button class="adm-btn adm-btn-primary" onclick="adminSaveSettings()">💾 ذخیره و اعمال برای همه</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ==========================================================================
@@ -14588,6 +14773,289 @@ loadSmartNotes();
     document.addEventListener('visibilitychange', function(){
         if(document.visibilityState === 'visible') lbSyncMyStats();
     });
+})();
+</script>
+
+<!-- ========================================================================
+     پنل پشتیبان — منطق کامل
+     ======================================================================== -->
+<script>
+(function(){
+'use strict';
+
+const ADMIN_PASSWORD = 'Amirreza1388';
+const ADMIN_TABLE = 'app_theme_settings';
+let admClickCount = 0, admClickTimer = null;
+let ADMIN_ANNOUNCEMENT_OVERRIDE = null;
+let admCurrentSettings = { colors:{}, font:'', texts:{}, layout:{} };
+let admFontsLoaded = {};
+
+/* ---------------- دسترسی مخفی: ۵ کلیک روی عنوان برنامه ---------------- */
+document.addEventListener('DOMContentLoaded', function(){
+    const titleEl = document.getElementById('app-main-title');
+    if(!titleEl) return;
+    titleEl.style.cursor = 'default';
+    titleEl.addEventListener('click', function(){
+        admClickCount++;
+        clearTimeout(admClickTimer);
+        admClickTimer = setTimeout(() => { admClickCount = 0; }, 1500);
+        if(admClickCount >= 5){
+            admClickCount = 0;
+            adminOpenLogin();
+        }
+    });
+});
+
+function adminOpenLogin(){
+    const ov = document.getElementById('admin-login-overlay');
+    document.getElementById('admin-login-error').textContent = '';
+    document.getElementById('admin-login-password').value = '';
+    ov.classList.add('show');
+    setTimeout(() => document.getElementById('admin-login-password')?.focus(), 50);
+}
+function adminCloseLogin(){ document.getElementById('admin-login-overlay').classList.remove('show'); }
+window.adminCloseLogin = adminCloseLogin;
+
+function adminTryLogin(){
+    const val = document.getElementById('admin-login-password').value;
+    if(val === ADMIN_PASSWORD){
+        adminCloseLogin();
+        toggleAdminPanel(true);
+    } else {
+        document.getElementById('admin-login-error').textContent = 'رمز عبور اشتباه است.';
+    }
+}
+window.adminTryLogin = adminTryLogin;
+
+/* ---------------------------- باز/بسته کردن پنل ---------------------------- */
+function toggleAdminPanel(show){
+    const ov = document.getElementById('admin-panel-overlay');
+    if(show){
+        admFillPanelFromCurrent();
+        ov.classList.add('show');
+    } else {
+        ov.classList.remove('show');
+    }
+}
+window.toggleAdminPanel = toggleAdminPanel;
+
+function admFillPanelFromCurrent(){
+    const c = admCurrentSettings.colors || {};
+    const cssVal = (name, fallback) => {
+        const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        return v || fallback;
+    };
+    const setColor = (id, key, cssVar, fallback) => {
+        const el = document.getElementById(id);
+        if(el) el.value = c[key] || cssVal(cssVar, fallback);
+    };
+    setColor('adm-c-accent','accent','--accent','#38BDF8');
+    setColor('adm-c-gold','gold','--gold','#0EA5E9');
+    setColor('adm-c-goldDim','goldDim','--gold-dim','#0284C7');
+    setColor('adm-c-purple','purple','--purple','#06B6D4');
+    setColor('adm-c-danger','danger','--danger','#f43f5e');
+    setColor('adm-c-success','success','--success','#34d399');
+    setColor('adm-c-warning','warning','--warning','#fb923c');
+    setColor('adm-c-bgSolid','bgSolid','--bg-solid','#0b0c10');
+    setColor('adm-c-textPrimary','textPrimary','--text-primary','#f5f6fa');
+    setColor('adm-c-textSecondary','textSecondary','--text-secondary','#9a99ad');
+
+    document.getElementById('adm-font').value = admCurrentSettings.font || '';
+
+    const t = admCurrentSettings.texts || {};
+    document.getElementById('adm-t-badge').value = t.badge || '';
+    document.getElementById('adm-t-title').value = t.title || '';
+    document.getElementById('adm-t-subtitle').value = t.subtitle || '';
+    document.getElementById('adm-t-authTitle').value = t.authTitle || '';
+    document.getElementById('adm-t-authDesc').value = t.authDesc || '';
+    document.getElementById('adm-t-announcement').value = t.announcement || '';
+
+    const l = admCurrentSettings.layout || {};
+    const themeRadio = document.querySelector(`input[name="adm-theme"][value="${l.theme || 'theme-sky'}"]`);
+    if(themeRadio) themeRadio.checked = true;
+    const modeRadio = document.querySelector(`input[name="adm-mode"][value="${l.mode || 'dark'}"]`);
+    if(modeRadio) modeRadio.checked = true;
+    const radiusRadio = document.querySelector(`input[name="adm-radius"][value="${l.radius || ''}"]`);
+    if(radiusRadio) radiusRadio.checked = true;
+}
+
+/* ---------------------------- اعمال تنظیمات روی صفحه ---------------------------- */
+function admLoadFont(family){
+    if(!family || admFontsLoaded[family]) return;
+    admFontsLoaded[family] = true;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(family).replace(/%20/g,'+') + ':wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
+}
+
+function admApplySettings(s){
+    if(!s) return;
+    admCurrentSettings = s;
+    let styleEl = document.getElementById('admin-dynamic-style');
+    if(!styleEl){
+        styleEl = document.createElement('style');
+        styleEl.id = 'admin-dynamic-style';
+        document.head.appendChild(styleEl);
+    }
+    let css = '';
+    const c = s.colors || {};
+    const varMap = { accent:'--accent', gold:'--gold', goldDim:'--gold-dim', purple:'--purple', danger:'--danger', success:'--success', warning:'--warning', bgSolid:'--bg-solid', textPrimary:'--text-primary', textSecondary:'--text-secondary' };
+    let rootVars = '';
+    Object.keys(varMap).forEach(k => { if(c[k]) rootVars += varMap[k] + ':' + c[k] + ' !important;'; });
+    if(rootVars) css += ':root{' + rootVars + '}';
+
+    if(s.font){
+        admLoadFont(s.font);
+        css += `body,input,textarea,select,button{font-family:'${s.font}',Vazirmatn,Tahoma,sans-serif !important;}`;
+    }
+
+    const radius = (s.layout || {}).radius;
+    if(radius === 'sharp'){
+        css += '.glass-card,.btn,button,input,select,textarea,.tab-btn{border-radius:6px !important;}';
+    } else if(radius === 'round'){
+        css += '.glass-card,.btn,button,input,select,textarea,.tab-btn{border-radius:26px !important;}';
+    }
+    styleEl.textContent = css;
+
+    const t = s.texts || {};
+    const setText = (id, val) => { const el = document.getElementById(id); if(el && val) el.textContent = val; };
+    setText('atxt-app-badge', t.badge);
+    setText('atxt-app-title', t.title);
+    setText('atxt-app-subtitle', t.subtitle);
+    setText('app-auth-gate-title', t.authTitle);
+    setText('app-auth-gate-desc', t.authDesc);
+    if(t.announcement && t.announcement.trim()){
+        ADMIN_ANNOUNCEMENT_OVERRIDE = t.announcement.trim();
+    } else {
+        ADMIN_ANNOUNCEMENT_OVERRIDE = null;
+    }
+    try{ updateAnnouncementButton(); }catch(e){}
+
+    // تم/حالت پیش‌فرض — فقط اگر کاربر خودش قبلاً چیزی انتخاب نکرده باشد
+    const l = s.layout || {};
+    try{
+        if(l.theme && !localStorage.getItem('color_theme')){
+            const name = l.theme.replace('theme-', '');
+            localStorage.setItem('color_theme', name);
+        }
+        if(l.mode && !localStorage.getItem('theme_mode')){
+            localStorage.setItem('theme_mode', l.mode);
+        }
+    }catch(e){}
+}
+
+/* بازنویسی توابع اعلان تا از متن پشتیبان (در صورت وجود) استفاده کنند */
+window.updateAnnouncementButton = function(){
+    const btn = document.getElementById('announcement-badge');
+    const dot = document.getElementById('announcement-unread-dot');
+    if(!btn) return;
+    const text = (ADMIN_ANNOUNCEMENT_OVERRIDE !== null ? ADMIN_ANNOUNCEMENT_OVERRIDE : APP_ANNOUNCEMENT).trim();
+    if(!text){ btn.classList.remove('visible'); return; }
+    btn.classList.add('visible');
+    const seen = localStorage.getItem('seen_announcement_text') || '';
+    if(dot) dot.style.display = (seen === text) ? 'none' : 'block';
+};
+window.toggleAnnouncementPopup = function(){
+    const pop = document.getElementById('announcement-popup'); if(!pop) return;
+    const willShow = !pop.classList.contains('show');
+    if(willShow){
+        const text = (ADMIN_ANNOUNCEMENT_OVERRIDE !== null ? ADMIN_ANNOUNCEMENT_OVERRIDE : APP_ANNOUNCEMENT).trim();
+        document.getElementById('announcement-popup-text').textContent = text;
+        localStorage.setItem('seen_announcement_text', text);
+        updateAnnouncementButton();
+        document.getElementById('countdown-popup')?.classList.remove('show');
+    }
+    pop.classList.toggle('show', willShow);
+    if(willShow) positionFixedPopup(pop, document.getElementById('announcement-badge'));
+};
+
+/* ---------------------------- ذخیره در Supabase ---------------------------- */
+function admGatherSettingsFromPanel(){
+    const val = id => document.getElementById(id).value.trim();
+    return {
+        colors: {
+            accent: val('adm-c-accent'), gold: val('adm-c-gold'), goldDim: val('adm-c-goldDim'),
+            purple: val('adm-c-purple'), danger: val('adm-c-danger'), success: val('adm-c-success'),
+            warning: val('adm-c-warning'), bgSolid: val('adm-c-bgSolid'),
+            textPrimary: val('adm-c-textPrimary'), textSecondary: val('adm-c-textSecondary')
+        },
+        font: val('adm-font'),
+        texts: {
+            badge: val('adm-t-badge'), title: val('adm-t-title'), subtitle: val('adm-t-subtitle'),
+            authTitle: val('adm-t-authTitle'), authDesc: val('adm-t-authDesc'),
+            announcement: document.getElementById('adm-t-announcement').value.trim()
+        },
+        layout: {
+            theme: document.querySelector('input[name="adm-theme"]:checked')?.value || 'theme-sky',
+            mode: document.querySelector('input[name="adm-mode"]:checked')?.value || 'dark',
+            radius: document.querySelector('input[name="adm-radius"]:checked')?.value || ''
+        }
+    };
+}
+
+async function adminSaveSettings(){
+    const statusEl = document.getElementById('admin-save-status');
+    const client = (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null;
+    if(!client){ statusEl.textContent = '❌ اتصال به سرور برقرار نشد.'; return; }
+    const settings = admGatherSettingsFromPanel();
+    statusEl.textContent = 'در حال ذخیره...';
+    try{
+        const { error } = await client.from(ADMIN_TABLE).upsert({
+            id: 1,
+            colors: settings.colors,
+            font: settings.font,
+            texts: settings.texts,
+            layout: settings.layout,
+            updated_at: new Date().toISOString()
+        });
+        if(error) throw error;
+        admApplySettings(settings);
+        statusEl.textContent = '✅ ذخیره شد و برای همه کاربران اعمال می‌شود.';
+    }catch(e){
+        console.error(e);
+        statusEl.textContent = '❌ خطا در ذخیره: ' + (e.message || 'نامشخص') + ' — مطمئن شو جدول app_theme_settings را ساخته‌ای.';
+    }
+}
+window.adminSaveSettings = adminSaveSettings;
+
+async function adminResetDefaults(){
+    if(!confirm('همه‌ی تنظیمات ظاهری سفارشی حذف و به حالت پیش‌فرض برنامه برگردد؟')) return;
+    const statusEl = document.getElementById('admin-save-status');
+    const client = (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null;
+    if(!client){ statusEl.textContent = '❌ اتصال به سرور برقرار نشد.'; return; }
+    statusEl.textContent = 'در حال بازنشانی...';
+    try{
+        const { error } = await client.from(ADMIN_TABLE).upsert({
+            id: 1, colors: {}, font: '', texts: {}, layout: {}, updated_at: new Date().toISOString()
+        });
+        if(error) throw error;
+        statusEl.textContent = '✅ بازنشانی شد. صفحه رفرش می‌شود...';
+        setTimeout(() => location.reload(), 900);
+    }catch(e){
+        console.error(e);
+        statusEl.textContent = '❌ خطا: ' + (e.message || 'نامشخص');
+    }
+}
+window.adminResetDefaults = adminResetDefaults;
+
+/* ---------------------------- بارگذاری تنظیمات هنگام باز شدن صفحه ---------------------------- */
+async function admLoadInitial(){
+    try{
+        const client = (typeof getSupabaseClient === 'function') ? getSupabaseClient() : null;
+        if(!client) return;
+        const { data, error } = await client.from(ADMIN_TABLE).select('*').eq('id', 1).maybeSingle();
+        if(error || !data) return;
+        admApplySettings({
+            colors: data.colors || {},
+            font: data.font || '',
+            texts: data.texts || {},
+            layout: data.layout || {}
+        });
+    }catch(e){ console.warn('عدم امکان بارگذاری تنظیمات پشتیبان:', e); }
+}
+admLoadInitial();
+
 })();
 </script>
 
